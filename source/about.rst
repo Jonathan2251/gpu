@@ -24,7 +24,7 @@ Revision history
 
 Version 0.2, not released yet.
 
-Version 0.1, Released Febuary 16, 2026.
+Version 0.1, Released Febuary 22, 2026.
 
   Initial version.
 
