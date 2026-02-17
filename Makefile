@@ -15,7 +15,7 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) sou
 I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
 
 # Custom
-GH_PAGES_SOURCES = source Fig Makefile 
+GH_PAGES_SOURCES = source Fig References Makefile 
 
 .PHONY: help
 help:
@@ -235,15 +235,15 @@ gh-pages:
 	bash ./clean.sh
 	git checkout gh-pages
 	rm -rf build _sources _static _images
-	git checkout master $(GH_PAGES_SOURCES)
+	git checkout main $(GH_PAGES_SOURCES)
 	git reset HEAD
 	make html latexpdf epub
 	mv -fv build/html/* ./
-	mv -fv build/latex/StudyAboard.pdf "./StudyAboard.pdf"
-	mv -fv build/epub/StudyAboard.epub "./StudyAboard.epub"
+	mv -fv build/latex/gpu.pdf "./gpu.pdf"
+	mv -fv build/epub/gpu.epub "./gpu.epub"
 	rm -rf $(GH_PAGES_SOURCES) build
 	git add -A
-	git commit -m "Generated gh-pages for `git log master -1 --pretty=short --abbrev-commit`" && git push origin gh-pages ; git checkout master
+	git commit -m "Generated gh-pages for `git log main -1 --pretty=short --abbrev-commit`" && git push origin gh-pages ; git checkout main
 
 .PHONY: clean
 clean:
