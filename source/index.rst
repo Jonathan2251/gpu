@@ -10,7 +10,6 @@ Table of Contents
    :maxdepth: 1
 
    about
-   begin
    graphics
    opengl
    hw
