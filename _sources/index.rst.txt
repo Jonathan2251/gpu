@@ -7,10 +7,15 @@ Table of Contents
 =================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    about
-   gpu
+   begin
+   graphics
+   opengl
+   hw
+   sw
+   opensrc
 
 
 Resources

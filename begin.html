@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>The Concept of GPU Compiler &#8212; The Concept of GPU Compiler</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/haiku.css?v=fce32b03" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+    <script src="_static/documentation_options.js?v=2709fde1"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Concept in Graphics and Systems" href="graphics.html" />
+    <link rel="prev" title="About" href="about.html" /> 
+  </head><body>
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>The Concept of GPU Compiler</span></a></h1>
+        <h2 class="heading"><span>The Concept of GPU Compiler</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="Top">
+      
+        <p>
+        «&#160;&#160;<a href="about.html">About</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="graphics.html">Concept in Graphics and Systems</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <section id="the-concept-of-gpu-compiler">
+<span id="sec-begin"></span><h1>The Concept of GPU Compiler<a class="headerlink" href="#the-concept-of-gpu-compiler" title="Link to this heading">¶</a></h1>
+<p>Basically, a CPU is a SISD (Single Instruction Single Data) architecture in each
+core. The multimedia instructions in CPUs are smaller-scale forms of SIMD (Single
+Instruction Multiple Data), while GPUs are large-scale SIMD processors, capable of
+coloring millions of image pixels in just a few milliseconds.</p>
+<p>Since 2D and 3D graphic processing offers great potential for parallel data
+processing, GPU hardware typically includes tens of thousands of functional units
+per chip, as seen in products by NVIDIA and other manufacturers.</p>
+<p>This chapter provides an overview of how 3D animation is created and executed on
+a CPU+GPU system. Following that, it introduces GPU compilers and hardware
+features relevant to graphics applications. Finally, it explains how GPUs have
+taken on more computational tasks traditionally handled by CPUs, through the
+GPGPU (General-Purpose computing on Graphics Processing Units) concept and the
+emergence of related standards.</p>
+<p>Website: Basic Theory of 3D Graphics with OpenGL <a class="footnote-reference brackets" href="#cg-basictheory" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="cg-basictheory" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_BasicsTheory.html">https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_BasicsTheory.html</a></p>
+</aside>
+</aside>
+</section>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="Bottom">
+      
+        <p>
+        «&#160;&#160;<a href="about.html">About</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="graphics.html">Concept in Graphics and Systems</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2026, Chen Chung-Shu.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    </div>
+  </body>
+</html>

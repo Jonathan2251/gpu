@@ -1,0 +1,2556 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Concept in Graphics and Systems &#8212; The Concept of GPU Compiler</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/haiku.css?v=fce32b03" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+    <script src="_static/documentation_options.js?v=2709fde1"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="OpenGL" href="opengl.html" />
+    <link rel="prev" title="The Concept of GPU Compiler" href="begin.html" /> 
+  </head><body>
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>The Concept of GPU Compiler</span></a></h1>
+        <h2 class="heading"><span>Concept in Graphics and Systems</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="Top">
+      
+        <p>
+        «&#160;&#160;<a href="begin.html">The Concept of GPU Compiler</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="opengl.html">OpenGL</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <section id="concept-in-graphics-and-systems">
+<span id="graphics"></span><h1>Concept in Graphics and Systems<a class="headerlink" href="#concept-in-graphics-and-systems" title="Link to this heading">¶</a></h1>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#d-modeling" id="id88">3D Modeling</a></p>
+<ul>
+<li><p><a class="reference internal" href="#animation" id="id89">Animation</a></p></li>
+<li><p><a class="reference internal" href="#node-editor-shaders-generator" id="id90">Node-Editor (shaders generator)</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id9" id="id91">Node-Editor</a></p></li>
+<li><p><a class="reference internal" href="#code-generation-from-node-editor" id="id92">Code Generation from Node-Editor</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#d-modeling-tools" id="id93">3D Modeling Tools</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#graphics-hw-and-sw-stack" id="id94">Graphics HW and SW Stack</a></p>
+<ul>
+<li><p><a class="reference internal" href="#hw-block-diagram" id="id95">HW Block Diagram</a></p></li>
+<li><p><a class="reference internal" href="#sw-stack-and-data-flow" id="id96">SW Stack and Data Flow</a></p></li>
+<li><p><a class="reference internal" href="#pixels-displaying" id="id97">Pixels Displaying</a></p></li>
+<li><p><a class="reference internal" href="#the-role-and-purpose-of-shaders" id="id98">The Role and Purpose of Shaders</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#basic-geometry-in-computer-graphics" id="id99">Basic geometry in computer graphics</a></p>
+<ul>
+<li><p><a class="reference internal" href="#color" id="id100">Color</a></p></li>
+<li><p><a class="reference internal" href="#transformation" id="id101">Transformation</a></p></li>
+<li><p><a class="reference internal" href="#cross-product" id="id102">Cross Product</a></p></li>
+<li><p><a class="reference internal" href="#dot-product" id="id103">Dot Product</a></p></li>
+<li><p><a class="reference internal" href="#projection" id="id104">Projection</a></p></li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="d-modeling">
+<span id="three-d-model"></span><h2><a class="toc-backref" href="#id88" role="doc-backlink">3D Modeling</a><a class="headerlink" href="#d-modeling" title="Link to this heading">¶</a></h2>
+<p>By creating 3D models with triangles or quads on a surface, the model is formed
+using a polygon mesh <a class="footnote-reference brackets" href="#polygon" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>. This mesh consists of all the vertices shown in
+the first image as <a class="reference internal" href="#modeling1"><span class="std std-numref">Fig. 1</span></a>.</p>
+<figure class="align-center" id="id54">
+<span id="modeling1"></span><a class="reference internal image-reference" href="_images/modeling1.png"><img alt="_images/modeling1.png" height="394" src="_images/modeling1.png" width="688" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 1 </span><span class="caption-text">Creating 3D model and texturing</span><a class="headerlink" href="#id54" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>After applying smooth shading <a class="footnote-reference brackets" href="#polygon" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>, the vertices and edge lines are
+covered with color (or the edges are visually removed — <strong>edges never actually
+have black outlines</strong>). As a result, the model appears much smoother
+<a class="footnote-reference brackets" href="#shading" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>.</p>
+<p>Furthermore, after texturing (texture mapping), the model looks even more
+realistic <a class="footnote-reference brackets" href="#texturemapping" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>.</p>
+<section id="animation">
+<span id="id5"></span><h3><a class="toc-backref" href="#id89" role="doc-backlink">Animation</a><a class="headerlink" href="#animation" title="Link to this heading">¶</a></h3>
+<p>★ Animation Layers: High → Low</p>
+<p>This breakdown organizes animation systems from the <strong>highest gameplay
+logic</strong> down to the <strong>lowest GPU skinning</strong>, and clearly marks which
+parts are controlled by the <strong>user</strong> and which parts are handled by the
+<strong>3D engine</strong>.</p>
+<ol class="arabic simple">
+<li><p>Gameplay Animation Logic (High Level): set by user (game developer)</p></li>
+</ol>
+<p>See video here <a class="footnote-reference brackets" href="#animation-state-video" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a>.</p>
+<p><strong>Examples</strong></p>
+<ul class="simple">
+<li><p>Play “walk” when speed &gt; 0.1</p></li>
+<li><p>Trigger “jump” on button press</p></li>
+<li><p>Switch to “attack” when enemy detected</p></li>
+<li><p>Blend run when velocity increases</p></li>
+</ul>
+<p><strong>Where it lives</strong></p>
+<p>Live in <strong>gameplay scripts</strong> (C#, Blueprints, GDScript, Python)</p>
+<ul class="simple">
+<li><p>Unity: C# scripts</p></li>
+<li><p>Unreal: Blueprints or C++</p></li>
+<li><p>Godot: GDScript</p></li>
+<li><p>ThinMatrix: Java (no scripting layer)</p></li>
+</ul>
+<p>This layer decides <em>when</em> animations should play.</p>
+<ol class="arabic simple" start="2">
+<li><p>Animation State Machine / Animation Graph: set by user (game developer)</p></li>
+</ol>
+<p><strong>Examples</strong></p>
+<ul class="simple">
+<li><p>Idle → Walk → Run transitions</p></li>
+<li><p>Blend trees</p></li>
+<li><p>Animation layers (upper body, lower body)</p></li>
+<li><p>Animation parameters (speed, grounded, direction)</p></li>
+</ul>
+<p><strong>Where it lives</strong></p>
+<ul class="simple">
+<li><p>Unity: Animator Controller</p></li>
+<li><p>Unreal: Animation Blueprint</p></li>
+<li><p>Godot: AnimationTree</p></li>
+<li><p>ThinMatrix: <em>Does not have this layer</em></p></li>
+</ul>
+<p>This layer controls <em>which</em> animation clip is active and how transitions
+occur.</p>
+<ol class="arabic simple" start="3">
+<li><p>Animation Clip Playback Layer: user chooses</p></li>
+</ol>
+<p>An <strong>animation clip</strong> is <strong>a sequence of keyframes</strong> over a period of time that
+represents a <strong>motion or action</strong>.</p>
+<p><strong>Examples</strong></p>
+<ul class="simple">
+<li><p>Play animation clip</p></li>
+<li><p>Loop animation</p></li>
+<li><p>Set animation speed</p></li>
+<li><p>Crossfade between clips</p></li>
+<li><p>Blend two clips together</p></li>
+</ul>
+<p><strong>Who sets it?</strong>
+User chooses which clip to play.</p>
+<p><strong>Who implements it?</strong>
+Engine handles blending, timing, and playback.</p>
+<p><strong>Where it lives</strong></p>
+<ul class="simple">
+<li><p>Unity: Mecanim runtime</p></li>
+<li><p>Unreal: AnimInstance</p></li>
+<li><p>Godot: AnimationPlayer</p></li>
+<li><p>ThinMatrix: Java engine code (Animator.java)</p></li>
+</ul>
+<p>This layer executes the user’s choices.</p>
+<ol class="arabic simple" start="4">
+<li><p>Skeleton Animation System (Low Level): 3D engine implements it</p></li>
+</ol>
+<p><strong>Examples</strong></p>
+<ul class="simple">
+<li><p>Bone hierarchy</p></li>
+<li><p>Keyframe interpolation</p></li>
+<li><p>Joint transforms</p></li>
+<li><p>Matrix palette generation</p></li>
+<li><p>Pose calculation</p></li>
+</ul>
+<p><strong>Who sets it?</strong>
+Engine</p>
+<p><strong>Who uses it?</strong>
+User indirectly, by playing animations.</p>
+<p><strong>Where it lives</strong></p>
+<ul class="simple">
+<li><p>Unity: C++ engine core</p></li>
+<li><p>Unreal: C++ engine core</p></li>
+<li><p>Godot: C++ engine core</p></li>
+<li><p>ThinMatrix: Java engine code (he writes this manually)</p></li>
+</ul>
+<p>This layer performs the mathematical work of animation.</p>
+<ol class="arabic simple" start="5">
+<li><p>GPU Skinning (Lowest Level): 3D engine implements it</p></li>
+</ol>
+<p><strong>Examples</strong></p>
+<ul class="simple">
+<li><p>Vertex shader skinning</p></li>
+<li><p>Applying bone matrices</p></li>
+<li><p>Weighted vertex deformation</p></li>
+<li><p>Sending matrices to GPU</p></li>
+</ul>
+<p><strong>Who sets it?</strong>
+Engine</p>
+<p><strong>Who uses it?</strong>
+User never touches this layer directly (except in custom engines).</p>
+<p><strong>Where it lives</strong></p>
+<ul class="simple">
+<li><p>Unity: C++ + HLSL</p></li>
+<li><p>Unreal: C++ + HLSL</p></li>
+<li><p>Godot: C++ + GLSL</p></li>
+<li><p>ThinMatrix: GLSL shader he writes manually</p></li>
+</ul>
+<p>This is the final stage where the GPU deforms the mesh.</p>
+<p>Full Hierarchy (Summary)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>HIGH LEVEL (User)
+──────────────────────────────────────────────
+1. Gameplay Animation Logic
+2. Animation State Machine / Animation Graph
+3. Animation Clip Playback
+
+LOW LEVEL (Engine)
+──────────────────────────────────────────────
+4. Skeleton Animation System
+5. GPU Skinning
+</pre></div>
+</div>
+<p>Developers only write the highest‑level animation logic and designed
+transitions &amp; blends as shown in <a class="reference internal" href="#animation-levels"><span class="std std-numref">Fig. 2</span></a>.
+The engine automatically handles all lower‑level animation work.
+Like the video <a class="footnote-reference brackets" href="#animation-state-video" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a>, Jason’s tutorials operate only in
+Level 1 and Level 2:</p>
+<p>✔ Level 1 — Scripts</p>
+<p>He writes code like:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">animator</span><span class="p">.</span><span class="n">SetFloat</span><span class="p">(</span><span class="s">&quot;Speed&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">speed</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>✔ Level 2 — State Machine</p>
+<p>He configures transitions and parameters.</p>
+<figure class="align-default" id="id55">
+<span id="animation-levels"></span><div class="graphviz"><img src="_images/graphviz-45536928c5db99ac0e69333bfbb9e24b44f85b12.png" alt="digraph AnimationLayers {
+    rankdir=TB;
+    node [shape=box, style=rounded, fontsize=12];
+
+    High1 [label=&quot;1. Gameplay Animation Logic\n(User scripts / gameplay code)&quot;];
+    High2 [label=&quot;2. Animation State Machine / Animation Graph\n(User-designed transitions &amp; blends)&quot;];
+    Mid  [label=&quot;3. Animation Clip Playback\n(Engine-controlled timing &amp; blending)&quot;];
+    Low1 [label=&quot;4. Skeleton Animation System\n(Bone transforms, keyframe interpolation)&quot;];
+    Low2 [label=&quot;5. GPU Skinning\n(Vertex shader applies bone matrices)&quot;];
+
+    High1 -&gt; High2 [label=&quot;animation intent\n(e.g., walk, run, jump)&quot;];
+    High2 -&gt; Mid   [label=&quot;selected clip + blend parameters&quot;];
+    Mid   -&gt; Low1  [label=&quot;sampled pose\n(bone transforms per frame)&quot;];
+    Low1  -&gt; Low2  [label=&quot;matrix palette\n(bone matrices sent to GPU)&quot;];
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 2 </span><span class="caption-text">Animation levels</span><a class="headerlink" href="#id55" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>ThinMatrix’s engine collapses the top three layers into Java because it
+has <strong>no scripting layer</strong> and <strong>no animation graph</strong>, so the user must
+modify the engine code directly.</p>
+<p>According to the video on ThinMatrix’s skeleton animation <a class="footnote-reference brackets" href="#animation1" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></a>,
+he is sampling the animation clip at different times.
+The animation clip already contains: keyframes, bone transforms, timestamps,
+interpolation curves.
+All of this comes from Blender’s exported .dae file.
+Joints are positioned at different poses at specific times (keyframes), as
+illustrated in <a class="reference internal" href="#animationfigure"><span class="std std-numref">Fig. 3</span></a>.</p>
+<figure class="align-center" id="id56">
+<span id="animationfigure"></span><a class="reference internal image-reference" href="_images/animation.png"><img alt="_images/animation.png" height="497" src="_images/animation.png" width="962" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 3 </span><span class="caption-text">Get time points at keyframes</span><a class="headerlink" href="#id56" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Although most of 3D game engines are written C++, <strong>ThinMatrix’s engine</strong> is
+100% Java.
+In this series of videos, you will see that he writes new Java engine modules,
+edits existing engine code, loads animation data from Blender, interpolates
+keyframes, updates bone matrices and sends them to the GPU.
+Because ThinMatrix’s engine is <strong>tiny and educational</strong> for engine programmer or
+game developer, does not provide Scripting Layer (such as C#, Python, GDScript,
+Blueprints) most commercial 3D engines.
+Instead, he modifies ThinMatrix’s Java engine directly, which differs from most
+other 3D engines operate.</p>
+<p><strong>Animation flow</strong></p>
+<p>Every modern 3D animation tool comes with its own <strong>built‑in render engine</strong>,
+and often more than one. In 3D game design, <strong>game engines (Unity, Unreal,
+Godot) use real‑time engines</strong> for real-time animation.</p>
+<p><strong>Pipeline: Blender → Engine → OpenGL</strong></p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>+------------------+
+|     Blender      |
+|  (Modeling Tool) |
++------------------+
+          |
+          |  Exports assets:
+          |  - Meshes (.obj, .fbx, .gltf)
+          |  - Armatures / bones
+          |  - Animations (keyframes)
+          |  - Textures (PNG, EXR, TGA)
+          v
++---------------------------+
+|       Game Engine         |
+| (Unity, Unreal, Godot,    |
+|  LWJGL, JOGL, Custom)     |
++---------------------------+
+          |
+          |  Engine loads assets:
+          |  - Parses mesh data
+          |  - Loads skeletons
+          |  - Loads animation curves
+          |  - Loads materials/shaders
+          |
+          |  Engine code you write:
+          |  - Java (JOGL/LWJGL)
+          |  - C++ (custom engine)
+          |  - C# (Unity)
+          |  - GDScript/C++ (Godot)
+          |
+          |  Engine compiles shaders:
+          |  - GLSL (OpenGL)
+          |  - HLSL (DirectX)
+          |  - SPIR-V (Vulkan)
+          v
++---------------------------+
+|         Renderer          |
+|    (OpenGL / Vulkan /     |
+|     DirectX / Metal)      |
++---------------------------+
+          |
+          |  GPU receives:
+          |  - Vertex buffers
+          |  - Index buffers
+          |  - Textures
+          |  - Uniforms (matrices, bones)
+          |  - Compiled shaders
+          v
++---------------------------+
+|            GPU            |
+| (Vertex Shader → Raster → |
+|  Fragment Shader → Frame) |
++---------------------------+
+          |
+          v
++---------------------------+
+|        Final Image        |
+|     (On your screen)      |
++---------------------------+
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<dl class="simple">
+<dt>3D modeling tools do store animation and movement data</dt><dd><p>— but they do NOT store any rendering or API‑specific code.</p>
+</dd>
+<dt>Game engines do store animation data</dt><dd><p>— but programmers still write the logic that plays, blends,
+and controls those animations.</p>
+</dd>
+</dl>
+</div>
+<p id="movement"><strong>Animation Data vs. Movement Speed in Games</strong></p>
+<p>List the animation types in a table for inclusion in this book.</p>
+<table class="docutils align-default" id="id57">
+<caption><span class="caption-number">Table 1 </span><span class="caption-text">Animation Types</span><a class="headerlink" href="#id57" title="Link to this table">¶</a></caption>
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 25.0%" />
+<col style="width: 35.0%" />
+<col style="width: 20.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p><strong>Animation Type</strong></p></th>
+<th class="head"><p>What Moves</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>GPU Requirement</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Transform Animation</strong></p></td>
+<td><p>Object transform</p></td>
+<td><p>The entire mesh moves as a rigid body using
+position, rotation, and scale. No vertex-level
+deformation occurs.</p></td>
+<td><p>Optional (fixed-function or shaders)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Skinning</strong></p></td>
+<td><p>Vertex positions</p></td>
+<td><p>Vertices are blended by bone matrices to deform
+the mesh (arms bending, legs walking). Requires
+per-vertex matrix blending.</p></td>
+<td><p>Requires shaders</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Morph Target Animation</strong></p></td>
+<td><p>Vertex positions</p></td>
+<td><p>Vertices blend between multiple stored shapes
+(facial expressions, muscle bulges). Uses morph
+weights to interpolate.</p></td>
+<td><p>Requires shaders</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Procedural Deformation</strong></p></td>
+<td><p>Vertex positions</p></td>
+<td><p>Vertices are modified by mathematical functions
+(wind, waves, noise, squash-and-stretch). Driven
+by time or simulation parameters.</p></td>
+<td><p>Requires shaders</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example: Walking Animation: Skinning + Transform Animation</strong></p>
+<p>When a character walks in a game, the animation is produced by two
+different systems working together:</p>
+<ol class="arabic simple">
+<li><p><strong>Skinning (Bone Animation)</strong>
+Skinning is responsible for deforming the mesh. It drives the motion
+of limbs such as legs, arms, spine, and feet. Without skinning, the
+character would move as a rigid statue with no bending or articulation.</p></li>
+<li><p><strong>Transform Animation (Rigid-Body Movement)</strong>
+Transform animation moves the entire character through the world.
+This includes translation, rotation, and root motion. Without transform
+animation, the character would walk in place without actually moving
+forward.</p>
+<ul class="simple">
+<li><p>Root bone: the bone that represents the entire object’s transform —
+the top‑most parent of the hierarchy. An example of person:</p></li>
+</ul>
+</li>
+</ol>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Root
+ └─ Pelvis
+     ├─ Spine
+     │   ├─ Chest
+     │   │   ├─ Neck
+     │   │   │   └─ Head
+     │   │   └─ Shoulders
+     │   │       ├─ Arm_L
+     │   │       └─ Arm_R
+     ├─ Leg_L
+     └─ Leg_R
+</pre></div>
+</div>
+<p>Both systems are required to create a complete walking animation:</p>
+<ul class="simple">
+<li><p><strong>Skinning</strong> provides the internal limb motion.</p></li>
+<li><p><strong>Transform animation</strong> provides the external world-space movement.</p></li>
+</ul>
+<p>Together, they produce the final effect of a character walking naturally
+through the environment.</p>
+<p>The following explains what animation data 3D modeling tools store, what
+game engines store, and what programmers must implement manually. It also
+clarifies the relationship between animation curves, movement speed, and
+gameplay logic.</p>
+<ol class="arabic simple">
+<li><p>What 3D Modeling Tools Actually Store</p></li>
+</ol>
+<p>3D modeling and animation tools such as Blender, Maya, and 3ds Max store
+<strong>animation data</strong>, not gameplay logic.</p>
+<p>They <strong>do store</strong>:</p>
+<ul class="simple">
+<li><p>Keyframes (frame 0, frame 10, frame 24, etc.)</p></li>
+<li><p>Bone transforms at each keyframe</p></li>
+<li><p>Interpolation curves (Bezier, linear, quaternion)</p></li>
+<li><p>Animation duration (e.g., 1.2 seconds)</p></li>
+<li><p>Frame rate (e.g., 24 fps)</p></li>
+<li><p>Skeleton hierarchy</p></li>
+<li><p>Skin weights (vertex-to-bone influences)</p></li>
+<li><p>Optional root bone motion (displacement over time)</p></li>
+</ul>
+<p>Modeling tools produce <strong>data</strong>, not rendering code and not gameplay rules in
+OpenGL/DirectX code.</p>
+<p>Example:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Bone &quot;Arm&quot; rotation at frame 0 = (0°, 0°, 0°)
+Bone &quot;Arm&quot; rotation at frame 10 = (45°, 0°, 0°)
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>What Game Engines Actually Store</p></li>
+</ol>
+<p>The <strong>engine’s built‑in C++ renderer handles all OpenGL/Vulkan/Metal calls
+automatically</strong>.
+Game engines such as Unity, Unreal Engine, Godot, or custom engines store
+and manage animation data, but still do not define gameplay movement speed.</p>
+<p>They <strong>do store</strong>:</p>
+<ul class="simple">
+<li><p>Animation clips</p></li>
+<li><p>State machines (Idle → Walk → Run)</p></li>
+<li><p>Blend trees</p></li>
+<li><p>Transition rules</p></li>
+<li><p>Animation events</p></li>
+<li><p>Curves for rotation, scaling, and root motion</p></li>
+</ul>
+<p>Again: data, not OpenGL/DirectX code.</p>
+<p>Example:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>If speed &lt; 0.1 → Idle
+If speed &gt; 0.1 → Walk
+If speed &gt; 4.0 → Run
+</pre></div>
+</div>
+<p>This is engine logic, not GPU code.</p>
+<p>Game engines interpret animation data but rely on programmer logic to
+control how characters move in the world.</p>
+<ol class="arabic simple" start="3">
+<li><p>What Programmers Must Implement</p></li>
+</ol>
+<p>Programmers write the <strong>logic</strong> that uses animation data to move objects.</p>
+<p>Examples:</p>
+<p>In Unity (C#)</p>
+<div class="highlight-csharp notranslate"><div class="highlight"><pre><span></span><span class="n">animator</span><span class="p">.</span><span class="n">SetFloat</span><span class="p">(</span><span class="s">&quot;speed&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">playerVelocity</span><span class="p">);</span>
+<span class="p">...</span>
+<span class="kt">float</span><span class="w"> </span><span class="n">speed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">3.5f</span><span class="p">;</span>
+<span class="n">transform</span><span class="p">.</span><span class="n">position</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">direction</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">speed</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Time</span><span class="p">.</span><span class="n">deltaTime</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>In a custom engine (C++/OpenGL)</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">shader</span><span class="p">.</span><span class="n">setMatrix</span><span class="p">(</span><span class="s">&quot;boneMatrices[0]&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">boneMatrix</span><span class="p">);</span>
+<span class="p">...</span>
+<span class="kt">float</span><span class="w"> </span><span class="n">velocity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">3.5f</span><span class="p">;</span>
+<span class="n">position</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">velocity</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">deltaTime</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>In JOGL/LWJGL (Java)</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">glUniformMatrix4fv</span><span class="p">(</span><span class="n">boneLocation</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="n">boneMatrixBuffer</span><span class="p">);</span>
+<span class="p">...</span>
+<span class="kt">float</span><span class="w"> </span><span class="n">velocity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">3.5f</span><span class="p">;</span>
+<span class="n">position</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">velocity</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">deltaTime</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Programmers write:</p>
+<p>Programmers implement:</p>
+<ul class="simple">
+<li><p>Movement speed</p>
+<ul>
+<li><p>E.g. <strong>Set the value for speed or velocity as the code above.</strong></p></li>
+</ul>
+</li>
+<li><p>Acceleration and deceleration</p></li>
+<li><p>Physics integration</p></li>
+<li><p>AI movement</p></li>
+<li><p>Player input</p></li>
+<li><p>Animation blending logic</p></li>
+<li><p>Uploading bone matrices to the GPU</p></li>
+<li><p>GLSL shader code for skinning</p></li>
+</ul>
+<p>Animation data is <em>used</em> by code, not replaced by it.</p>
+<ol class="arabic simple" start="4">
+<li><p>Root Motion vs. Movement Speed</p></li>
+</ol>
+<p>Some animations include <strong>root motion</strong>, where the root bone moves forward
+during a walk cycle. Modeling tools export this as bone displacement over
+time, but they still do <strong>not</strong> define speed.</p>
+<p>Example:</p>
+<p>If the root bone moves 1 meter in 0.5 seconds, the engine can compute:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">speed</span> <span class="o">=</span> <span class="mi">1</span><span class="n">m</span> <span class="o">/</span> <span class="mf">0.5</span><span class="n">s</span> <span class="o">=</span> <span class="mi">2</span> <span class="n">m</span><span class="o">/</span><span class="n">s</span>
+</pre></div>
+</div>
+<p>However:</p>
+<ul class="simple">
+<li><p>Blender does not store “2 m/s”</p></li>
+<li><p>The engine derives speed from displacement</p></li>
+<li><p>Programmers decide whether to use root motion or in-place animation</p></li>
+</ul>
+<ol class="arabic simple" start="5">
+<li><p>Summary Table</p></li>
+</ol>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Concept</p></th>
+<th class="head"><p>Stored in Blender?</p></th>
+<th class="head"><p>Stored in Engine?</p></th>
+<th class="head"><p>Controlled by Programmer?</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Keyframes</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Bone transforms</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-even"><td><p>Animation length</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Movement speed</p></td>
+<td><p>No</p></td>
+<td><p>Yes (derived)</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-even"><td><p>Physics movement</p></td>
+<td><p>No</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-odd"><td><p>AI movement</p></td>
+<td><p>No</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+</tr>
+</tbody>
+</table>
+<ol class="arabic simple" start="6">
+<li><p>Final Clarification</p></li>
+</ol>
+<ul class="simple">
+<li><p><strong>3D modeling tools store animation timing, not gameplay speed.</strong></p></li>
+<li><p><strong>Game engines store animation clips, not movement speed.</strong></p></li>
+<li><p><strong>Programmers control movement speed, physics, and gameplay behavior.</strong></p></li>
+<li><p><strong>No tool generates JOGL/OpenGL/Vulkan/DirectX code.</strong></p></li>
+<li><p><strong>All rendering API calls are written by engine developers or by you in a
+custom engine.</strong></p></li>
+</ul>
+<p><strong>Example for accelerating playing</strong></p>
+<p>Animation Speed vs Engine Rendering (5× Speed)</p>
+<p>The following table shows how animation playback, movement speed, and GPU
+rendering interact when the gameplay speed is multiplied by five. The
+animation remains 24 fps internally, but its playback time advances five
+times faster. The GPU continues to render at 60 fps and samples the
+animation at the current time.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Property</p></th>
+<th class="head"><p>Original Value</p></th>
+<th class="head"><p>After 5× Speed</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Animation FPS (baked)</p></td>
+<td><p>24 fps</p></td>
+<td><p>24 fps (unchanged)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Animation Playback Speed</p></td>
+<td><p>1×</p></td>
+<td><p>5×</p></td>
+</tr>
+<tr class="row-even"><td><p>Steps per Second</p></td>
+<td><p>6 steps/sec</p></td>
+<td><p>30 steps/sec</p></td>
+</tr>
+<tr class="row-odd"><td><p>Movement Speed</p></td>
+<td><p>6 m/sec</p></td>
+<td><p>30 m/sec</p></td>
+</tr>
+<tr class="row-even"><td><p>GPU Rendering FPS</p></td>
+<td><p>60 fps</p></td>
+<td><p>60 fps</p></td>
+</tr>
+<tr class="row-odd"><td><p>Engine Playing Frames
+(What GPU Displays)</p></td>
+<td><p>Samples animation
+at 60 fps</p></td>
+<td><p>Samples animation at
+60 fps (skips/interpolates
+intermediate animation
+frames)</p></td>
+</tr>
+</tbody>
+</table>
+<p>Summary:</p>
+<ul class="simple">
+<li><p>The animation does <strong>not</strong> become 120 fps; it is simply played 5× faster.</p></li>
+<li><p>The runner appears to take <strong>30 steps per second</strong> and move <strong>30 meters per
+second</strong>.</p></li>
+<li><p>The GPU still renders <strong>60 frames per second</strong>.</p></li>
+<li><p>The engine <strong>samples</strong> the animation at each rendered frame, so it
+effectively displays every fifth animation sample, using interpolation
+for smoothness. For this case, it may display <strong>1 out of 2 animation frames</strong>
+from 3D modeling.</p></li>
+</ul>
+</section>
+<section id="node-editor-shaders-generator">
+<span id="node-editor"></span><h3><a class="toc-backref" href="#id90" role="doc-backlink">Node-Editor (shaders generator)</a><a class="headerlink" href="#node-editor-shaders-generator" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>3D animation tools (Blender, Maya, Houdini) use render engines and node
+editors for materials, lighting, and effects.</p></li>
+<li><p>Game engines (Unity, Unreal, Godot) use real‑time engines and node editors
+for shaders, VFX, and sometimes logic.</p></li>
+</ul>
+<p>A node editor defines the <strong>entire material</strong> that is applied to the
+surface of a 3D object. The shader generated from the node graph runs on
+<strong>every pixel</strong> (fragment) of the object’s surface. In this sense, the
+node editor controls the <strong>whole surface</strong>, not only a specific region.</p>
+<p>However, the node graph can include <strong>masks</strong>, <strong>textures</strong>, <strong>vertex
+colors</strong>, or <strong>procedural patterns</strong> that allow the artist to specify
+which <em>parts</em> of the surface receive a particular effect. These masks do
+not limit the shader to only part of the surface; instead, they instruct
+the shader how to behave differently across different regions.</p>
+<section id="id9">
+<h4><a class="toc-backref" href="#id91" role="doc-backlink">Node-Editor</a><a class="headerlink" href="#id9" title="Link to this heading">¶</a></h4>
+<p><strong>Example</strong></p>
+<p>Let’s say you want:</p>
+<ul class="simple">
+<li><p>rust only on the edges</p></li>
+<li><p>metal everywhere else</p></li>
+</ul>
+<p>In the node editor:</p>
+<ol class="arabic simple">
+<li><p>Load a rust texture</p></li>
+<li><p>Load a metal texture</p></li>
+<li><p>Use a mask (curvature or hand-painted)</p></li>
+<li><p>Mix them using a Mix node</p></li>
+</ol>
+<p>The shader still runs on the whole surface, but the mask tells it:</p>
+<ul class="simple">
+<li><p>“Use rust here”</p></li>
+<li><p>“Use metal here”</p></li>
+</ul>
+<p>In summary:</p>
+<ul class="simple">
+<li><p>The node editor defines the <strong>full material</strong> for the <strong>entire
+surface</strong>.</p></li>
+<li><p>Artists can use masks or textures to <strong>target specific areas</strong> within
+that surface.</p></li>
+<li><p>The shader still executes globally, but its <strong>output varies</strong> based on
+the mask inputs.</p></li>
+</ul>
+<p>Thus, a node editor controls the whole surface, while masks determine how
+different parts of that surface are shaded.</p>
+<p>For 3D video game engines,
+the only case where mask data is inside the model file is vertex colors.
+Everything else lives in textures or material/shader assets.</p>
+<p><strong>Procedural Rust on Edges Using Shader Nodes</strong></p>
+<p>To demonstrate how to create a <strong>rust-on-edges</strong> material using Blender’s shader
+node editor as shown in <a class="reference internal" href="#node-editor-ex1"><span class="std std-numref">Fig. 4</span></a>.
+The goal is to reproduce the effect commonly used on metal containers: clean
+metal on flat surfaces and rust accumulation along exposed edges.</p>
+<figure class="align-center" id="id58">
+<span id="node-editor-ex1"></span><a class="reference internal image-reference" href="_images/node-editor-ex1.png"><img alt="Full-width image" height="440" src="_images/node-editor-ex1.png" width="782" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 4 </span><span class="caption-text">An example to Rust on Edges Using Shader Nodes <a class="footnote-reference brackets" href="#node-editor-web1" id="id10" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id58" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The technique relies on three core ideas:</p>
+<ol class="arabic simple">
+<li><p>Detecting edges using the <em>Bevel</em> or <em>Pointiness</em> attribute.</p></li>
+<li><p>Creating a mask that isolates only the worn edges.</p></li>
+<li><p>Blending a rust material with a metal material using that mask.</p></li>
+</ol>
+<p>This workflow is fully procedural and does not require painting or
+external textures.</p>
+<p>Procedural Edge Wear Node Graph (ASCII Diagram) to create
+<a class="reference internal" href="#node-editor-ex1"><span class="std std-numref">Fig. 4</span></a> in video <a class="footnote-reference brackets" href="#node-editor-web1" id="id11" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a> includes
+1. edge detection, 2. mask breakup, 3. material creation, and 4. final blending
+as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+================================================================+
+|                    1.  EDGE DETECTION BLOCK                    |
+|                     (Generating an Edge-Wear Mask)             |
++================================================================+
+
+   Geometry Node
+        |
+        |----&gt; Pointiness (Cycles only)
+        |
+   Bevel Node (Eevee/Cycles)
+        Radius = 0.01–0.03
+        |
+        v
+   ColorRamp (Sharpen edge highlight)
+        |
+        v
+   Edge Mask (base convex-edge detection)
+
+
++================================================================+
+|              2. MASK BREAKUP / RANDOMIZATION BLOCK             |
+|               (Refining the Mask With Noise Textures)          |
++================================================================+
+
+   Noise Texture (Scale 5–15)
+        |
+        v
+   ColorRamp (optional shaping)
+        |
+        v
+   Multiply Node  &lt;---------------- Edge Mask
+        |
+        v
+   ColorRamp (final threshold control)
+        |
+        v
+   Final Edge Wear Mask
+
+material creation
++================================================================+
+|                      3. MATERIAL BLOCK                         |
+|                       (Base Material Structure)                |
++================================================================+
+
+   METAL MATERIAL:
+        Principled BSDF
+        Metallic = 1.0
+        Roughness = 0.2–0.4
+
+   RUST MATERIAL:
+        Principled BSDF
+        Base Color = orange/brown
+        Roughness = 0.7–1.0
+        Optional Noise → color variation
+        Optional Bump → rust height
+
+
++================================================================+
+|                      4. BLENDING BLOCK                         |
+|                       (Blending Metal and Rust Materials)      |
++================================================================+
+
+   Metal BSDF ----------------------+
+                                    |
+                                    v
+                               Mix Shader ----&gt; Material Output
+                                    ^
+                                    |
+   Rust BSDF -----------------------+
+                                    |
+                                    |
+                         Final Edge Wear Mask (Fac)
+</pre></div>
+</div>
+</section>
+<section id="code-generation-from-node-editor">
+<h4><a class="toc-backref" href="#id92" role="doc-backlink">Code Generation from Node-Editor</a><a class="headerlink" href="#code-generation-from-node-editor" title="Link to this heading">¶</a></h4>
+<p>Node-based shader editors are visual tools used in modern game engines
+and DCC (Digital Content Creation) software. They allow users to build
+shaders by connecting nodes instead of writing GLSL, HLSL, or Metal code
+manually. These editors <strong>do generate shader code automatically</strong>.</p>
+<ol class="arabic simple">
+<li><p>Node-Based Editors Do Generate Shader Code</p></li>
+</ol>
+<p>Node-based shader editors such as:</p>
+<ul class="simple">
+<li><p>Unity Shader Graph</p></li>
+<li><p>Unreal Engine Material Editor</p></li>
+<li><p>Godot Visual Shader Editor</p></li>
+<li><p>Blender Shader Nodes (for Eevee/Cycles)</p></li>
+</ul>
+<p>all <strong>compile the visual node graph into real shader code</strong>.</p>
+<p>Depending on the engine, the generated code may be:</p>
+<ul class="simple">
+<li><p>GLSL (OpenGL / Vulkan)</p></li>
+<li><p>HLSL (DirectX)</p></li>
+<li><p>MSL (Metal)</p></li>
+<li><p>SPIR-V (Vulkan intermediate format)</p></li>
+</ul>
+<p>The generated code is usually not shown to the user, but it is compiled
+and sent to the GPU at runtime.</p>
+<ol class="arabic simple" start="2">
+<li><p>How Users Generate Shader Code with Nodes</p></li>
+</ol>
+<p>The workflow for generating shader code through a node editor typically
+looks like this:</p>
+<ol class="arabic simple">
+<li><p>The user opens the shader editor.</p></li>
+<li><p>The user creates nodes representing:</p>
+<ul class="simple">
+<li><p>math operations (add, multiply, dot product)</p></li>
+<li><p>texture sampling</p>
+<ul>
+<li><p>Determine FS.</p></li>
+</ul>
+</li>
+<li><p>lighting functions</p></li>
+<li><p>color adjustments</p></li>
+<li><p>UV transformations</p></li>
+</ul>
+</li>
+<li><p>The user connects nodes visually to define the shader logic.</p>
+<ul class="simple">
+<li><p>Defines surface color,lighting, and texture sampling → <strong>determine FS</strong>.</p></li>
+<li><p>For simple deformations (waves, wind, dissolve) → <strong>determine the VS</strong>.</p></li>
+<li><p>Generate both <strong>TCS and TES</strong> code for <strong>displacement and subdivision
+control</strong>.</p></li>
+<li><p><strong>GS</strong> code is typically <strong>written manually</strong> by  graphics programmers
+since <strong>primitives culling and clipping</strong> are not related with model
+resolution and texture materials.</p></li>
+</ul>
+</li>
+<li><p>The engine converts the node graph into an internal shader
+representation.</p></li>
+<li><p>The engine compiles this representation into platform-specific shader
+code (GLSL, HLSL, MSL, or SPIR-V).</p></li>
+<li><p>The compiled shader is sent to the GPU and used for rendering.</p></li>
+</ol>
+<p>The user never writes the shader code directly; the editor generates it
+automatically.</p>
+<ol class="arabic simple" start="3">
+<li><p>Who Is the “User” of Node-Based Editors?</p></li>
+</ol>
+<p>The typical users of node-based shader editors are:</p>
+<dl class="simple">
+<dt><strong>Graphics Designers / Technical Artists</strong></dt><dd><ul class="simple">
+<li><p>Primary users.</p></li>
+<li><p>They create visual effects, materials, and surface shaders.</p></li>
+<li><p>They usually do not write GLSL or HLSL manually.</p></li>
+<li><p>Node editors allow them to work visually without programming.</p></li>
+</ul>
+</dd>
+<dt><strong>Software Programmers / Graphics Programmers</strong></dt><dd><ul class="simple">
+<li><p>Secondary users.</p></li>
+<li><p>They may create custom nodes or extend the shader system.</p></li>
+<li><p>They write low-level shader code when needed.</p></li>
+<li><p>They integrate the generated shaders into the rendering pipeline.</p></li>
+</ul>
+</dd>
+</dl>
+<p>In most workflows:</p>
+<ul class="simple">
+<li><p><strong>Graphics designers</strong> build the shader visually.</p></li>
+<li><p><strong>The engine</strong> generates the shader code.</p></li>
+<li><p><strong>Programmers</strong> handle advanced logic, optimization, or custom nodes.</p></li>
+</ul>
+<ol class="arabic simple" start="4">
+<li><p>Summary</p></li>
+</ol>
+<ul class="simple">
+<li><p>Node-based shader editors <strong>do generate shader code</strong> automatically.</p></li>
+<li><p>Users generate shaders by connecting visual nodes rather than writing
+GLSL/HLSL manually.</p></li>
+<li><p>The primary “user” is the <strong>graphics designer or technical artist</strong>.</p></li>
+<li><p>Programmers support the system by writing custom nodes or low-level
+shaders when needed.</p></li>
+</ul>
+<p>The shaders introduction is illustrated in the next section <a class="reference internal" href="opengl.html#opengl"><span class="std std-ref">OpenGL</span></a>.</p>
+</section>
+</section>
+<section id="d-modeling-tools">
+<h3><a class="toc-backref" href="#id93" role="doc-backlink">3D Modeling Tools</a><a class="headerlink" href="#d-modeling-tools" title="Link to this heading">¶</a></h3>
+<p>Every CAD software manufacturer, such as AutoDesk and Blender, has their own
+proprietary format. To solve interoperability problems, neutral or open source
+formats were created as intermediate formats to convert between proprietary
+formats.</p>
+<p>Naturally, these neutral formats have become very popular. Two famous examples
+are STL (with a <cite>.STL</cite> extension) and COLLADA (with a <cite>.DAE</cite> extension). Below
+is a list showing 3D file formats along with their types.</p>
+<table class="docutils align-default" id="id59">
+<caption><span class="caption-number">Table 2 </span><span class="caption-text">3D file formats <a class="footnote-reference brackets" href="#dfmt" id="id12" role="doc-noteref"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id59" title="Link to this table">¶</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>3D file format</p></th>
+<th class="head"><p>Type</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>STL</p></td>
+<td><p>Neutral</p></td>
+</tr>
+<tr class="row-odd"><td><p>OBJ</p></td>
+<td><p>ASCII variant is neutral, binary variant is proprietary</p></td>
+</tr>
+<tr class="row-even"><td><p>FBX</p></td>
+<td><p>Proprietary</p></td>
+</tr>
+<tr class="row-odd"><td><p>COLLADA</p></td>
+<td><p>Neutral</p></td>
+</tr>
+<tr class="row-even"><td><p>3DS</p></td>
+<td><p>Proprietary</p></td>
+</tr>
+<tr class="row-odd"><td><p>IGES</p></td>
+<td><p>Neutral</p></td>
+</tr>
+<tr class="row-even"><td><p>STEP</p></td>
+<td><p>Neutral</p></td>
+</tr>
+<tr class="row-odd"><td><p>VRML/X3D</p></td>
+<td><p>Neutral</p></td>
+</tr>
+</tbody>
+</table>
+<p>The four key features a 3D file can store include the model’s geometry, the
+model’s surface texture, scene details, and animation of the model <a class="footnote-reference brackets" href="#dfmt" id="id13" role="doc-noteref"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></a>.</p>
+<p>Specifically, they can store details about four key features of a 3D model,
+though it’s worth bearing in mind that you may not always take advantage of
+all four features in all projects, and not all file formats support all four
+features!</p>
+<p>3D printer applications do not to support animation. CAD and CAM such as
+designing airplane does not need feature of scene details.</p>
+<p>DAE (Collada) appeared in the video animation above.
+Collada files  belong to a neutral format used heavily in the video game and
+film industries. It’s managed by the non-profit technology consortium, the
+Khronos Group.</p>
+<p>The file extension for the Collada format is .dae.
+The Collada format stores data using the XML mark-up language.</p>
+<p>The original intention behind the Collada format was to become a standard among
+3D file formats. Indeed, in 2013, it was adopted by ISO as a publicly available
+specification, ISO/PAS 17506. As a result, many 3D modeling programs support
+the Collada format.</p>
+<p>That said, the consensus is that the Collada format hasn’t kept up with the
+times. It was once used heavily as an interchange format for Autodesk Max/Maya
+in film production, but the industry has now shifted more towards OBJ, FBX,
+and Alembic <a class="footnote-reference brackets" href="#dfmt" id="id14" role="doc-noteref"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></a>.</p>
+</section>
+</section>
+<section id="graphics-hw-and-sw-stack">
+<span id="ghast"></span><h2><a class="toc-backref" href="#id94" role="doc-backlink">Graphics HW and SW Stack</a><a class="headerlink" href="#graphics-hw-and-sw-stack" title="Link to this heading">¶</a></h2>
+<p>This section provides a more detailed illustration of animation accross the
+software and hardware stacks on both CPU and GPU, and explains how data flows
+between the CPU, the GPU, and each layer of the software stack.</p>
+<p>In the previous section <a class="reference internal" href="#three-d-model"><span class="std std-ref">3D Modeling</span></a>, described what information 3D
+models store and how this information is used to perform animation.</p>
+<p>In the incoming section <a class="reference internal" href="#sw-stack"><span class="std std-ref">SW Stack and Data Flow</span></a> will describe <strong>how each frame is
+generated</strong> to display the <strong>movement animation or skinning effects</strong> using the
+small animation parameters stored in 3D model and sent from CPU.</p>
+<p>The the incoming section <a class="reference internal" href="#role-shaders"><span class="std std-ref">Role and Purpose of Shaders</span></a> will
+explain different visual effects can be achieved by <strong>switching shaders</strong> to
+shapplying different materials across frames.</p>
+<p>Reference:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://en.wikipedia.org/wiki/Free_and_open-source_graphics_device_driver">https://en.wikipedia.org/wiki/Free_and_open-source_graphics_device_driver</a></p></li>
+</ul>
+<section id="hw-block-diagram">
+<h3><a class="toc-backref" href="#id95" role="doc-backlink">HW Block Diagram</a><a class="headerlink" href="#hw-block-diagram" title="Link to this heading">¶</a></h3>
+<p>The block diagram of the Graphic Processing Unit (GPU) is shown in
+<a class="reference internal" href="#gpu-block-diagram"><span class="std std-numref">Fig. 5</span></a>.</p>
+<figure class="align-center" id="id60">
+<span id="gpu-block-diagram"></span><a class="reference internal image-reference" href="_images/gpu-block-diagram.png"><img alt="_images/gpu-block-diagram.png" height="376" src="_images/gpu-block-diagram.png" width="400" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 5 </span><span class="caption-text">Components of a GPU: GPU has accelerated video decoding and encoding
+<a class="footnote-reference brackets" href="#wiki-gpu" id="id15" role="doc-noteref"><span class="fn-bracket">[</span>10<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id60" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The roles of the CPU and GPU in graphic animation are illustrated in
+<a class="reference internal" href="#graphic-cpu-gpu"><span class="std std-numref">Fig. 6</span></a>.</p>
+<figure class="align-center" id="id61">
+<span id="graphic-cpu-gpu"></span><a class="reference internal image-reference" href="_images/graphic-cpu-gpu.png"><img alt="_images/graphic-cpu-gpu.png" height="407" src="_images/graphic-cpu-gpu.png" width="711" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 6 </span><span class="caption-text">OpenGL and Vulkan are both rendering APIs. In both cases, the GPU executes
+shaders, while the CPU executes everything else <a class="footnote-reference brackets" href="#ogl-cpu-gpu" id="id16" role="doc-noteref"><span class="fn-bracket">[</span>11<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id61" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<ul class="simple">
+<li><p>GPU can’t directly read user input from, say, keyboard, mouse, gamepad, or
+play audio, or load files from a hard drive, or anything like that. In this
+situation, cannot let GPU handle the animation work <a class="footnote-reference brackets" href="#cpu-gpu-role" id="id17" role="doc-noteref"><span class="fn-bracket">[</span>12<span class="fn-bracket">]</span></a>.</p></li>
+<li><p>A graphics driver consists of an implementation of the OpenGL state machine
+and a compilation stack to compile the shaders into the GPU’s machine language.
+This compilation, as well as pretty much anything else, is executed on the CPU,
+then the compiled shaders are sent to the GPU and are executed by it.
+(SDL = Simple DirectMedia Layer) <a class="footnote-reference brackets" href="#mesawiki" id="id18" role="doc-noteref"><span class="fn-bracket">[</span>13<span class="fn-bracket">]</span></a>.</p></li>
+</ul>
+<figure class="align-center" id="id62">
+<span id="graphic-gpu-csf"></span><a class="reference internal image-reference" href="_images/graphic-gpu-csf.png"><img alt="_images/graphic-gpu-csf.png" height="610" src="_images/graphic-gpu-csf.png" width="643" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 7 </span><span class="caption-text">MCU and specific HW circuits to speedup the processing of CSF
+(Command Stream Fronted) <a class="footnote-reference brackets" href="#csf" id="id19" role="doc-noteref"><span class="fn-bracket">[</span>14<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id62" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The GPU driver write command and data from CPU to GPU’s system memory through
+PCIe. These commands are called Command Stream Fronted (CSF) in the memory of
+GPU. A chipset of GPU includes tens of SIMD processors (cores). In order to
+speedup the GPU driver’s processing, the CSF is designed to a simpler form.
+As result, GPU chipset include MCU (Micro Chip Unit) and specfic HW to transfer
+the CSF into individual data structure for each SIMD processor to execute as
+<a class="reference internal" href="#graphic-gpu-csf"><span class="std std-numref">Fig. 7</span></a>. The firmware version of MCU is updated by MCU itself
+usually.</p>
+</section>
+<section id="sw-stack-and-data-flow">
+<span id="sw-stack"></span><h3><a class="toc-backref" href="#id96" role="doc-backlink">SW Stack and Data Flow</a><a class="headerlink" href="#sw-stack-and-data-flow" title="Link to this heading">¶</a></h3>
+<p>The driver runs on the CPU side as shown in <a class="reference internal" href="#graphic-sw-stack"><span class="std std-numref">Fig. 8</span></a>.
+The OpenGL API eventually calls the driver’s functions, and the driver
+executes these functions by issuing commands to the GPU hardware and/or
+sending data to the GPU.</p>
+<p>Even so, the GPU’s rendering work, which uses data such as 3D vertices and
+colors sent from the CPU and stored in GPU or shared memory, consumes
+more computing power than the CPU.</p>
+<figure class="align-default" id="id63">
+<span id="graphic-sw-stack"></span><div class="graphviz"><img src="_images/graphviz-f68d21d8824f0290fd22ec1bce98b7844e0cd67c.png" alt="digraph G {
+  rankdir=LR;
+  
+  compound=true;
+  node [shape=record];
+  subgraph cluster_cpu {
+    label = &quot;CPU (Client)&quot;;
+    CPU_SW [label=&quot; 3D Model | Game Engine | { OpenGL API | Shaders \n (buitin-functions)} | &lt;f1&gt; Driver&quot;];
+  }
+  subgraph cluster_gpu {
+    label = &quot;GPU HW (Server)&quot;;
+    subgraph cluster_gpu_sw {
+      label = &quot;3D Rendering pipeline \ndescribed in the later section&quot;;
+      ModelData        [label=&quot;3D Model Information\n(VAO, VBO, textures,\nindex buffers, materials)&quot;];
+    }
+  }
+  CPU_SW:f1 -&gt; ModelData [label=&quot;1. Creating Mesh:\nVAO, texture, ..., from 3D model, \n shader-exectuable-code.&quot;];
+    
+//  label = &quot;Graphic SW Stack&quot;;
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 8 </span><span class="caption-text">Graphic SW Stack and data flow in initializing graphic model</span><a class="headerlink" href="#id63" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>✅  As section <a class="reference internal" href="#animation"><span class="std std-ref">Animation</span></a> and <a class="reference internal" href="#graphic-sw-stack"><span class="std std-numref">Fig. 8</span></a>.
+The <strong>game engine’s built‑in C++ renderer handles all OpenGL/Vulkan/Metal
+calls automatically</strong>.
+Users set the value for speed, velocity, …, etc, customize the animation
+logic.</p>
+<p>After the user creates a skeleton and textures
+for each model and sets keyframe times using a 3D modeling tool, users can
+write <strong>gameplay scripts</strong> (<strong>Java code</strong>, C#, Blueprints, GDScript, Python,
+etc.) to tell the engine to play animations <a class="footnote-reference brackets" href="#joglwiki" id="id20" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a>.</p>
+<p>As section <a class="reference internal" href="#node-editor"><span class="std std-ref">Node-Editor (shaders generator)</span></a>, the skin materials created by Graphics Designers
+/ Technical Artists and secondly created by Software Programmers / Graphics
+Programmers using the tool Node-Editor (shaders generator).
+As result, shaders generated from tool Node-Editor (shaders generator).</p>
+<p>Shaders may call built-in functions written in Compute Shaders, SPIR-V, or
+LLVM-IR. LLVM <cite>libclc</cite> is a project for OpenCL built-in functions, which can
+also be used in OpenGL <a class="footnote-reference brackets" href="#libclc" id="id21" role="doc-noteref"><span class="fn-bracket">[</span>15<span class="fn-bracket">]</span></a>. Like CPU built-ins, new GPU ISAs or
+architectures must implement their own built-ins or port them from open source
+projects like <cite>libclc</cite>.</p>
+<p>The 3D model on the CPU performs these animations in movement and others by
+computing each frame from the stored keyframes, as illustrated in animation
+section <a class="reference internal" href="#animation"><span class="std std-ref">Animation</span></a>.</p>
+<figure class="align-default" id="id64">
+<span id="graphic-sw-stack-2"></span><div class="graphviz"><img src="_images/graphviz-a6d2e2b7ac57f8aeb220fcaf2a369ecb17bd2ae1.png" alt="digraph G {
+  rankdir=LR;
+  
+  compound=true;
+  node [shape=record];
+  subgraph cluster_cpu {
+    label = &quot;CPU (Client)&quot;;
+    CPU_SW [label=&quot; 3D Model | Game Engine | { OpenGL API | Shaders \n (buitin-functions)} | &lt;f1&gt; Driver&quot;];
+  }
+  subgraph cluster_gpu {
+    label = &quot;GPU HW (Server)&quot;;
+    subgraph cluster_gpu_sw {
+      label = &quot;3D Rendering pipeline \ndescribed in the later section&quot;;
+      ModelData        [label=&quot;3D Model Information\n(VAO, VBO, textures,\nindex buffers, materials)&quot;];
+      UniformUpdates   [label=&quot;Uniform Updates\n(bone matrices, morph weights,\nmaterial params, time, etc.\nsee Note below)&quot;, style=filled, fillcolor=lightgreen, color=&quot;black&quot;];
+    }
+  }
+  CPU_SW:f1 -&gt; UniformUpdates [label=&quot;2. Animation: \nDraw command and Uniform Updates\nfor each frame rendering&quot;];
+    
+//  label = &quot;Graphic SW Stack&quot;;
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 9 </span><span class="caption-text">Graphic SW Stack and data flow in rendering</span><a class="headerlink" href="#id64" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The per-frame data is not the full set of vertices, but rather a small set of
+animation parameters named <strong>Uniform Updates</strong> as appeared in
+<a class="reference internal" href="#graphic-sw-stack-2"><span class="std std-numref">Fig. 9</span></a>, which are described later.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Bone matrices</strong> determine the positions of triangles within a 3D model
+during animation.
+This bone transformation data is much <strong>smaller</strong> than the complete mesh of
+the 3D model.
+We will provide an example and explain this in more detail in the
+<a class="reference internal" href="opengl.html#animation-ex"><span class="std std-ref">Animation Example</span></a> section.
+Because this transformation data is small and constant across all shader
+pipeline stages, it is stored in the GPU’s global memory and can be cached in
+the <strong>uniform/constant cache</strong> for performance, as illustrated in
+<a class="reference internal" href="hw.html#mem-hierarchy"><span class="std std-numref">Fig. 64</span></a> of <a class="reference internal" href="hw.html#sec-mem-hierarchy"><span class="std std-ref">Processor Units and Memory Hierarchy in NVIDIA GPU 15</span></a> section.</p>
+</div>
+<p>The CPU updates only these small animation parameters and issues draw command to
+the GPU server side.</p>
+<figure class="align-default" id="id65">
+<span id="in-out-rendering"></span><div class="graphviz"><img src="_images/graphviz-d6333f1b3113b281a0bcd814b1a30a59b6fe0644.png" alt="digraph GPU_Pipeline {
+    rankdir=LR;
+    node [shape=box, style=rounded, fontsize=12];
+
+    UniformUpdates   [label=&quot;Uniform Updates\n(bone matrices, morph weights,\nmaterial params, time, etc.)&quot;];
+    ModelData        [label=&quot;3D Model Information\n(VAO, VBO, textures,\nindex buffers, materials)&quot;];
+    GPURendering     [label=&quot;GPU Rendering\n(vertex shader, fragment shader,\nskinning, morphing, rasterization)&quot;];
+    Framebuffer      [label=&quot;Framebuffer\n(Video Memory Output)&quot;];
+
+    UniformUpdates -&gt; GPURendering;
+    ModelData      -&gt; GPURendering;
+    GPURendering   -&gt; Framebuffer [label=&quot;Rendered Image&quot;];
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 10 </span><span class="caption-text">The input and output for GPU rendering</span><a class="headerlink" href="#id65" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Next, the 3D Rendering-pipeline is illustrated in <a class="reference internal" href="#in-out-rendering"><span class="std std-numref">Fig. 10</span></a>.</p>
+<p>The shape of object data are stored in the form of VAOs (Vertex Array Objects) in
+OpenGL. This will be explained in a later <a class="reference internal" href="opengl.html#opengl"><span class="std std-ref">section OpenGL</span></a>.
+Additionally, OpenGL provides VBOs (Vertex Buffer Objects), which allow
+vertex array data to be stored in high-performance graphics memory on the
+server side GPU and enable efficient data transfer <a class="footnote-reference brackets" href="#vbo" id="id22" role="doc-noteref"><span class="fn-bracket">[</span>16<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#classorvbo" id="id23" role="doc-noteref"><span class="fn-bracket">[</span>17<span class="fn-bracket">]</span></a>.</p>
+<p>After GPU receives the <strong>Uniform Updates</strong> from CPU, it performs the
+computationally intensive per‑vertex work within the rendering pipeline to
+generate the <strong>final pixel values</strong> for <strong>each frame</strong> displayed on screen.
+These final pixel values are collectively referred to the
+<strong>Rendered Image</strong>.</p>
+<p>✅  “<strong>Rendered Image</strong>” = the final per‑frame output written into the
+framebuffer.
+The <strong>Uniform Updates</strong> will be described in detail later.</p>
+<p>✅ CPU only updates small animation parameters named <strong>Uniform Updates</strong> as
+appeared in <a class="reference internal" href="#graphic-sw-stack-2"><span class="std std-numref">Fig. 9</span></a>; GPU computes the heavy per‑vertex work.</p>
+<p>As mentioned in the previous section on <a class="reference internal" href="#movement"><span class="std std-ref">animation movement</span></a>,
+3D modeling tools store Keyframes, bone transforms at each keyframe and related
+data, and perform animation based on this information.</p>
+<p>The CPU updates only the <strong>bone</strong> transformation data …, rather than updating
+the entire vertex or mesh data for each animation frame.
+These updates are very small—on the order of kilobytes rather than megabytes.
+For each rendered frame, the CPU sends these small updates to the GPU, and the
+<strong>GPU takes over the animation work from the CPU</strong>.
+This type of movement animation is called <strong>skinning</strong>, and is illustrated as
+follows:</p>
+<p><strong>Skinning</strong></p>
+<p>Skinning is a vertex deformation technique used to animate a mesh by attaching
+its vertices to a hierarchical skeleton (bones). Each vertex stores one or more
+bone indices and corresponding weights that describe how strongly each bone
+influences that vertex.</p>
+<p>During animation, the application updates the bone transformation matrices.
+The vertex shader then computes the final vertex position by blending the
+transformed positions according to the stored weights. This allows the mesh to
+bend, twist, and deform smoothly as the skeleton moves.</p>
+<p>Skinning does not create new geometry or smooth the surface topology. It only
+transforms the existing vertices of the mesh. Examples include bending an arm,
+flapping a wing, or deforming a flexible tube as its bones rotate.</p>
+<p>CPU only update high‑level animation state, such as:</p>
+<ul class="simple">
+<li><p>Current animation time</p></li>
+<li><p><strong>Bone matrices (small)</strong></p></li>
+<li><p><strong>Morph weights</strong></p></li>
+<li><p>Material parameters</p></li>
+<li><p>Particle emitter settings</p></li>
+<li><p>Global uniforms (camera, lights, etc.)</p></li>
+</ul>
+<p>These are tiny updates — kilobytes, not megabytes.</p>
+<div class="math notranslate nohighlight">
+\[finalPosition =
+\sum_{i=0}^{N-1}
+\mathbf{weight}_i \left( \mathbf{boneMatrix}_i \cdot originalPosition \right)\]</div>
+<p>In practice (real engines): the weights are normalized so the sum = 1.0
+<span class="math notranslate nohighlight">\(\Rightarrow \sum_{i=0}^{N-1}\mathbf{weight}_i = 1.0\)</span></p>
+<p>Example: Bending an Arm</p>
+<p>Imagine a character’s arm mesh.
+Each vertex in the elbow area has weights like:</p>
+<ul class="simple">
+<li><p>70% influenced by upper‑arm bone</p></li>
+<li><p>30% influenced by lower‑arm bone</p></li>
+</ul>
+<p>When the elbow bends:</p>
+<ul class="simple">
+<li><p>Upper‑arm bone rotates</p></li>
+<li><p>Lower‑arm bone rotates</p></li>
+<li><p>GPU blends the influence</p></li>
+<li><p>The elbow area deforms smoothly</p></li>
+</ul>
+<p>This is skinning.</p>
+<p>✅  After the GPU animation, the color pixels are write to framebuffer
+(video memory). The display device (monitor, LCD, OLED, etc.) fetches these
+pixels and displays them on the screen. The interface between framebuffer and
+display device is explained in the next section <a class="reference internal" href="#display"><span class="std std-ref">Pixels Displaying</span></a>.</p>
+</section>
+<section id="pixels-displaying">
+<span id="display"></span><h3><a class="toc-backref" href="#id97" role="doc-backlink">Pixels Displaying</a><a class="headerlink" href="#pixels-displaying" title="Link to this heading">¶</a></h3>
+<p>The interface between frame buffer and displaying device is shown as
+<a class="reference internal" href="#pc-lcd"><span class="std std-numref">Fig. 11</span></a>.</p>
+<figure class="align-center" id="id66">
+<span id="pc-lcd"></span><a class="reference internal image-reference" href="_images/pc-lcd.png"><img alt="_images/pc-lcd.png" height="512" src="_images/pc-lcd.png" width="768" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 11 </span><span class="caption-text">PC with Frame Buffer to LCD Display</span><a class="headerlink" href="#id66" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>GPU and screen (monitor, LCD, OLED, etc.) use <strong>VSync, NVIDIA G-SYNC or AMD
+FreeSync</strong> to prevent <strong>screen tearing</strong>, as described below:</p>
+<figure class="align-center" id="id67">
+<span id="db-vsync"></span><a class="reference internal image-reference" href="_images/db-vsync.png"><img alt="_images/db-vsync.png" height="324" src="_images/db-vsync.png" width="348" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 12 </span><span class="caption-text">VSync</span><a class="headerlink" href="#id67" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p class="rubric">VSync</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>No tearing occurs when the GPU and display operate at the same refresh rate,
+since the GPU refreshes faster than the display as shown below.
+
+              A    B
+
+GPU      | ----| ----|
+
+Display  |-----|-----|
+
+            B      A
+
+Tearing occurs when the GPU has exact refresh cycles but VSync takes
+one more cycle than the display as shown below.
+
+              A
+
+GPU      | -----|
+
+Display  |-----|-----|
+
+            B      A
+
+To avoid tearing, the GPU runs at half the refresh rate of the display,
+as shown below.
+
+              A          B
+
+GPU      | -----|    | -----|
+
+Display  |-----|-----|-----|-----|
+
+            B      B    A     A
+</pre></div>
+</div>
+<ul>
+<li><p>Double Buffering</p>
+<p>While the display is reading from the frame buffer to display the current
+frame, we might be updating its contents for the next frame (not necessarily
+in raster-scan manner). This would result in the so-called tearing, in which
+the screen shows parts of the old frame and parts of the new frame.
+This could be resolved by using so-called double buffering. Instead of using
+a single frame buffer, modern GPU uses two of them: a front buffer and a back
+buffer. The display reads from the front buffer, while we can write the next
+frame to the back buffer. When we finish, we signal to GPU to swap the front
+and back buffer (known as buffer swap or page flip).</p>
+</li>
+<li><p>VSync</p>
+<p>Double buffering alone does not solve the entire problem, as the buffer swap
+might occur at an inappropriate time, for example, while the display is in
+the middle of displaying the old frame. This is resolved via the so-called
+vertical synchronization (or VSync) at the end of the raster-scan.
+When we signal to the GPU to do a buffer swap, the GPU will wait till the next
+VSync to perform the actual swap, after the entire current frame is displayed.</p>
+<p>As above text digram.
+The most important point is: When the VSync buffer-swap is enabled, you cannot
+refresh the display faster than the refresh rate of the display!!!
+If GPU is capable of producing higher frame rates than the display’s
+refresh rate, then GPU can use fast rate without tearing.
+If GPU has same or less frame rates then display’s and you application
+refreshes at a fixed rate, the resultant refresh rate is
+likely to be an integral factor of the display’s refresh rate, i.e., 1/2, 1/3,
+1/4, etc. Otherwise it will cause tearing <a class="footnote-reference brackets" href="#cg-basictheory" id="id24" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
+</li>
+<li><p>NVIDIA G-SYNC and AMD FreeSync</p>
+<p>If your monitor and graphics card both in your customer computer support
+NVIDIA G-SYNC, you’re in luck. With this technology, a special chip in the
+display communicates with the graphics card. This lets the monitor vary the
+refresh rate to match the frame rate of the NVIDIA GTX graphics card, up to
+the maximum refresh rate of the display. This means that the frames are
+displayed as soon as they are rendered by the GPU, eliminating screen tearing
+and reducing stutter for when the frame rate is both higher and lower than
+the refresh rate of the display. This makes it perfect for situations where
+the frame rate varies, which happens a lot when gaming.
+Today, you can even find G-SYNC technology in gaming laptops!</p>
+<p>AMD has a similar solution called FreeSync. However, this doesn’t require a
+proprietary chip in the monitor.
+In FreeSync, the AMD Radeon driver, and the display firmware handle the
+communication.
+Generally, FreeSync monitors are less expensive than their G-SYNC counterparts,
+but gamers generally prefer G-SYNC over FreeSync as the latter may cause
+ghosting, where old images leave behind artifacts <a class="footnote-reference brackets" href="#g-sync" id="id25" role="doc-noteref"><span class="fn-bracket">[</span>18<span class="fn-bracket">]</span></a>.</p>
+</li>
+</ul>
+</section>
+<section id="the-role-and-purpose-of-shaders">
+<span id="role-shaders"></span><h3><a class="toc-backref" href="#id98" role="doc-backlink">The Role and Purpose of Shaders</a><a class="headerlink" href="#the-role-and-purpose-of-shaders" title="Link to this heading">¶</a></h3>
+<p>The flow for 3D/2D graphic processing is shown in <a class="reference internal" href="#opengl-flow"><span class="std std-numref">Fig. 13</span></a>.</p>
+<figure class="align-default" id="id68">
+<span id="opengl-flow"></span><div class="graphviz"><img src="_images/graphviz-29b74583c3e465d018bacd232ea22179b015deb8.png" alt="digraph G {
+  rankdir=LR;
+
+  compound=true;
+  node [shape=record];
+  subgraph cluster_3d {
+    label = &quot;3D/2D modeling software&quot;;
+    subgraph cluster_code {
+      label = &quot;3D/2D's code: engine, shader, ...&quot;;
+      Api [label=&quot;&lt;a&gt; OpenGL API | &lt;s&gt; Shaders (3D animation's shaders \n or programmer writing shaders&quot;];
+    }
+  }
+  subgraph cluster_driver {
+    label = &quot;Driver&quot;
+    Compiler [label=&quot;On-line Compiler&quot;];
+    Obj [label=&quot;obj&quot;];
+    Linker [label=&quot;On-line binding (Linker)&quot;];
+    Exe [label=&quot;exe&quot;];
+  }
+  Api:a -&gt; Obj [lhead =&quot;cluster_driver&quot;];
+  Api:s -&gt; Compiler;
+  Compiler -&gt; Obj -&gt; Linker -&gt; Exe;
+  Exe -&gt; GPU;
+  Exe -&gt; CPU [ltail =&quot;cluster_driver&quot;]; 
+
+//  label = &quot;OpenGL Flow&quot;;
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 13 </span><span class="caption-text">OpenGL Flow</span><a class="headerlink" href="#id68" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The compiled shaders are sent to the GPU when you call glLinkProgram().
+That is the moment the driver uploads the compiled shader binaries into
+GPU‑executable form.</p>
+<p>The glLinkProgram() is called when you finish preparing a shader program —
+<strong>not when creating a mesh, and not when issuing a draw command</strong>.</p>
+<p>When a game actually call <cite>glLinkProgram()</cite> to re-link the shader, the shader
+need to be compiled and load to GPU.</p>
+<p>Usually it is happend in game startup, level load, or creating a new shader
+variant (e.g., enabling shadows, fog, skinning).</p>
+<p>Games switch shaders constantly — sometimes hundreds of times per frame —
+but they do not re‑link them.</p>
+<p>When playing a video game, different materials, effects and rendering passes
+will applying to difference shaders.</p>
+<p>Examples of switching shaders:</p>
+<ul class="simple">
+<li><p>When the player enters a snowy biome, ice meshes use the ice shader.</p></li>
+<li><p>The axe blade uses a metal PBR shader.
+Sparks fly when the axe blade hits stone it switch to particle shader.</p></li>
+</ul>
+</section>
+</section>
+<section id="basic-geometry-in-computer-graphics">
+<h2><a class="toc-backref" href="#id99" role="doc-backlink">Basic geometry in computer graphics</a><a class="headerlink" href="#basic-geometry-in-computer-graphics" title="Link to this heading">¶</a></h2>
+<p>This section introduces the fundamental geometry mathematics used in computer
+graphics.
+As discussed in the previous sections, 3D animation primarily based on
+geometric representations such as meshes (vertices) and surface discriptions
+including textures, materials, shaders, and lighting models created in 3D
+content creation tools.
+Consequently, vertex tranformations and lighting-based color computations form
+the mathematical foundation of modern computer graphics and animation.</p>
+<p>The complete concept can be found in the book <em>Computer Graphics: Principles
+and Practice, 3rd Edition</em>, authored by John F. et al. However, the book
+contains over a thousand pages.</p>
+<p>It is very comprehensive and may take considerable time to understand all the
+details.</p>
+<section id="color">
+<h3><a class="toc-backref" href="#id100" role="doc-backlink">Color</a><a class="headerlink" href="#color" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Additive colors in light are shown in <a class="reference internal" href="#additive-colors"><span class="std std-numref">Fig. 14</span></a>
+<a class="footnote-reference brackets" href="#additive-colors-wiki" id="id26" role="doc-noteref"><span class="fn-bracket">[</span>19<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#additive-colors-ytube" id="id27" role="doc-noteref"><span class="fn-bracket">[</span>20<span class="fn-bracket">]</span></a>.</p></li>
+<li><p>In the case of paints, additive colors produce shades and become light gray
+due to the addition of darker pigments <a class="footnote-reference brackets" href="#additive-colors-shade" id="id28" role="doc-noteref"><span class="fn-bracket">[</span>21<span class="fn-bracket">]</span></a>.</p></li>
+</ul>
+<figure class="align-center" id="id69">
+<span id="additive-colors"></span><a class="reference internal image-reference" href="_images/additive-colors.png"><img alt="_images/additive-colors.png" height="346" src="_images/additive-colors.png" width="954" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 14 </span><span class="caption-text">Additive colors in light</span><a class="headerlink" href="#id69" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Additive colors</strong></p>
+<p>I know it doesn’t match human intuition. However, additive RGB colors in
+light combine to produce white light, while additive RGB in paints result in
+light gray paint. This makes sense because light has no shade. This result
+stems from the way human eyes perceive color. Without light, no color can be
+sensed by the eyes.</p>
+<p>Computer engineers should understand that exploring the underlying reasons
+falls into the realms of physics or the biology of the human eye structure.</p>
+</div>
+</section>
+<section id="transformation">
+<span id="id29"></span><h3><a class="toc-backref" href="#id101" role="doc-backlink">Transformation</a><a class="headerlink" href="#transformation" title="Link to this heading">¶</a></h3>
+<p>Overview</p>
+<p>The tranformation matrices have been taught in high school and college.
+However this mathematical details are not always retained clearly in memory.
+The following section reviews the parts relevant to graphics rendering.</p>
+<p>In both 2D and 3D graphics, every object transformation is performed by
+multiplying the object’s vertex coordinates by one or more <strong>transformation
+matrices</strong>. Modern OpenGL uses <strong>homogeneous coordinates</strong> and <strong>4×4 matrices</strong>
+to unify translation, rotation, scaling, projection, and even animation
+(skinning) into a single mathematical framework.</p>
+<p>A vertex in 3D is represented as:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\mathbf{v} =
+\begin{bmatrix}
+x \\ y \\ z \\ 1
+\end{bmatrix}\end{split}\]</div>
+<p>A transformation is applied by matrix multiplication:</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{v}' = M \mathbf{v}\]</div>
+<p>Multiple transformations are combined by multiplying matrices:</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{v}' = P \, V \, M \, \mathbf{v}\]</div>
+<p>Where:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">M</span></code> = Model matrix (object → world)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">V</span></code> = View matrix (world → camera)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">P</span></code> = Projection matrix (camera → clip space)</p></li>
+</ul>
+<p>This is the core of the OpenGL rendering pipeline, as shown in
+<a class="reference internal" href="#trans-steps"><span class="std std-numref">Fig. 15</span></a>.</p>
+<figure class="align-center" id="id70">
+<span id="trans-steps"></span><a class="reference internal image-reference" href="_images/trans-steps.png"><img alt="_images/trans-steps.png" height="156" src="_images/trans-steps.png" width="877" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 15 </span><span class="caption-text">Cooridinates Transform Pipeline <a class="footnote-reference brackets" href="#cg-basictheory" id="id30" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id70" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<ul class="simple">
+<li><p>Model space: The is the vertices position mentioned under <a class="reference internal" href="#movement"><span class="std std-ref">Root bone in
+Animation flow</span></a>. All vertex coordinates are calcuated relative to the
+root bone.</p></li>
+<li><p>Model Rranform: <code class="docutils literal notranslate"><span class="pre">M</span></code> = Model matrix (object → world). This represents the
+vertex positions mentioned under <a class="reference internal" href="#movement"><span class="std std-ref">Transform Animation in Animation flow</span></a>.</p></li>
+</ul>
+<p>Details for <a class="reference internal" href="#trans-steps"><span class="std std-numref">Fig. 15</span></a> can be found on “4.  Vertex Processing” of
+the website <a class="footnote-reference brackets" href="#cg-basictheory" id="id31" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
+<p>Transformation Matrices <a class="footnote-reference brackets" href="#wiki-transformation" id="id32" role="doc-noteref"><span class="fn-bracket">[</span>22<span class="fn-bracket">]</span></a></p>
+<ul>
+<li><p>Translation: Moves an object in 3D space.</p>
+<p><span class="math notranslate nohighlight">\(T(x,y,z)=\begin{bmatrix}1&amp;0&amp;0&amp;x\\0&amp;1&amp;0&amp;y\\0&amp;0&amp;1&amp;z\\0&amp;0&amp;0&amp;1\end{bmatrix}
+\begin{bmatrix}X\\Y\\Z\\1\end{bmatrix}
+=
+\begin{bmatrix}X+x\\Y+y\\Z+z\\1\end{bmatrix}\)</span></p>
+</li>
+<li><p>Scaling: Resizes an object.</p>
+<p><span class="math notranslate nohighlight">\(S(s_x,s_y,s_z)=\begin{bmatrix}s_x&amp;0&amp;0&amp;0\\0&amp;s_y&amp;0&amp;0\\0&amp;0&amp;s_z&amp;0\\0&amp;0&amp;0&amp;1\end{bmatrix}
+\begin{bmatrix}X\\Y\\Z\\1\end{bmatrix}
+=
+\begin{bmatrix}s_x X\\s_y Y\\s_z Z\\1\end{bmatrix}\)</span></p>
+</li>
+<li><p>Rotation X: Rotates around the X-axis.</p>
+<p><span class="math notranslate nohighlight">\(R_x(\theta)=\begin{bmatrix}1&amp;0&amp;0&amp;0\\0&amp;\cos\theta&amp;-\sin\theta&amp;0\\0&amp;\sin\theta&amp;\cos\theta&amp;0\\0&amp;0&amp;0&amp;1\end{bmatrix}
+\begin{bmatrix}X\\Y\\Z\\1\end{bmatrix}
+=
+\begin{bmatrix}X\\Y\cos\theta - Z\sin\theta\\Y\sin\theta + Z\cos\theta\\1\end{bmatrix}\)</span></p>
+</li>
+<li><p>Rotation Y: Rotates around the Y-axis.</p>
+<p><span class="math notranslate nohighlight">\(R_y(\theta)=\begin{bmatrix}\cos\theta&amp;0&amp;\sin\theta&amp;0\\0&amp;1&amp;0&amp;0\\-\sin\theta&amp;0&amp;\cos\theta&amp;0\\0&amp;0&amp;0&amp;1\end{bmatrix}
+\begin{bmatrix}X\\Y\\Z\\1\end{bmatrix}
+=
+\begin{bmatrix}X\cos\theta + Z\sin\theta\\Y\\-X\sin\theta + Z\cos\theta\\1\end{bmatrix}\)</span></p>
+</li>
+<li><p>Rotation Z: Rotates around the Z-axis.</p>
+<p><span class="math notranslate nohighlight">\(R_z(\theta)=\begin{bmatrix}\cos\theta&amp;-\sin\theta&amp;0&amp;0\\\sin\theta&amp;\cos\theta&amp;0&amp;0\\0&amp;0&amp;1&amp;0\\0&amp;0&amp;0&amp;1\end{bmatrix}
+\begin{bmatrix}X\\Y\\Z\\1\end{bmatrix}
+=
+\begin{bmatrix}X\cos\theta - Y\sin\theta\\X\sin\theta + Y\cos\theta\\Z\\1\end{bmatrix}\)</span></p>
+</li>
+<li><p>Shear in X: - Skews geometry along axis X.</p>
+<p><span class="math notranslate nohighlight">\(\text{Shear}_X(a,b)=
+\begin{bmatrix}1&amp;a&amp;b&amp;0\\0&amp;1&amp;0&amp;0\\0&amp;0&amp;1&amp;0\\0&amp;0&amp;0&amp;1\end{bmatrix}
+\begin{bmatrix}X\\Y\\Z\\1\end{bmatrix}
+=
+\begin{bmatrix}X + aY + bZ\\Y\\Z\\1\end{bmatrix}\)</span></p>
+</li>
+<li><p>Shear in Y: Skews geometry along axis Y.</p>
+<p><span class="math notranslate nohighlight">\(\text{Shear}_Y(c,d)=
+\begin{bmatrix}1&amp;0&amp;0&amp;0\\c&amp;1&amp;d&amp;0\\0&amp;0&amp;1&amp;0\\0&amp;0&amp;0&amp;1\end{bmatrix}
+\begin{bmatrix}X\\Y\\Z\\1\end{bmatrix}
+=
+\begin{bmatrix}X\\cX + Y + dZ\\Z\\1\end{bmatrix}\)</span></p>
+</li>
+<li><p>Shear in Z: Skews geometry along axis Z.</p>
+<p><span class="math notranslate nohighlight">\(\text{Shear}_Z(e,f)=
+\begin{bmatrix}1&amp;0&amp;0&amp;0\\0&amp;1&amp;0&amp;0\\e&amp;f&amp;1&amp;0\\0&amp;0&amp;0&amp;1\end{bmatrix}
+\begin{bmatrix}X\\Y\\Z\\1\end{bmatrix}
+=
+\begin{bmatrix}X\\Y\\eX + fY + Z\\1\end{bmatrix}\)</span></p>
+</li>
+<li><p>Reflection: Mirrors across a plane.</p>
+<p><span class="math notranslate nohighlight">\(\text{Reflect}_{XY},\ \text{Reflect}(\mathbf{n})\)</span></p>
+</li>
+</ul>
+<p>The “4.2  Model Transform (or Local Transform, or World Transform)” of on the
+website <a class="footnote-reference brackets" href="#cg-basictheory" id="id33" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> provides conceptual coverage of transformations.
+List the websites that provide proofs of the non-obvious transformation
+formulas below.</p>
+<p><strong>Rotation</strong></p>
+<p>The mathematical proof is given below.</p>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://en.wikipedia.org/wiki/Rotation_matrix">https://en.wikipedia.org/wiki/Rotation_matrix</a></p></li>
+</ol>
+<ul class="simple">
+<li><p>Prove the 2D formula and then intutively extend it to 3D along the X, Y, and
+Z axes <a class="footnote-reference brackets" href="#wiki-rotation" id="id34" role="doc-noteref"><span class="fn-bracket">[</span>23<span class="fn-bracket">]</span></a>.</p></li>
+</ul>
+<ol class="arabic simple" start="2">
+<li><p>Proof in greater details:</p></li>
+</ol>
+<p><a class="reference external" href="https://austinmorlan.com/posts/rotation_matrices/">https://austinmorlan.com/posts/rotation_matrices/</a></p>
+<p><strong>Shear (Skew)</strong></p>
+<p>Shear is a skewing transformation as shown in <a class="reference internal" href="#shear"><span class="std std-numref">Fig. 16</span></a>.</p>
+<figure class="align-center" id="id71">
+<span id="shear"></span><a class="reference internal image-reference" href="_images/shear.png"><img alt="_images/shear.png" height="157" src="_images/shear.png" width="170" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 16 </span><span class="caption-text">3D shear</span><a class="headerlink" href="#id71" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Shear in X:
+plane x = 0 (the YZ‑plane), slides points parallel to the X‑axis.</p>
+<p>The mathematical proof is given below.</p>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Shear_mapping">https://en.wikipedia.org/wiki/Shear_mapping</a></p>
+<p><strong>Reflection</strong></p>
+<p>Reflection is nothing but a mirror image of an object.</p>
+<p>Reflection across the XY-plane:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\text{Reflect}_{XY} =
+\begin{bmatrix}
+1 &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; 1 &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; -1 &amp; 0 \\
+0 &amp; 0 &amp; 0 &amp; 1
+\end{bmatrix}\end{split}\]</div>
+<p>Reflection across an arbitrary plane with unit normal <span class="math notranslate nohighlight">\(\mathbf{n}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[R = I - 2 \mathbf{n}\mathbf{n}^T\]</div>
+<p>The mathematical proof is given below.</p>
+<p><a class="reference external" href="https://www.geeksforgeeks.org/computer-graphics/computer-graphics-reflection-transformation-in-3d/">https://www.geeksforgeeks.org/computer-graphics/computer-graphics-reflection-transformation-in-3d/</a></p>
+<p>The following Quaternion Product (Hamilton product) is from the wiki
+<a class="footnote-reference brackets" href="#wiki-quaternion" id="id35" role="doc-noteref"><span class="fn-bracket">[</span>24<span class="fn-bracket">]</span></a> since it is not covered in the book.</p>
+<div class="math notranslate nohighlight">
+\[\mathbf ij = -ji = k, jk = -kj = i, ki = -ik = j.\]</div>
+</section>
+<section id="cross-product">
+<span id="id36"></span><h3><a class="toc-backref" href="#id102" role="doc-backlink">Cross Product</a><a class="headerlink" href="#cross-product" title="Link to this heading">¶</a></h3>
+<p>Todo:</p>
+<ul class="simple">
+<li><p>Computing the direction of the line of intersection between two planes
+(via <span class="math notranslate nohighlight">\(n_1 \mathsf x n_2\)</span>)</p></li>
+</ul>
+<p>end-of-Todo</p>
+<p>Both triangles and quads are polygons. So, objects can be formed with
+polygons in both 2D and 3D. The transformation in 2D or 3D is well covered in
+almost every computer graphics book. This section introduces the most
+important concept and method for <strong>determining inner and outer planes</strong>. Then,
+a <strong>point or object can be checked for visibility</strong> during 2D or 3D rendering.</p>
+<p>Any <strong>area</strong> of a polygon can be calculated by dividing it into triangles or
+quads. The area of a triangle or quad can be calculated using the cross
+product in 3D.</p>
+<p>✅ The role of cross product:</p>
+<p>In 2D geometry mathematics, <span class="math notranslate nohighlight">\(v_0, v_1 and v_2\)</span> can form the area of a
+parallelogram as shown in <a class="reference internal" href="#rectangle-2d"><span class="std std-numref">Fig. 17</span></a>.
+The fourth vertex, <span class="math notranslate nohighlight">\(\mathbf{v}_3\)</span>, can then be determined to complete the
+parallelogram.</p>
+<figure class="align-default" id="id72">
+<span id="rectangle-2d"></span><a class="reference internal image-reference" href="_images/parallelogram-2d.png"><img alt="_images/parallelogram-2d.png" height="197" src="_images/parallelogram-2d.png" width="312" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 17 </span><span class="caption-text">The area determined by <span class="math notranslate nohighlight">\(v_0, v_1, v_2\)</span> in 2D</span><a class="headerlink" href="#id72" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The area of the parallelogram is given by:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\mathbf a = v_1-v_0, \mathbf b = v_2-v_0\\\Vert \mathbf a \mathsf x \mathbf b \Vert = \Vert a \Vert \Vert b \Vert |
+sin(\Theta) |\end{aligned}\end{align} \]</div>
+<p>The area of a parallelogram is same in both 2D and 3D.
+To extend the definition of the corss product to 3D, all we must additionally
+consider the orientation of the plane, since a plane has two possible faces.</p>
+<div class="math notranslate nohighlight">
+\[\mathbf a \mathsf x \mathbf b = \Vert a \Vert \Vert b \Vert sin(\Theta) n\]</div>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(n\)</span> is a unit vector perpendicular to the plane.
+<span class="math notranslate nohighlight">\(\Rightarrow\)</span> direction.</p></li>
+</ul>
+<p>As shown in <a class="reference internal" href="#parallelogram-3d-left"><span class="std std-numref">Fig. 18</span></a>, the plane determined by
+<span class="math notranslate nohighlight">\(v_0, v_1, v_2\)</span> with CCW ordering defines a unique orientation.</p>
+<p>The area of the parallelogram remains unchanged after rotation as shown in
+<a class="reference internal" href="#parallelogram-3d-right"><span class="std std-numref">Fig. 19</span></a>, which means the
+area and plane face determined by extending the definition of cross product from
+2D to 3D correctly.</p>
+<table class="docutils align-center">
+<colgroup>
+<col style="width: 50.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><figure class="align-default" id="id73">
+<span id="parallelogram-3d-left"></span><a class="reference internal image-reference" href="_images/parallelogram-3d.png"><img alt="_images/parallelogram-3d.png" height="244" src="_images/parallelogram-3d.png" width="329" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 18 </span><span class="caption-text">The area and plane face determined by <span class="math notranslate nohighlight">\(v_0, v_1, v_2\)</span> with CCW
+ordering before rotation <span class="math notranslate nohighlight">\(z\)</span> axis.</span><a class="headerlink" href="#id73" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</td>
+<td><figure class="align-default" id="id74">
+<span id="parallelogram-3d-right"></span><a class="reference internal image-reference" href="_images/parallelogram-3d-2.png"><img alt="_images/parallelogram-3d-2.png" height="244" src="_images/parallelogram-3d-2.png" width="358" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 19 </span><span class="caption-text">The area and plane face determined by <span class="math notranslate nohighlight">\(v_0, v_1, v_2\)</span> with CCW
+ordering after rotation <span class="math notranslate nohighlight">\(z\)</span> axis.</span><a class="headerlink" href="#id74" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</td>
+</tr>
+</tbody>
+</table>
+<p id="triangle-area">The area of the triangle is obtained by dividing the parallelogram by 2:</p>
+<div class="math notranslate nohighlight">
+\[\frac{1}{2} \Vert \mathbf a \mathsf x \mathbf b \Vert \quad \text{...
+(triangle area)}\]</div>
+<p>✅ Matrix Notation for Cross Product:</p>
+<p>The cross product in <strong>2D</strong> is defined by a formula and can be represented
+with matrix notation, as proven here
+<a class="footnote-reference brackets" href="#cross-product-2d-proof" id="id37" role="doc-noteref"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#cross-product-2d-proof2" id="id38" role="doc-noteref"><span class="fn-bracket">[</span>28<span class="fn-bracket">]</span></a>.</p>
+<p>The cross product in <strong>2D</strong> is defined by a formula and can be represented
+with matrix notation, as proven here
+<a class="footnote-reference brackets" href="#cross-product-2d-proof" id="id39" role="doc-noteref"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#cross-product-2d-proof2" id="id40" role="doc-noteref"><span class="fn-bracket">[</span>28<span class="fn-bracket">]</span></a>.</p>
+<div class="math notranslate nohighlight">
+\[\mathbf a \mathsf x \mathbf b = \Vert a \Vert \Vert b \Vert sin(\Theta)\]</div>
+<div class="math notranslate nohighlight">
+\[\begin{split}\mathbf a \mathsf x \mathbf b =
+\begin{vmatrix}
+\mathbf i &amp; \mathbf j&amp; \mathbf k\\
+a_1&amp; a_2&amp; 0\\
+b_1&amp; b_2&amp; 0
+\end{vmatrix} =
+\begin{bmatrix}
+a_1&amp; a_2 \\
+b_1&amp; b_2
+\end{bmatrix}\end{split}\]</div>
+<p>After the above matrix form is proven, the antisymmetry property
+may be demonstrated as follows:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}a \mathsf x b = \mathsf x&amp;
+\begin{bmatrix}
+a \\
+b
+\end{bmatrix} =
+\begin{bmatrix}
+a_1&amp; a_2 \\
+b_1&amp; b_2
+\end{bmatrix} =
+a_1b_2 - a_2b_1 =\end{split}\]</div>
+<div class="math notranslate nohighlight">
+\[\begin{split}-b_1a_2 - (-b_2a_1) =
+\begin{bmatrix}
+- b_1&amp; - b_2 \\
+a_1&amp; a_2
+\end{bmatrix} =
+\mathsf x&amp;
+\begin{bmatrix}
+-b \\
+a
+\end{bmatrix} =
+-b \mathsf x a\end{split}\]</div>
+<p>✅ Determine the area in a plane:</p>
+<p>As described earlier of in this section, three vertices form a parallelogram or
+triangle and the area in the plane can be determined since the angle between
+<span class="math notranslate nohighlight">\(v_1 - v_0\)</span> and <span class="math notranslate nohighlight">\(v_2 - v_1\)</span> satisfied <span class="math notranslate nohighlight">\(0 &lt; \Theta &lt; 180^\circ\)</span>
+under CCW orientation.
+In fact <strong>one single vector :math:`v_1 - v_0` is sufficient</strong> to determine the
+area.
+We describle this below.</p>
+<p>In 2D, any two points <span class="math notranslate nohighlight">\(\text{from } P_i \text{ to } P_{i+1}\)</span> can form a
+vector and determine the inner or outer side.</p>
+<p>For example, as shown in <a class="reference internal" href="#inward-edge-normals"><span class="std std-numref">Fig. 20</span></a>, <span class="math notranslate nohighlight">\(\Theta\)</span> is the
+angle from <span class="math notranslate nohighlight">\(P_iP_{i+1}\)</span> to <span class="math notranslate nohighlight">\(P_iP'_{i+1} = 180^\circ\)</span>.</p>
+<p>Using the right-hand rule and counter-clockwise order, any vector
+<span class="math notranslate nohighlight">\(P_iQ\)</span> between <span class="math notranslate nohighlight">\(P_iP_{i+1}\)</span> and <span class="math notranslate nohighlight">\(P_iP'_{i+1}\)</span>, with angle
+<span class="math notranslate nohighlight">\(\theta\)</span> such that <span class="math notranslate nohighlight">\(0^\circ &lt; \theta &lt; 180^\circ\)</span>, indicates the
+inward direction.</p>
+<figure class="align-center" id="id75">
+<span id="inward-edge-normals"></span><a class="reference internal image-reference" href="_images/inward-edge-normals.png"><img alt="_images/inward-edge-normals.png" height="265" src="_images/inward-edge-normals.png" width="676" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 20 </span><span class="caption-text">Inward edge normals</span><a class="headerlink" href="#id75" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id76">
+<span id="d-vector-inward"></span><a class="reference internal image-reference" href="_images/2d-vector-inward.png"><img alt="_images/2d-vector-inward.png" height="203" src="_images/2d-vector-inward.png" width="418" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 21 </span><span class="caption-text">Inward and outward in 2D for a vector.</span><a class="headerlink" href="#id76" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Based on this observation, the rule for inward and outward vectors is shown in
+<a class="reference internal" href="#inward-edge-normals"><span class="std std-numref">Fig. 20</span></a>. Facing the same direction as a specific vector,
+the left side is inward and the right side is outward, as shown in
+<a class="reference internal" href="#d-vector-inward"><span class="std std-numref">Fig. 21</span></a>.</p>
+<p>For each edge <span class="math notranslate nohighlight">\(P_i - P_{i+1}\)</span>, the inward edge normal is the vector
+<span class="math notranslate nohighlight">\(\mathsf{x} \; v_i\)</span>; the outward edge normal is
+<span class="math notranslate nohighlight">\(- \; \mathsf{x} \; v_i\)</span>, where <span class="math notranslate nohighlight">\(\mathsf{x} \; v_i\)</span> is the
+cross-product of <span class="math notranslate nohighlight">\(v_i\)</span>, as shown in <a class="reference internal" href="#inward-edge-normals"><span class="std std-numref">Fig. 20</span></a>.</p>
+<p>A polygon can be created from a set of vertices. Suppose
+<span class="math notranslate nohighlight">\((P_0, P_1, ..., P_n)\)</span> defines a polygon. The line segments
+<span class="math notranslate nohighlight">\(P_0P_1, P_1P_2\)</span>, etc., are the polygon’s edges. The vectors
+<span class="math notranslate nohighlight">\(v_0 = P_1 - P_0, v_1 = P_2 - P_1, ..., v_n = P_0 - P_n\)</span> represent those
+edges.</p>
+<p>Using counter-clockwise ordering, the left side is considered inward.
+Thus, the inward region of a polygon can be determined, as shown in
+<a class="reference internal" href="#convex-left"><span class="std std-numref">Fig. 22</span></a> and <a class="reference internal" href="#convex-middle"><span class="std std-numref">Fig. 23</span></a>.</p>
+<table class="docutils align-center">
+<colgroup>
+<col style="width: 33.0%" />
+<col style="width: 34.0%" />
+<col style="width: 33.0%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><figure class="align-default" id="id77">
+<span id="convex-left"></span><a class="reference internal image-reference" href="_images/triangle-ccw.png"><img alt="_images/triangle-ccw.png" height="347" src="_images/triangle-ccw.png" width="398" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 22 </span><span class="caption-text">Triangle with CCW</span><a class="headerlink" href="#id77" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</td>
+<td><figure class="align-default" id="id78">
+<span id="convex-middle"></span><a class="reference internal image-reference" href="_images/hexagon-ccw.png"><img alt="_images/hexagon-ccw.png" height="332" src="_images/hexagon-ccw.png" width="238" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 23 </span><span class="caption-text">Hexagon with CCW</span><a class="headerlink" href="#id78" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</td>
+<td><figure class="align-default" id="id79">
+<span id="convex-right"></span><a class="reference internal image-reference" href="_images/triangle-cw.png"><img alt="_images/triangle-cw.png" height="312" src="_images/triangle-cw.png" width="375" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 24 </span><span class="caption-text">Triangle with CW</span><a class="headerlink" href="#id79" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</td>
+</tr>
+</tbody>
+</table>
+<p>For a convex polygon with vertices listed in counter-clockwise order, the
+inward edge normals point toward the interior of the polygon, and the outward
+edge normals point toward the unbounded exterior. This matches our usual
+intuition.</p>
+<p>However, if the polygon vertices are listed in clockwise (CW) order, the interior
+and exterior definitions are reversed. <a class="reference internal" href="#convex-right"><span class="std std-numref">Fig. 24</span></a> shows an example
+where <span class="math notranslate nohighlight">\(P_0, P_1, P_2\)</span> are arranged in CW order.</p>
+<p>This cross product has an important property: going from <span class="math notranslate nohighlight">\(v\)</span> to
+<span class="math notranslate nohighlight">\(\times v\)</span> involves a 90° rotation in the same direction as the
+rotation from the positive x-axis to the positive y-axis.</p>
+<figure class="align-center" id="id80">
+<span id="in-polygon"></span><a class="reference internal image-reference" href="_images/polygon.png"><img alt="_images/polygon.png" height="160" src="_images/polygon.png" width="237" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 25 </span><span class="caption-text">Draw a polygon with vectices counter clockwise</span><a class="headerlink" href="#id80" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>As shown in <a class="reference internal" href="#in-polygon"><span class="std std-numref">Fig. 25</span></a>, when drawing a polygon with vectors (lines)
+in counter-clockwise order, the polygon will be formed, and the two sides of
+each vector (line) can be identified <a class="footnote-reference brackets" href="#cgpap" id="id41" role="doc-noteref"><span class="fn-bracket">[</span>29<span class="fn-bracket">]</span></a>.</p>
+<p>Furthermore, whether a point is inside or outside the polygon can be
+determined.</p>
+<p>One simple method to test whether a point lies inside or outside a simple
+polygon is to cast a ray from the point in any fixed direction and count how
+many times it intersects the edges of the polygon.</p>
+<p>If the point is outside the polygon, the ray will intersect its edges an even
+number of times. If the point is inside the polygon, it will intersect the
+edges an odd number of times <a class="footnote-reference brackets" href="#wiki-point-in-polygon" id="id42" role="doc-noteref"><span class="fn-bracket">[</span>30<span class="fn-bracket">]</span></a>.</p>
+<figure class="align-center" id="id81">
+<span id="d-cross-product"></span><a class="reference internal image-reference" href="_images/3d-cross-product.png"><img alt="_images/3d-cross-product.png" height="355" src="_images/3d-cross-product.png" width="230" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 26 </span><span class="caption-text">Cross product definition in 3D</span><a class="headerlink" href="#id81" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>In the same way, by following the counter-clockwise direction to create a
+2D polygon step by step, a 3D polygon can be constructed.</p>
+<p>As shown in <a class="reference internal" href="#d-cross-product"><span class="std std-numref">Fig. 26</span></a> from the wiki
+<a class="footnote-reference brackets" href="#cross-product-wiki" id="id43" role="doc-noteref"><span class="fn-bracket">[</span>26<span class="fn-bracket">]</span></a>, the inward direction is determined by
+<span class="math notranslate nohighlight">\(a \times b &lt; 0\)</span>, and the outward direction is determined by
+<span class="math notranslate nohighlight">\(a \times b &gt; 0\)</span> in OpenGL.</p>
+<p>Replacing <span class="math notranslate nohighlight">\(a\)</span> and <span class="math notranslate nohighlight">\(b\)</span> with <span class="math notranslate nohighlight">\(x\)</span> and <span class="math notranslate nohighlight">\(y\)</span>, as shown in
+<a class="reference internal" href="#ogl-pointing-outwards"><span class="std std-numref">Fig. 27</span></a>, the positive Z-axis (<span class="math notranslate nohighlight">\(z+\)</span>) represents
+the outer surface, while the negative Z-axis (<span class="math notranslate nohighlight">\(z-\)</span>) represents the
+inner surface <a class="footnote-reference brackets" href="#ogl-point-outwards" id="id44" role="doc-noteref"><span class="fn-bracket">[</span>31<span class="fn-bracket">]</span></a>.</p>
+<figure class="align-center" id="id82">
+<span id="ogl-pointing-outwards"></span><a class="reference internal image-reference" href="_images/ogl-pointing-outwards.png"><img alt="_images/ogl-pointing-outwards.png" height="320" src="_images/ogl-pointing-outwards.png" width="685" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 27 </span><span class="caption-text">OpenGL pointing outwards, indicating the outer surface (z axis is +)</span><a class="headerlink" href="#id82" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id83">
+<span id="in-3d-polygon"></span><a class="reference internal image-reference" href="_images/3d-polygon.png"><img alt="_images/3d-polygon.png" height="243" src="_images/3d-polygon.png" width="285" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 28 </span><span class="caption-text">3D polygon with directions on each plane</span><a class="headerlink" href="#id83" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Reposition each triangle in front of camera and construct it using triangle
+with CCW ordering, as shown in <a class="reference internal" href="#convex-left"><span class="std std-numref">Fig. 22</span></a>.
+By building every triangle with CCW ordering, we can defined a consistent outer
+surface (front face).
+The <a class="reference internal" href="#in-3d-polygon"><span class="std std-numref">Fig. 28</span></a> shows an example of a 3D polygon created from 2D
+triangles. The direction of the plane (triangle) is given by the line
+perpendicular to the plane.</p>
+<p>Cast a ray from the 3D point along the X-axis and count how many intersections
+with the outer object occur. Depending on the number of intersections along
+each axis (even or odd), you can understan if <strong>the point (or the camara) is i
+nside or outside</strong> <a class="footnote-reference brackets" href="#point-in-3d-object" id="id45" role="doc-noteref"><span class="fn-bracket">[</span>32<span class="fn-bracket">]</span></a>.</p>
+<p>An odd number means inside, and an even number means outside. As shown in
+<a class="reference internal" href="#in-3d-object"><span class="std std-numref">Fig. 29</span></a>, points on the line passing through the object satisfy
+this rule.</p>
+<figure class="align-center" id="id84">
+<span id="in-3d-object"></span><a class="reference internal image-reference" href="_images/in-3d-object.png"><img alt="_images/in-3d-object.png" height="238" src="_images/in-3d-object.png" width="190" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 29 </span><span class="caption-text">Point is inside or outside of 3D object</span><a class="headerlink" href="#id84" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>✅ Summary:</p>
+<p>Based on these description of this section, this means:</p>
+<p>✔️  Each mesh (triangle or primitive) has a fixed “outer” and “inner” side,
+determined by CCW ordering in object space.</p>
+<p>✔️  By reading these CCW-ordered vertices sequentially, the shape and surface
+orientation of the 3D model can be constructed.</p>
+<p>✔️  There is no need to wait for the entire mesh to be received; once three
+CCW-ordered vertices are available, each triangle can be processed correctly
+as shown in <a class="reference internal" href="#construct-triangle"><span class="std std-numref">Fig. 30</span></a> from the camera position <span class="math notranslate nohighlight">\(p_0\)</span>.</p>
+<figure class="align-center" id="id85">
+<span id="construct-triangle"></span><a class="reference internal image-reference" href="_images/construct-triangle.png"><img alt="_images/construct-triangle.png" height="303" src="_images/construct-triangle.png" width="334" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 30 </span><span class="caption-text">A triangle can be constructed as soon as three vertices are received</span><a class="headerlink" href="#id85" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>✔️  When the camera moves to the <span class="math notranslate nohighlight">\(p_1\)</span> inside an object: CCW ↔ CW
+flips as shown in <a class="reference internal" href="#construct-triangle"><span class="std std-numref">Fig. 30</span></a>.</p>
+<p>✔️  As shown in <a class="reference internal" href="#triangle-area"><span class="std std-ref">Trangle Area Calculation</span></a> when
+<span class="math notranslate nohighlight">\(0 &lt; \Theta &lt; 180^\circ\)</span> under CCW orientation, the area of a triangle
+area is given by:</p>
+<div class="math notranslate nohighlight">
+\[\frac{1}{2} \mathbf \Vert (v_1-v_0) \mathsf x \mathbf (v_2-v_0) \Vert =
+\frac{1}{2} \Vert (v_1-v_0) \Vert \Vert (v_2-v_0) \Vert sin(\Theta)\]</div>
+<p>✔️  Though each triangle can be correctly identified and processed using its
+CCW ordering.
+As mentioned in <a class="reference internal" href="#trans-steps"><span class="std std-numref">Fig. 15</span></a> of section <a class="reference internal" href="#transformation"><span class="std std-ref">Transformation</span></a>,
+the Cooridinates Transform Pipeline maps geometry from Camera Space to
+Clipping Space (Clipping Volume).
+This tranformation significantly simplifies the calculation required
+for discarding and clipping triangles, as will be desribed in the next
+section <a class="reference internal" href="#projection"><span class="std std-ref">Projection</span></a>.</p>
+<p>How does OpenGL render (draw) the inner face of a triangle?</p>
+<p>OpenGL does NOT determine front/back in world space.</p>
+<p>When the camera moves to the inner space of a object:</p>
+<ul class="simple">
+<li><p>The projection changes</p></li>
+<li><p>The triangle’s screen‑space orientation changes</p></li>
+<li><p>CCW ↔ CW flips</p></li>
+<li><p>So the GPU flips front/back classification</p></li>
+</ul>
+<p class="rubric">OpenGL uses counter clockwise and pointing outwards as default <a class="footnote-reference brackets" href="#vbo" id="id46" role="doc-noteref"><span class="fn-bracket">[</span>16<span class="fn-bracket">]</span></a>.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// unit cube</span>
+<span class="c1">// A cube has 6 sides and each side has 4 vertices, therefore, the total number</span>
+<span class="c1">// of vertices is 24 (6 sides * 4 verts), and 72 floats in the vertex array</span>
+<span class="c1">// since each vertex has 3 components (x,y,z) (= 24 * 3)</span>
+<span class="c1">//    v6----- v5</span>
+<span class="c1">//   /|      /|</span>
+<span class="c1">//  v1------v0|</span>
+<span class="c1">//  | |     | |</span>
+<span class="c1">//  | v7----|-v4</span>
+<span class="c1">//  |/      |/</span>
+<span class="c1">//  v2------v3</span>
+
+<span class="c1">// vertex position array</span>
+<span class="n">GLfloat</span><span class="w"> </span><span class="n">vertices</span><span class="p">[]</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w">  </span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w">  </span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w">  </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="c1">// v0,v1,v2,v3 (front)</span>
+<span class="w">   </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w">   </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w">   </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w">  </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="c1">// v0,v3,v4,v5 (right)</span>
+<span class="w">   </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w">   </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w">  </span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="c1">// v0,v5,v6,v1 (top)</span>
+<span class="w">  </span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w">  </span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w">  </span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="c1">// v1,v6,v7,v2 (left)</span>
+<span class="w">  </span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w">   </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w">   </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="c1">// v7,v4,v3,v2 (bottom)</span>
+<span class="w">   </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w">  </span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w">  </span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w">  </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="w">  </span><span class="c1">// v4,v7,v6,v5 (back)</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>From the code above, we can see that OpenGL uses counter-clockwise and
+pointing outwards as the default. However, OpenGL provides
+<code class="docutils literal notranslate"><span class="pre">glFrontFace(GL_CW)</span></code> for clockwise winding <a class="footnote-reference brackets" href="#ogl-frontface" id="id47" role="doc-noteref"><span class="fn-bracket">[</span>33<span class="fn-bracket">]</span></a>.</p>
+<p>For a group of objects, a scene graph provides better animation support and
+saves memory <a class="footnote-reference brackets" href="#scene-graph-wiki" id="id48" role="doc-noteref"><span class="fn-bracket">[</span>34<span class="fn-bracket">]</span></a>.</p>
+</section>
+<section id="dot-product">
+<span id="id49"></span><h3><a class="toc-backref" href="#id103" role="doc-backlink">Dot Product</a><a class="headerlink" href="#dot-product" title="Link to this heading">¶</a></h3>
+<p>Dot Product</p>
+<ul class="simple">
+<li><p>Ray–plane (line–plane) intersection</p></li>
+<li><p>Determining angles between vectors</p></li>
+<li><p>Lighting (Lambertian shading)</p></li>
+<li><p>Solving for a point on the intersection line of two planes
+(because plane equations use dot products)</p></li>
+</ul>
+<p>Described in wiki here:</p>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Dot_product">https://en.wikipedia.org/wiki/Dot_product</a></p>
+<p>✅ As described in the previous section <a class="reference internal" href="#cross-product"><span class="std std-ref">Cross Product</span></a>,
+the cross-product is:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\mathbf a = v_1-v_0, \mathbf b = v_2-v_0\\\mathbf a \mathsf x \mathbf b = \Vert a \Vert \Vert b \Vert sin(\Theta) n\end{aligned}\end{align} \]</div>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(n\)</span> is a unit vector perpendicular to the plane
+<span class="math notranslate nohighlight">\(\Rightarrow\)</span> direction.</p></li>
+</ul>
+<p>The dot product definition is:</p>
+<div class="math notranslate nohighlight">
+\[\mathbf a \mathsf \cdot \mathbf b = \Vert a \Vert \Vert b \Vert cos(\Theta)\]</div>
+<p>✅ Since <span class="math notranslate nohighlight">\(n\)</span> is the outward normal vector for a CCW-ordered triangle, we
+have:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\((\mathbf p - v_0) \mathsf \cdot \mathbf n &gt; 0 \Rightarrow \mathbf p\)</span>
+lies on the front (outer) side of the plane.</p></li>
+<li><p><span class="math notranslate nohighlight">\((\mathbf p - v_0) \mathsf \cdot \mathbf n = 0 \Rightarrow \mathbf p\)</span>
+lies on the plane.</p></li>
+<li><p><span class="math notranslate nohighlight">\((\mathbf p - v_0) \mathsf \cdot \mathbf n &lt; 0 \Rightarrow \mathbf p\)</span>
+lies on the back (inner) side of the plane.</p></li>
+</ul>
+<p>✅ A plane is represented by:</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{n} \cdot (\mathbf{x}_1 - \mathbf{x}_0) = 0\]</div>
+<p>where:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(n\)</span> is the plane’s normal vector</p></li>
+<li><p><span class="math notranslate nohighlight">\(x_0, x_1\)</span> are any points on the plane</p></li>
+</ul>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\mathbf{n} \cdot (\mathbf{x}_1 - \mathbf{x}_0) = 0\\\Rightarrow \mathbf{n} \cdot \mathbf{x}_1 - \mathbf{n} \cdot \mathbf{x}_0 = 0\\\Rightarrow \mathbf{n} \cdot \mathbf{x}_1 = \mathbf{n} \cdot \mathbf{x}_0\end{aligned}\end{align} \]</div>
+<p>Let’s define the scalar constant <span class="math notranslate nohighlight">\(d\)</span> by:</p>
+<div class="math notranslate nohighlight">
+\[d = -\,\mathbf{n} \cdot \mathbf{x}_0\]</div>
+<p>Thus, the set of all points <span class="math notranslate nohighlight">\(\mathbf{p}\)</span> satisfying</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{n} \cdot \mathbf{p} + d = 0\]</div>
+<p>✅ Ray–plane (line–plane) intersection</p>
+<p>For an edge between vertices <span class="math notranslate nohighlight">\(\mathbf{p}_0\)</span> and <span class="math notranslate nohighlight">\(\mathbf{p}_1\)</span>,
+parameterized as:</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{p}(t) = \mathbf{p}_0 + t(\mathbf{p}_1 - \mathbf{p}_0)\]</div>
+<p>the intersection with a clipping plane is found by solving:</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{n} \cdot \mathbf{p}(t) + d = 0\]</div>
+<p>This yields:</p>
+<div class="math notranslate nohighlight">
+\[t = \frac{- (\mathbf{n} \cdot \mathbf{p}_0 + d)}
+{\mathbf{n} \cdot (\mathbf{p}_1 - \mathbf{p}_0)}\]</div>
+</section>
+<section id="projection">
+<span id="id50"></span><h3><a class="toc-backref" href="#id104" role="doc-backlink">Projection</a><a class="headerlink" href="#projection" title="Link to this heading">¶</a></h3>
+<figure class="align-center" id="id86">
+<span id="viewfrustum"></span><a class="reference internal image-reference" href="_images/ViewFrustum.png"><img alt="_images/ViewFrustum.png" height="182" src="_images/ViewFrustum.png" width="223" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 31 </span><span class="caption-text">Clipping-Volume Cuboid</span><a class="headerlink" href="#id86" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Only objects within the cone between near and far planes are projected to 2D
+in perspective projection.</p>
+<p>Perspective and orthographic projections (used in CAD tools) from 3D to 2D
+can be represented by transformation matrices as described in wiki here
+<a class="footnote-reference brackets" href="#wiki-prospective-projection" id="id51" role="doc-noteref"><span class="fn-bracket">[</span>25<span class="fn-bracket">]</span></a>.</p>
+<p>The “4.4  Projection Transform - Perspective Projection”  of on the
+website <a class="footnote-reference brackets" href="#cg-basictheory" id="id52" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> provides conceptual coverage of projections.</p>
+<p><strong>Camera Space Setup</strong></p>
+<p>Assume a right-handed camera coordinate system as shown in <a class="reference internal" href="#viewfrustum"><span class="std std-numref">Fig. 31</span></a>:</p>
+<ul class="simple">
+<li><p>The camera is located at the origin.</p></li>
+<li><p>The camera looks down the negative <span class="math notranslate nohighlight">\(z\)</span> axis.</p></li>
+<li><p>The near plane is located at <span class="math notranslate nohighlight">\(z = -n\)</span>.</p></li>
+<li><p>The far plane is located at <span class="math notranslate nohighlight">\(z = -f\)</span>.</p></li>
+<li><p>The view frustum bounds on the near plane are:</p>
+<ul>
+<li><p>left: <span class="math notranslate nohighlight">\(l\)</span></p></li>
+<li><p>right: <span class="math notranslate nohighlight">\(r\)</span></p></li>
+<li><p>bottom: <span class="math notranslate nohighlight">\(b\)</span></p></li>
+<li><p>top: <span class="math notranslate nohighlight">\(t\)</span></p></li>
+</ul>
+</li>
+</ul>
+<p>A point in camera space is represented as:</p>
+<div class="math notranslate nohighlight">
+\[(x, y, z, 1), \quad z &lt; 0\]</div>
+<p>The position on the near plane is:</p>
+<div class="math notranslate nohighlight">
+\[(x_n, y_n, -n) \quad with \quad x_n = \frac{n}{-z}x, \quad \frac{n}{-z}y\]</div>
+<p>✅ Reason:</p>
+<p>As described in the previous section <a class="reference internal" href="#cross-product"><span class="std std-ref">Cross Product</span></a>,
+each mesh (triangle or primitive) has a fixed “outer” and “inner” side,
+determined by CCW ordering in object space.
+By reading these CCW-ordered vertices sequentially, the shape and surface
+orientation of the 3D model can be constructed, and hidden primitives
+can be clipped or discarded.</p>
+<p>However primitive clipping and discarding can be performed much
+more efficiently by mapping the view frustum to <strong>clip space</strong>, where the GPU
+can <strong>easily clip or discard primitives</strong>, as shown <a class="reference internal" href="#trans-steps-2"><span class="std std-numref">Fig. 32</span></a>
+from the earlier section <a class="reference internal" href="#transformation"><span class="std std-ref">Transformation</span></a> again for clarity.
+Performing clipping and discarding in <strong>world space</strong> would be significantly
+more <strong>difficult</strong>.</p>
+<figure class="align-center" id="id87">
+<span id="trans-steps-2"></span><a class="reference internal image-reference" href="_images/trans-steps.png"><img alt="_images/trans-steps.png" height="156" src="_images/trans-steps.png" width="877" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 32 </span><span class="caption-text">Cooridinates Transform Pipeline <a class="footnote-reference brackets" href="#cg-basictheory" id="id53" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id87" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Perspective projection <span class="math notranslate nohighlight">\(P_{\text{persp}}\)</span> (general form):
+Converts 3D → clip space with depth</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}P =
+\begin{bmatrix}
+\frac{2n}{r-l} &amp; 0 &amp; \frac{r+l}{r-l} &amp; 0 \\
+0 &amp; \frac{2n}{t-b} &amp; \frac{t+b}{t-b} &amp; 0 \\
+0 &amp; 0 &amp; -\frac{f+n}{f-n} &amp; -\frac{2fn}{f-n} \\
+0 &amp; 0 &amp; -1 &amp; 1
+\end{bmatrix}\end{split}\]</div>
+<p>by a homogeneous point</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\mathbf{p} =
+\begin{bmatrix} x \\ y \\ z \\ 1 \end{bmatrix}\end{split}\]</div>
+<p>Converting from camera space to cliping space produces a
+homogeneous coordinate of the form <span class="math notranslate nohighlight">\([x, y, z, w_c]\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}P \mathbf{p} =
+\begin{bmatrix}
+\frac{2n}{r-l} x + \frac{r+l}{r-l} z \\
+\frac{2n}{t-b} y + \frac{t+b}{t-b} z \\
+-\frac{f+n}{f-n} z - \frac{2fn}{f-n} \\
+-z
+\end{bmatrix}
+=
+\begin{bmatrix} x_c \\ y_c \\ z_c \\ w_c \end{bmatrix}\end{split}\]</div>
+<p>After transforming to <strong>ciip space</strong>, each vertex corrodinate is expressed in
+<strong>homogeneous</strong> form, and the <strong>view frustum boundaries are encoded in the
+coordinate values</strong>.
+A vertex lies inside the view frustum if the following conditions are satisfied:</p>
+<div class="math notranslate nohighlight">
+\[-w_c \le x_c \le w_c \
+-w_c \le y_c \le w_c \
+-w_c \le z_c \le w_c\]</div>
+<p>The <strong>near plane</strong> is located at <span class="math notranslate nohighlight">\(z = -n\)</span>.
+When <span class="math notranslate nohighlight">\(w_c = -n\)</span>, the geometry is mapped to the normalized device
+coordinates (NDC) on the <strong>screen</strong>.</p>
+<p>After <strong>perspective division</strong> —- that is, dividing clip-space coordinates by
+<span class="math notranslate nohighlight">\(w_c = -n\)</span> —- the resulting NDC are:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}w_c = -z\\x_{ndc} = \frac{x_c}{w_c} =
+   \frac{\frac{2n}{r-l} x + \frac{r+l}{r-l} z}{-z}
+   = \frac{2n}{r-l} \frac{x}{-z} + \frac{r+l}{r-l},\\\quad
+y_{ndc} = \frac{y_c}{w_c} =
+   \frac{\frac{2n}{t-b} y + \frac{t+b}{t-b} z}{-z}
+   = \frac{2n}{t-b} \frac{y}{-z} + \frac{t+b}{t-b},\\\quad
+z_{ndc} = \frac{z_c}{w_c} =
+   \frac{-\frac{f+n}{f-n} z - \frac{2fn}{f-n}}{-z}
+   = \frac{f+n}{f-n} + \frac{2fn}{(f-n) z}\end{aligned}\end{align} \]</div>
+<p>This matrix maps the view frustum in camera space to the normalized cube
+in NDC after homogeneous division.</p>
+<p>✅ Comparsion for clipping and discarding in World Space and Clipping Space</p>
+<p>When a triangle intersects the view frustum, it must be clipped so that only the
+portion inside the frustum is rasterized. Although the clipping procedure is
+conceptually similar in world space and clip space, the mathematical complexity
+differs significantly. Clipping and discarding in clip space will saves <strong>85%</strong>
+in instructions.</p>
+<p><strong>1A. Discarding in world space</strong>:</p>
+<p>As described in the section <a class="reference internal" href="#dot-product"><span class="std std-ref">Dot Product</span></a>:</p>
+<p>The definition of Dot Product is:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\mathbf a = v_1-v_0, \mathbf b = v_2-v_0\\\mathbf a \mathsf \cdot \mathbf b = \Vert a \Vert \Vert b \Vert cos(\Theta)\end{aligned}\end{align} \]</div>
+<p>When <span class="math notranslate nohighlight">\((\mathbf p - v_0) \mathsf \cdot \mathbf n &lt; 0 \Rightarrow \mathbf p\)</span>
+lies on the back (inner) side of the plane.</p>
+<p>For the ray–plane (line–plane)
+intersection, the <span class="math notranslate nohighlight">\(d_i\)</span> can be obtained by choosing any point
+<span class="math notranslate nohighlight">\(\mathbf{p}_0\)</span> on the plane with normal vector <span class="math notranslate nohighlight">\(\mathbf{n}_i\)</span>.</p>
+<div class="math notranslate nohighlight">
+\[d_i = -\,\mathbf{n}_i \cdot \mathbf{p}_0\]</div>
+<p>In world (or view) space, the view frustum is bounded by six arbitrary planes,
+each defined by a normal vector <span class="math notranslate nohighlight">\(\mathbf{n}\)</span> and distance <span class="math notranslate nohighlight">\(d\)</span>.</p>
+<p>For each vertex <span class="math notranslate nohighlight">\(\mathbf{p}\)</span>, discarding requires testing against all
+planes:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}(\mathbf p - p_0) \mathsf \cdot \mathbf n_i &lt; 0\\\Rightarrow
+\mathbf{n}_i \cdot \mathbf{p} + d_i &lt; 0
+\quad \text{for any } i \in [1,6]\end{aligned}\end{align} \]</div>
+<p>Cost per vertex</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>6 dot products (each ≈ 3 multiplications + 2 additions)</p></li>
+<li><p>6 additions with plane constants</p></li>
+<li><p>6 comparisons</p></li>
+</ul>
+</div></blockquote>
+<p>Approximate arithmetic cost:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>18 multiplications</p></li>
+<li><p>18 additions</p></li>
+<li><p>6 comparisons</p></li>
+</ul>
+</div></blockquote>
+<p><strong>1B. Discarding in clip space</strong>:</p>
+<p>In clip space, vertices are represented in homogeneous coordinates
+<span class="math notranslate nohighlight">\((x_c, y_c, z_c, w_c)\)</span>.
+The view frustum becomes an axis-aligned volume defined by:</p>
+<div class="math notranslate nohighlight">
+\[-w_c \le x_c \le w_c \
+-w_c \le y_c \le w_c \
+-w_c \le z_c \le w_c\]</div>
+<p>Approximate arithmetic cost:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>6 comparisons</p></li>
+</ul>
+</div></blockquote>
+<p>Overall arithmetic instruction reduction <strong>85% ~ 95%</strong>.</p>
+<p><strong>2A. Clipping in World Space</strong>:</p>
+<p>Edge–plane intersection</p>
+<p>As described in the section <a class="reference internal" href="#dot-product"><span class="std std-ref">Dot Product</span></a>, the ray–plane (line–plane)
+intersection can be derived as follows:</p>
+<div class="math notranslate nohighlight">
+\[t = \frac{- (\mathbf{n} \cdot \mathbf{p}_0 + d)}
+{\mathbf{n} \cdot (\mathbf{p}_1 - \mathbf{p}_0)}\]</div>
+<p>Each frustum plane requires a separate equation and dot-product evaluation.</p>
+<p>Triangle reconstruction</p>
+<p>After computing all intersection points:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>New vertices are inserted along intersecting edges</p></li>
+<li><p>The original triangle is split into one or more triangles</p></li>
+<li><p>Perspective projection is applied afterward</p></li>
+</ul>
+</div></blockquote>
+<p>Care must be taken to preserve perspective correctness during interpolation.</p>
+<p><strong>2B. Clipping in Clip Space</strong>:</p>
+<p>Edge–plane intersection</p>
+<p>Edges are interpolated linearly in homogeneous space:</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{v}(t) = \mathbf{v}_0 + t(\mathbf{v}_1 - \mathbf{v}_0)\]</div>
+<p>Intersection with a clipping boundary is found by solving equations such as:</p>
+<div class="math notranslate nohighlight">
+\[x(t) = \pm w(t), \quad y(t) = \pm w(t), \quad z(t) = \pm w(t)\]</div>
+<p>Each case reduces to a single scalar equation for <span class="math notranslate nohighlight">\(t\)</span>.</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}x(t) = x_0 + t(x_1 - x_0) \
+w(t) = w_0 + t(w_1 - w_0)\\x(t) = w(t) \rightarrow\\x_0 + t(x_1 - x_0) = w_0 + t(w_1 - w_0)\\x_0 - w_0 = t \bigl[(w_1 - w_0) - (x_1 - x_0)\bigr]\\t = \frac{x_0 - w_0}{(x_0 - w_0) - (x_1 - w_1)}\end{aligned}\end{align} \]</div>
+<p>Compare <span class="math notranslate nohighlight">\(t = \frac{x_0 - w_0}{(x_0 - w_0) - (x_1 - w_1)}\)</span> and the
+equation from world space <span class="math notranslate nohighlight">\(t = \frac{- (\mathbf{n} \cdot \mathbf{p}_0
++ d)}{\mathbf{n} \cdot (\mathbf{p}_1 - \mathbf{p}_0)}\)</span>, it saves <strong>85%</strong> for
+reducing two dot operations and more opertions.</p>
+<p>Triangle reconstruction</p>
+<p>After clipping:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>New vertices remain in homogeneous coordinates</p></li>
+<li><p>Perspective division is deferred</p></li>
+<li><p>Linear interpolation remains perspective-correct</p></li>
+</ul>
+</div></blockquote>
+<p>The final step applies the perspective divide:</p>
+<div class="math notranslate nohighlight">
+\[(x_c, y_c, z_c, w_c) \rightarrow
+\left( \frac{x_c}{w_c}, \frac{y_c}{w_c}, \frac{z_c}{w_c} \right)\]</div>
+<p>4.3 Comparison and Practical Implications</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>World-space clipping and discarding uses general plane equations and
+complex geometry.</p></li>
+<li><p>Clip-space clipping and discarding uses axis-aligned bounds and simple
+interpolation.</p></li>
+<li><p>Perspective correctness is naturally preserved in clip space.</p></li>
+<li><p>GPU hardware can implement clip-space clipping and discarding efficiently.</p></li>
+</ul>
+</div></blockquote>
+<p>For these reasons, modern graphics pipelines perform triangle clipping and
+discarding in clip space, not in world space.</p>
+<p>✅ Perspective Projection Matrix Derivation</p>
+<p>This section derives the perspective projection matrix by mapping a view
+frustum in camera space to Normalized Device Coordinates (NDC).</p>
+<p>A vertex is kept
+only if it satisfies the following inequalities:</p>
+<div class="math notranslate nohighlight">
+\[-w_c \le x_c \le w_c\]</div>
+<div class="math notranslate nohighlight">
+\[-w_c \le y_c \le w_c\]</div>
+<div class="math notranslate nohighlight">
+\[-w_c \le z_c \le w_c\]</div>
+<p>These inequalities define the <strong>view frustum in homogeneous coordinates</strong>.</p>
+<p>If a vertex violates any of these conditions, it lies outside the view
+frustum (left, right, top, bottom, near, or far plane) and is clipped or
+discarded.</p>
+<p>The goal is to map this frustum to Normalized Device Coordinates (NDC):</p>
+<div class="math notranslate nohighlight">
+\[x_{ndc}, y_{ndc}, z_{ndc} \in [-1, 1]\]</div>
+<p><strong>Homogeneous Perspective Divide</strong></p>
+<p>After projection, homogeneous division is applied:</p>
+<div class="math notranslate nohighlight">
+\[x_{ndc} = \frac{x_c}{w_c}, \quad
+y_{ndc} = \frac{y_c}{w_c}, \quad
+z_{ndc} = \frac{z_c}{w_c}\]</div>
+<p>To achieve perspective foreshortening, the homogeneous coordinate must satisfy:</p>
+<div class="math notranslate nohighlight">
+\[w_c = -z\]</div>
+<p>This requirement determines the last row of the projection matrix.</p>
+<p><strong>X Coordinate Mapping</strong></p>
+<div class="math notranslate nohighlight">
+\[A_x = \frac{2}{r-l}, \quad
+B_x = -\frac{r+l}{r-l}\]</div>
+<p>By similar triangles, the projected x-coordinate on the near plane is:</p>
+<div class="math notranslate nohighlight">
+\[x_n = \frac{n}{-z} x\]</div>
+<p>The near-plane bounds map to NDC as follows:</p>
+<div class="math notranslate nohighlight">
+\[x = l \Rightarrow x_{ndc} = -1
+\qquad
+x = r \Rightarrow x_{ndc} = +1\]</div>
+<p>Assume a linear mapping:</p>
+<div class="math notranslate nohighlight">
+\[x_{ndc} = A_x x_n + B_x\]</div>
+<p>Applying the near constraints: substituting <span class="math notranslate nohighlight">\(x_n = l\ and\ x_{ndc} = -1\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[-1 = A_x l + B_x
+\qquad ...(1)\]</div>
+<p>Applying the far constraints: substituting <span class="math notranslate nohighlight">\(x_n = r\ and\ x_{ndc} = 1\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[1 = A_x r + B_x
+\qquad ...(2)\]</div>
+<p>Solving equations (1) and (2) to get <span class="math notranslate nohighlight">\(A_x\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[2 = A_x (r-l) \Rightarrow A_x = \frac{2}{r-l}
+\qquad ...(3)\]</div>
+<p>Substituting equation (3) to (2):</p>
+<div class="math notranslate nohighlight">
+\[1 = A_x r + B_x \Rightarrow 1 = \frac{2}{r-l}r + B_x
+\Rightarrow B_x = \frac{r-l-2r}{r-1} = -\frac{r+l}{r-l} \qquad ...(4)\]</div>
+<p>From (3) and (4):
+Solving for <span class="math notranslate nohighlight">\(A_x\)</span> and <span class="math notranslate nohighlight">\(B_x\)</span> yields:</p>
+<div class="math notranslate nohighlight">
+\[A_x = \frac{2}{r-l}, \quad
+B_x = -\frac{r+l}{r-l}\]</div>
+<p>Substituting <span class="math notranslate nohighlight">\(x_n\)</span> gives the resulting mapping is:</p>
+<div class="math notranslate nohighlight">
+\[x_{ndc}
+= \frac{2n}{r-l} \frac{x}{-z}
+  + \frac{r+l}{r-l}\]</div>
+<p><strong>Y Coordinate Mapping</strong>:</p>
+<p>Using the same derivation for the y-axis:</p>
+<div class="math notranslate nohighlight">
+\[y_n = \frac{n}{-z} y\]</div>
+<p>The resulting mapping is:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}A_y = \frac{2}{t-b}, \quad
+B_y = -\frac{t+b}{t-b}\\y_{ndc}
+= \frac{2n}{t-b} \frac{y}{-z}
+  + \frac{t+b}{t-b}\end{aligned}\end{align} \]</div>
+<p><strong>Z Coordinate Mapping</strong></p>
+<p>Depth is mapped linearly such that:</p>
+<div class="math notranslate nohighlight">
+\[z = -n \Rightarrow z_{ndc} = -1
+\qquad
+z = -f \Rightarrow z_{ndc} = +1\]</div>
+<p>Assume:</p>
+<div class="math notranslate nohighlight">
+\[z_c = A_z z + B_z\]</div>
+<p>Then:</p>
+<div class="math notranslate nohighlight">
+\[z_{ndc} = \frac{A_z z + B_z}{-z}\]</div>
+<p>Applying the near constraints: substituting <span class="math notranslate nohighlight">\(z = -n\ and\ z_{ndc} = -1\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[-1 = \frac{A_z(-n) + B_z}{-(-n)} \Rightarrow -n = {A_z(-n) + B_z}
+\qquad ...(1)\]</div>
+<p>Applying the far constraints: substituting <span class="math notranslate nohighlight">\(z = -f\ and\ z_{ndc} = 1\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[1 = \frac{A_z(-f) + B_z}{-(-f)} \Rightarrow  f = {A_z(-f) + B_z}
+\qquad ...(2)\]</div>
+<p>Solving equations (1) and (2) to get <span class="math notranslate nohighlight">\(A_z\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[-n-f = {A_z(-n+f)} \Rightarrow {A_z} = \frac{-n-f}{-n+f} = -\frac{f+n}{f-n}
+\qquad ...(3)\]</div>
+<p>Substituting equation (3) to (2):</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}f = {A_z(-f) + B_z} \Rightarrow f = {-\frac{f+n}{f-n}(-f) + B_z}\\\Rightarrow {B_z} = f+\frac{f+n}{f-n}(-f) = \frac{(f^2-fn)+(-f^2-fn)}{f-n} =
+-\frac{2fn}{f-n} \qquad ...(4)\end{aligned}\end{align} \]</div>
+<p>From (3) and (4):</p>
+<div class="math notranslate nohighlight">
+\[A_z = -\frac{f+n}{f-n}, \quad
+B_z = -\frac{2fn}{f-n}\]</div>
+<p><strong>Perspective Projection Matrix</strong></p>
+<p>Combining all components, the perspective projection matrix is:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}P =
+\begin{bmatrix}
+\frac{2n}{r-l} &amp; 0 &amp; \frac{r+l}{r-l} &amp; 0 \\
+0 &amp; \frac{2n}{t-b} &amp; \frac{t+b}{t-b} &amp; 0 \\
+0 &amp; 0 &amp; -\frac{f+n}{f-n} &amp; -\frac{2fn}{f-n} \\
+0 &amp; 0 &amp; -1 &amp; 0
+\end{bmatrix}\end{split}\]</div>
+<p>Projection: The explanation and mathematical proof is given below also.</p>
+<p><a class="reference external" href="https://www.cse.unr.edu/~bebis/CS791E/Notes/PerspectiveProjection.pdf?copilot_analytics_metadata=eyJldmVudEluZm9fY2xpY2tTb3VyY2UiOiJjaXRhdGlvbkxpbmsiLCJldmVudEluZm9fbWVzc2FnZUlkIjoiY21HdnpMWDdSd3lxeFdzWjJWVUNxIiwiZXZlbnRJbmZvX2NvbnZlcnNhdGlvbklkIjoiOUNxcXFVdDhhRnBCbVFrS3RWTXNKIiwiZXZlbnRJbmZvX2NsaWNrRGVzdGluYXRpb24iOiJodHRwczpcL1wvd3d3LmNzZS51bnIuZWR1XC9+YmViaXNcL0NTNzkxRVwvTm90ZXNcL1BlcnNwZWN0aXZlUHJvamVjdGlvbi5wZGYifQ%3D%3D">https://www.cse.unr.edu/~bebis/CS791E/Notes/PerspectiveProjection.pdf?copilot_analytics_metadata=eyJldmVudEluZm9fY2xpY2tTb3VyY2UiOiJjaXRhdGlvbkxpbmsiLCJldmVudEluZm9fbWVzc2FnZUlkIjoiY21HdnpMWDdSd3lxeFdzWjJWVUNxIiwiZXZlbnRJbmZvX2NvbnZlcnNhdGlvbklkIjoiOUNxcXFVdDhhRnBCbVFrS3RWTXNKIiwiZXZlbnRJbmZvX2NsaWNrRGVzdGluYXRpb24iOiJodHRwczpcL1wvd3d3LmNzZS51bnIuZWR1XC9+YmViaXNcL0NTNzkxRVwvTm90ZXNcL1BlcnNwZWN0aXZlUHJvamVjdGlvbi5wZGYifQ%3D%3D</a></p>
+<p>Reference:</p>
+<p>1. Every computer graphics book covers the topic of transformation of objects
+and
+their positions in space. Chapter 4 of the <em>Blue Book: OpenGL SuperBible, 7th
+Edition</em> provides a concise yet useful 40-page overview of transformation
+concepts and is good material for gaining a deeper understanding of transformations.
+description of transformation.</p>
+<ol class="arabic simple" start="2">
+<li><p>Chapter 7 of Red book covers the tranformations and projections.</p></li>
+<li><p><a class="reference external" href="https://en.wikipedia.org/wiki/3D_projection">https://en.wikipedia.org/wiki/3D_projection</a></p></li>
+</ol>
+<ul class="simple">
+<li><p><a class="reference external" href="https://registry.khronos.org/OpenGL-Refpages/">https://registry.khronos.org/OpenGL-Refpages/</a></p></li>
+<li><p><a class="reference external" href="https://www.mesa3d.org">https://www.mesa3d.org</a></p></li>
+<li><p><a class="reference external" href="https://www.opengl.org/sdk/">https://www.opengl.org/sdk/</a>, <a class="reference external" href="https://www.opengl.org/sdk/libs/">https://www.opengl.org/sdk/libs/</a></p></li>
+</ul>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="cg-basictheory" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id24">1</a>,<a role="doc-backlink" href="#id30">2</a>,<a role="doc-backlink" href="#id31">3</a>,<a role="doc-backlink" href="#id33">4</a>,<a role="doc-backlink" href="#id52">5</a>,<a role="doc-backlink" href="#id53">6</a>)</span>
+<p><a class="reference external" href="https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_BasicsTheory.html">https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_BasicsTheory.html</a></p>
+</aside>
+<aside class="footnote brackets" id="polygon" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id2">2</a>)</span>
+<p><a class="reference external" href="https://www.quora.com/Which-one-is-better-for-3D-modeling-Quads-or-Tris">https://www.quora.com/Which-one-is-better-for-3D-modeling-Quads-or-Tris</a></p>
+</aside>
+<aside class="footnote brackets" id="shading" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">3</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Shading">https://en.wikipedia.org/wiki/Shading</a></p>
+</aside>
+<aside class="footnote brackets" id="texturemapping" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">4</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Texture_mapping">https://en.wikipedia.org/wiki/Texture_mapping</a></p>
+</aside>
+<aside class="footnote brackets" id="animation-state-video" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id6">1</a>,<a role="doc-backlink" href="#id7">2</a>)</span>
+<p><a class="reference external" href="https://www.youtube.com/watch?v=7QIcd6_TTys">https://www.youtube.com/watch?v=7QIcd6_TTys</a></p>
+</aside>
+<aside class="footnote brackets" id="animation1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id8">6</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://www.youtube.com/watch?v=f3Cr8Yx3GGA">https://www.youtube.com/watch?v=f3Cr8Yx3GGA</a></p>
+</aside>
+<aside class="footnote brackets" id="joglwiki" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id20">7</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Java_OpenGL">https://en.wikipedia.org/wiki/Java_OpenGL</a></p>
+</aside>
+<aside class="footnote brackets" id="node-editor-web1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id10">1</a>,<a role="doc-backlink" href="#id11">2</a>)</span>
+<p><a class="reference external" href="https://odysee.com/&#64;jsabbott:d/how-to-make-procedural-edge-wear-in:2">https://odysee.com/&#64;jsabbott:d/how-to-make-procedural-edge-wear-in:2</a></p>
+</aside>
+<aside class="footnote brackets" id="dfmt" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id12">1</a>,<a role="doc-backlink" href="#id13">2</a>,<a role="doc-backlink" href="#id14">3</a>)</span>
+<p><a class="reference external" href="https://all3dp.com/3d-file-format-3d-files-3d-printer-3d-cad-vrml-stl-obj/">https://all3dp.com/3d-file-format-3d-files-3d-printer-3d-cad-vrml-stl-obj/</a></p>
+</aside>
+<aside class="footnote brackets" id="wiki-gpu" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id15">10</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Graphics_processing_unit">https://en.wikipedia.org/wiki/Graphics_processing_unit</a></p>
+</aside>
+<aside class="footnote brackets" id="ogl-cpu-gpu" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id16">11</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Vulkan">https://en.wikipedia.org/wiki/Vulkan</a></p>
+</aside>
+<aside class="footnote brackets" id="cpu-gpu-role" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id17">12</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://stackoverflow.com/questions/47426655/cpu-and-gpu-in-3d-game-whos-doing-what">https://stackoverflow.com/questions/47426655/cpu-and-gpu-in-3d-game-whos-doing-what</a></p>
+</aside>
+<aside class="footnote brackets" id="mesawiki" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id18">13</a><span class="fn-bracket">]</span></span>
+<p>&lt;<a class="reference external" href="https://en.wikipedia.org/wiki/Mesa_(computer_graphics)">https://en.wikipedia.org/wiki/Mesa_(computer_graphics)</a>&gt;</p>
+</aside>
+<aside class="footnote brackets" id="csf" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id19">14</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://developer.arm.com/documentation/102813/0107/GPU-activity">https://developer.arm.com/documentation/102813/0107/GPU-activity</a></p>
+</aside>
+<aside class="footnote brackets" id="libclc" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id21">15</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://libclc.llvm.org">https://libclc.llvm.org</a></p>
+</aside>
+<aside class="footnote brackets" id="vbo" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>16<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id22">1</a>,<a role="doc-backlink" href="#id46">2</a>)</span>
+<p><a class="reference external" href="http://www.songho.ca/opengl/gl_vbo.html">http://www.songho.ca/opengl/gl_vbo.html</a></p>
+</aside>
+<aside class="footnote brackets" id="classorvbo" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id23">17</a><span class="fn-bracket">]</span></span>
+<p>If your models will be rigid, meaning you will not change each vertex individually, and you will render many frames with the same model, you will achieve the best performance not by storing the models in your class, but in vertex buffer objects (VBOs) <a class="reference external" href="https://gamedev.stackexchange.com/questions/19560/what-is-the-best-way-to-store-meshes-or-3d-models-in-a-class">https://gamedev.stackexchange.com/questions/19560/what-is-the-best-way-to-store-meshes-or-3d-models-in-a-class</a></p>
+</aside>
+<aside class="footnote brackets" id="g-sync" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id25">18</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://www.avadirect.com/blog/frame-rate-fps-vs-hz-refresh-rate/">https://www.avadirect.com/blog/frame-rate-fps-vs-hz-refresh-rate/</a></p>
+</aside>
+<aside class="footnote brackets" id="additive-colors-wiki" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id26">19</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/RGB_color_model">https://en.wikipedia.org/wiki/RGB_color_model</a></p>
+</aside>
+<aside class="footnote brackets" id="additive-colors-ytube" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id27">20</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://www.youtube.com/watch?v=kEnz_3miiAc">https://www.youtube.com/watch?v=kEnz_3miiAc</a></p>
+</aside>
+<aside class="footnote brackets" id="additive-colors-shade" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id28">21</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://www.tiktok.com/&#64;tonesterpaints/video/7059565281227853102">https://www.tiktok.com/&#64;tonesterpaints/video/7059565281227853102</a></p>
+</aside>
+<aside class="footnote brackets" id="wiki-transformation" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id32">22</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Transformation_matrix">https://en.wikipedia.org/wiki/Transformation_matrix</a></p>
+</aside>
+<aside class="footnote brackets" id="wiki-rotation" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id34">23</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Rotation_matrix">https://en.wikipedia.org/wiki/Rotation_matrix</a></p>
+</aside>
+<aside class="footnote brackets" id="wiki-quaternion" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id35">24</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Quaternion">https://en.wikipedia.org/wiki/Quaternion</a></p>
+</aside>
+<aside class="footnote brackets" id="wiki-prospective-projection" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id51">25</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/3D_projection">https://en.wikipedia.org/wiki/3D_projection</a></p>
+</aside>
+<aside class="footnote brackets" id="cross-product-wiki" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id43">26</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Cross_product">https://en.wikipedia.org/wiki/Cross_product</a></p>
+</aside>
+<aside class="footnote brackets" id="cross-product-2d-proof" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id37">1</a>,<a role="doc-backlink" href="#id39">2</a>)</span>
+<p><a class="reference external" href="https://www.xarg.org/book/linear-algebra/2d-perp-product/">https://www.xarg.org/book/linear-algebra/2d-perp-product/</a></p>
+</aside>
+<aside class="footnote brackets" id="cross-product-2d-proof2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>28<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id38">1</a>,<a role="doc-backlink" href="#id40">2</a>)</span>
+<p><a class="reference external" href="https://www.nagwa.com/en/explainers/175169159270/">https://www.nagwa.com/en/explainers/175169159270/</a></p>
+</aside>
+<aside class="footnote brackets" id="cgpap" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id41">29</a><span class="fn-bracket">]</span></span>
+<p>Figure 7.19 of Book: Computer graphics principles and practice 3rd edition</p>
+</aside>
+<aside class="footnote brackets" id="wiki-point-in-polygon" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id42">30</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Point_in_polygon">https://en.wikipedia.org/wiki/Point_in_polygon</a></p>
+</aside>
+<aside class="footnote brackets" id="ogl-point-outwards" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id44">31</a><span class="fn-bracket">]</span></span>
+<p>Normals are used to differentiate the front- and back-face, and for other processing such as lighting. Right-hand rule (or counter-clockwise) is used in OpenGL. The normal is pointing outwards, indicating the outer surface (or front-face). <a class="reference external" href="https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_BasicsTheory.html">https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_BasicsTheory.html</a></p>
+</aside>
+<aside class="footnote brackets" id="point-in-3d-object" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id45">32</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://stackoverflow.com/questions/63557043/how-to-determine-whether-a-point-is-inside-or-outside-a-3d-model-computationally">https://stackoverflow.com/questions/63557043/how-to-determine-whether-a-point-is-inside-or-outside-a-3d-model-computationally</a></p>
+</aside>
+<aside class="footnote brackets" id="ogl-frontface" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id47">33</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://registry.khronos.org/OpenGL-Refpages/gl4/html/glFrontFace.xhtml">https://registry.khronos.org/OpenGL-Refpages/gl4/html/glFrontFace.xhtml</a></p>
+</aside>
+<aside class="footnote brackets" id="scene-graph-wiki" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id48">34</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Scene_graph">https://en.wikipedia.org/wiki/Scene_graph</a></p>
+</aside>
+</aside>
+</section>
+</section>
+</section>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="Bottom">
+      
+        <p>
+        «&#160;&#160;<a href="begin.html">The Concept of GPU Compiler</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="opengl.html">OpenGL</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2026, Chen Chung-Shu.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    </div>
+  </body>
+</html>

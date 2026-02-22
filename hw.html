@@ -1,0 +1,3007 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>GPU Architecture &#8212; The Concept of GPU Compiler</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/haiku.css?v=fce32b03" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+    <script src="_static/documentation_options.js?v=2709fde1"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Software Structure" href="sw.html" />
+    <link rel="prev" title="OpenGL" href="opengl.html" /> 
+  </head><body>
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>The Concept of GPU Compiler</span></a></h1>
+        <h2 class="heading"><span>GPU Architecture</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="Top">
+      
+        <p>
+        «&#160;&#160;<a href="opengl.html">OpenGL</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="sw.html">Software Structure</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <section id="gpu-architecture">
+<span id="gpu-arch"></span><h1>GPU Architecture<a class="headerlink" href="#gpu-architecture" title="Link to this heading">¶</a></h1>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#gpu-hardware-units" id="id86">GPU Hardware Units</a></p></li>
+<li><p><a class="reference internal" href="#sm-simt" id="id87">SM (SIMT)</a></p>
+<ul>
+<li><p><a class="reference internal" href="#sm-hardware" id="id88">SM Hardware</a></p></li>
+<li><p><a class="reference internal" href="#sm-scheduling" id="id89">SM Scheduling</a></p></li>
+<li><p><a class="reference internal" href="#simt-and-spmd-pipelines" id="id90">SIMT and SPMD Pipelines</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#processor-units-and-memory-hierarchy-in-nvidia-gpu" id="id91">Processor Units and Memory Hierarchy in NVIDIA GPU </a></p></li>
+<li><p><a class="reference internal" href="#memory-subsystem" id="id92">Memory Subsystem</a></p>
+<ul>
+<li><p><a class="reference internal" href="#address-coalescing-and-gather-scatter" id="id93">Address Coalescing and Gather-scatter</a></p></li>
+<li><p><a class="reference internal" href="#vram-dgpu" id="id94">VRAM dGPU</a></p></li>
+<li><p><a class="reference internal" href="#regless-style-architectures" id="id95">RegLess-style architectures </a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#specialized-units" id="id96">Specialized Units</a></p>
+<ul>
+<li><p><a class="reference internal" href="#geometry-units" id="id97">Geometry Units</a></p></li>
+<li><p><a class="reference internal" href="#rasterization-units" id="id98">Rasterization Units </a></p></li>
+<li><p><a class="reference internal" href="#texture-mapping-units-tmus" id="id99">Texture Mapping Units (TMUs) </a></p></li>
+<li><p><a class="reference internal" href="#render-output-units-rops" id="id100">Render Output Units (ROPs) </a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#system-features-buffers" id="id101">System Features – Buffers</a></p></li>
+</ul>
+</nav>
+<figure class="align-center" id="id49">
+<span id="cg-hw"></span><a class="reference internal image-reference" href="_images/cg-hw.png"><img alt="_images/cg-hw.png" height="327" src="_images/cg-hw.png" width="693" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 54 </span><span class="caption-text">Computer Graphics Hardware (figure from book <a class="footnote-reference brackets" href="#cg-basictheory" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>)</span><a class="headerlink" href="#id49" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<section id="gpu-hardware-units">
+<h2><a class="toc-backref" href="#id86" role="doc-backlink">GPU Hardware Units</a><a class="headerlink" href="#gpu-hardware-units" title="Link to this heading">¶</a></h2>
+<p>A GPU (graphics processing unit) is built as a massively generic parallel
+processor of SIMD/SIMT architecture with several specialized processing units
+inside shown as <a class="reference internal" href="#gpu-block-diagram-2"><span class="std std-numref">Fig. 55</span></a> from the
+<a class="reference internal" href="graphics.html#ghast"><span class="std std-ref">section Graphics HW and SW Stack</span></a>.</p>
+<figure class="align-center" id="id50">
+<span id="gpu-block-diagram-2"></span><a class="reference internal image-reference" href="_images/gpu-block-diagram.png"><img alt="_images/gpu-block-diagram.png" height="376" src="_images/gpu-block-diagram.png" width="400" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 55 </span><span class="caption-text">Components of a GPU: GPU has accelerated video decoding and encoding
+<a class="footnote-reference brackets" href="#wiki-gpu" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id50" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>From compiler’s view, GPU is shown as <a class="reference internal" href="#gpu-hw"><span class="std std-numref">Fig. 56</span></a>.</p>
+<figure class="align-default" id="id51">
+<span id="gpu-hw"></span><div class="graphviz"><img src="_images/graphviz-ed153f27179a02053c73ab818e39fa56bd74a284.png" alt="digraph GPU {
+  rankdir=LR;
+  bgcolor=&quot;white&quot;;
+  node [shape=box, fontname=&quot;Helvetica&quot;, fontsize=10];
+
+  /* Top-level GPU container */
+  subgraph cluster_gpu {
+    label = &quot;Massively Parallel Processor (GPU)&quot;;
+    style = rounded;
+    color = black;
+    fontsize=12;
+
+    /* Compute cluster: many SMs/CUs */
+    subgraph cluster_compute {
+      label = &quot;Compute Cluster (many SMs / CUs)&quot;;
+      style = filled;
+      fillcolor = &quot;#f7fbff&quot;;
+      color = &quot;#c6dbef&quot;;
+
+      SMs [label=&lt;
+        &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;6&quot;&gt;
+          &lt;TR&gt;&lt;TD&gt;&lt;B&gt;SM 0..N-1&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
+          &lt;TR&gt;&lt;TD&gt;
+            &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;1&quot; CELLSPACING=&quot;0&quot;&gt;
+              &lt;TR&gt;&lt;TD&gt;&lt;FONT POINT-SIZE=&quot;10&quot;&gt;&lt;B&gt;Warp Scheduler&lt;/B&gt;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+              &lt;TR&gt;&lt;TD&gt;&lt;FONT POINT-SIZE=&quot;10&quot;&gt;Registers&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+              &lt;TR&gt;&lt;TD&gt;&lt;FONT POINT-SIZE=&quot;10&quot;&gt;Shared Memory / L1&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+              &lt;TR&gt;&lt;TD&gt;&lt;FONT POINT-SIZE=&quot;10&quot;&gt;ALUs (FP/INT)&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+              &lt;TR&gt;&lt;TD&gt;&lt;FONT POINT-SIZE=&quot;10&quot;&gt;SFUs (transcendental)&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+              &lt;TR&gt;&lt;TD&gt;&lt;FONT POINT-SIZE=&quot;10&quot;&gt;Load/Store Units&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+              &lt;TR&gt;&lt;TD&gt;&lt;FONT POINT-SIZE=&quot;10&quot;&gt;RegLess Staging Operands (RSO)&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+            &lt;/TABLE&gt;
+          &lt;/TD&gt;&lt;/TR&gt;
+        &lt;/TABLE&gt;
+      &gt;, shape=plaintext];
+    }
+
+    /* Specialized units */
+    subgraph cluster_special {
+      label = &quot;Specialized Units&quot;;
+      style = filled;
+      fillcolor = &quot;#fff7f3&quot;;
+      color = &quot;#fcbba1&quot;;
+
+      Geo [label=&quot;Geometry Units\n(primitive assembly,\ntessellation, clipping)&quot;];
+      Raster [label=&quot;Rasterization Units\n(triangle -&gt; fragments,\nattribute interpolation)&quot;];
+      TMU  [label=&quot;Texture Mapping Units (TMUs)\n(sampling &amp; filtering)&quot;];
+      ROP  [label=&quot;Render Output Units (ROPs)\n(blend, depth, stencil,\nframebuffer write)&quot;];
+      Tensor [label=&quot;Tensor / Matrix Cores\n(AI accel)&quot;];
+      RT     [label=&quot;Ray-Tracing Cores\n(BVH traversal, intersections)&quot;];
+      Video  [label=&quot;Video Encode / Decode Engines\n(NVENC / VCN / VPU)&quot;];
+      Display [label=&quot;Display Controller\n(HDMI / DP)&quot;];
+    }
+
+    /* Memory subsystem */
+    subgraph cluster_mem {
+      label = &quot;Memory Subsystem&quot;;
+      style = filled;
+      fillcolor = &quot;#f7fff7&quot;;
+      color = &quot;#c7e9c0&quot;;
+
+      L1  [label=&quot;L1 / Shared Memory (per SM)&quot;];
+      L2  [label=&quot;L2 Cache (shared)&quot;];
+      VRAM[label=&quot;VRAM (GDDR / HBM)\n(high bandwidth)&quot;];
+      Interconnect [label=&quot;Memory Controller / Interconnect&quot;];
+
+      Coalescing [label=&quot;Memory Coalescing\n(merge warp memory requests)&quot;];
+      GatherScatter [label=&quot;Gather–Scatter\n(irregular memory access)&quot;];
+    }
+
+    /* Connections between major blocks */
+    SMs -&gt; Geo [label=&quot; vertices&quot;];
+    Geo -&gt; Raster [label=&quot; primitives&quot;];
+    Raster -&gt; SMs [label=&quot; fragments (shaded in SMs)&quot;];
+
+    SMs -&gt; TMU [label=&quot; texture fetch&quot;];
+    SMs -&gt; Tensor [label=&quot; matrix ops&quot;];
+    SMs -&gt; RT [label=&quot; ray queries&quot;, style=dashed];
+
+    Raster -&gt; ROP [label=&quot; fragments -&gt; tests + blend&quot;];
+    SMs -&gt; ROP [label=&quot; shaded fragments&quot;];
+    ROP  -&gt; VRAM [label=&quot; final framebuffer write&quot;];
+
+    /* Memory subsystem connections */
+    SMs -&gt; L1 [label=&quot; fast access&quot;];
+    TMU  -&gt; L2 [label=&quot; texture reads&quot;];
+    SMs -&gt; L2 [label=&quot; global loads/stores&quot;];
+    L2   -&gt; VRAM [label=&quot; miss -&gt; VRAM&quot;];
+    Interconnect -&gt; VRAM [label=&quot; memory transactions&quot;];
+
+    /* Memory behavior connections */
+    SMs -&gt; Coalescing [label=&quot; warp memory requests&quot;];
+    Coalescing -&gt; L2 [label=&quot; optimized transaction&quot;];
+    SMs -&gt; GatherScatter [label=&quot; irregular access&quot;, style=dashed];
+    GatherScatter -&gt; L2 [label=&quot; multiple transactions&quot;, style=dashed];
+
+    /* Video/Display */
+    Video -&gt; VRAM [label=&quot; read/write video frames&quot;];
+    Display -&gt; VRAM [label=&quot; scanout&quot;];
+  }
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 56 </span><span class="caption-text">Components of a GPU: SIMD/SIMT + several specialized processing units</span><a class="headerlink" href="#id51" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>A GPU is not just “many cores” — it’s a mix of general-purpose ompute clusters,
+specialized units, and the memory subsystem. It corresponds to the block
+diagram graph shown in <a class="reference internal" href="#gpu-hw"><span class="std std-numref">Fig. 56</span></a>.</p>
+<p>The stages of the OpenGL rendering pipeline and the GPU hardware units
+that accelerate them as shown in <a class="reference internal" href="#ogl-pipeline-hw"><span class="std std-numref">Fig. 57</span></a>:</p>
+<figure class="align-default" id="id52">
+<span id="ogl-pipeline-hw"></span><div class="graphviz"><img src="_images/graphviz-c9358e8b6218d8f7f1a13fac7ddd6a4772b42720.png" alt="digraph OpenGL_GPU_Mapping {
+    rankdir=TB;
+
+    // Use HTML-like label for the whole graph
+    label=&lt;
+        &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
+            &lt;TR&gt;&lt;TD&gt;&lt;/TD&gt;&lt;/TR&gt;
+            &lt;TR&gt;&lt;TD&gt;&lt;/TD&gt;&lt;/TR&gt;
+            &lt;TR&gt;&lt;TD&gt;&lt;FONT POINT-SIZE=&quot;16&quot; COLOR=&quot;darkblue&quot;&gt;&lt;B&gt;• OpenGL pipeline stages = Yellow&lt;/B&gt;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+            &lt;TR&gt;&lt;TD&gt;&lt;FONT POINT-SIZE=&quot;16&quot; COLOR=&quot;darkblue&quot;&gt;&lt;B&gt;• GPU hardware units = Blue&lt;/B&gt;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+            &lt;TR&gt;&lt;TD&gt;&lt;FONT POINT-SIZE=&quot;16&quot; COLOR=&quot;darkblue&quot;&gt;&lt;B&gt;• GPU-only internals = Gray&lt;/B&gt;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+            &lt;TR&gt;&lt;TD&gt;&lt;FONT POINT-SIZE=&quot;16&quot; COLOR=&quot;darkblue&quot;&gt;&lt;B&gt;• Dashed arrows indicate mapping from OpenGL stages to hardware&lt;/B&gt;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+        &lt;/TABLE&gt;
+    &gt;;
+
+    node [shape=box style=&quot;rounded,filled&quot; fontsize=16];
+
+    // === OpenGL Pipeline (multi-rows) ===
+    Application   [label=&quot;Application\n(CPU Side)&quot;, fillcolor=lightyellow];
+    VertexSpec    [label=&quot;Vertex Specification\n(glDraw, VBOs)&quot;, fillcolor=lightyellow];
+
+    OGL_Vertex    [label=&quot;Vertex Shader&quot;, fillcolor=lightyellow];
+    TessCtrl      [label=&quot;Tessellation \nControl Shader&quot;, fillcolor=lightyellow];
+    TessGen       [label=&quot;Tessellation \nPrimitive Generator&quot;, fillcolor=lightyellow];
+    TessEval      [label=&quot;Tessellation \nEvaluation Shader&quot;, fillcolor=lightyellow];
+    OGL_Geometry  [label=&quot;Geometry Shader / Clipping&quot;, fillcolor=lightyellow];
+
+    OGL_Raster    [label=&quot;Rasterization&quot;, fillcolor=lightyellow];
+    OGL_Fragment  [label=&quot;Fragment Shader&quot;, fillcolor=lightyellow];
+    OGL_PerFrag   [label=&quot;Per-Fragment Ops\n(Depth, Stencil, Blend)&quot;, fillcolor=lightyellow];
+    OGL_Framebuf  [label=&quot;Framebuffer&quot;, fillcolor=lightyellow];
+
+    // OpenGL flow
+    Application -&gt; VertexSpec -&gt; OGL_Vertex -&gt; TessCtrl -&gt; TessGen -&gt; TessEval -&gt; OGL_Geometry -&gt; OGL_Raster -&gt; OGL_Fragment -&gt; OGL_PerFrag -&gt; OGL_Framebuf;
+
+    // === GPU Hardware Units (multi-rows) ===
+    HW_Vertex    [label=&quot;SMs (Vertex Shader)\n(ALUs, SFUs, Load/Store)&quot;, fillcolor=lightblue];
+    HW_Fragment  [label=&quot;SMs (Fragment Shader)\n(ALUs, SFUs, TMUs)&quot;, fillcolor=lightblue];
+    HW_Geometry  [label=&quot;Geometry Units\n(Primitive Assembly, Clipping)&quot;, fillcolor=lightblue];
+    HW_Raster    [label=&quot;Rasterization Units\n(Triangle → Fragments)&quot;, fillcolor=lightblue];
+    ROP          [label=&quot;Render Output Units (ROPs)\n(Depth, Stencil, Blend)&quot;, fillcolor=lightblue];
+    HW_Framebuf  [label=&quot;Framebuffer in VRAM&quot;, fillcolor=lightblue];
+    TMU          [label=&quot;Texture Mapping Units (TMUs)\n(Texture Fetch/Filter)&quot;, fillcolor=lightgray];
+    Display      [label=&quot;Display Controller\n(Output to Screen)&quot;, fillcolor=lightgray];
+
+    // Memory hierarchy
+    L1           [label=&quot;L1 / Shared Memory&quot;, fillcolor=lightgray];
+    L2           [label=&quot;L2 Cache&quot;, fillcolor=lightgray];
+    VRAM         [label=&quot;VRAM (GDDR/HBM)&quot;, fillcolor=lightgray];
+    Coalescing   [label=&quot;Coalescing Unit&quot;, fillcolor=lightgray];
+    GatherScatter[label=&quot;Gather–Scatter Unit&quot;, fillcolor=lightgray];
+
+    // GPU flow
+    HW_Vertex -&gt; HW_Geometry -&gt; HW_Raster -&gt; HW_Fragment;
+    HW_Fragment -&gt; TMU;
+    HW_Fragment -&gt; ROP -&gt; HW_Framebuf -&gt; Display;
+
+    // Memory path
+    HW_Vertex -&gt; L1;
+    HW_Fragment -&gt; L1;
+    L2 -&gt; Coalescing;
+    L1 -&gt; L2 -&gt; VRAM;
+    L2 -&gt; GatherScatter;
+    TMU -&gt; L1 [label=&quot;Texture Fetch&quot;];
+    VRAM -&gt; Display;
+
+    // === Mapping edges (OpenGL → Hardware) ===
+    OGL_Vertex   -&gt; HW_Vertex   [style=dashed color=blue];
+    TessCtrl     -&gt; HW_Vertex   [style=dashed color=blue];
+    TessEval     -&gt; HW_Vertex   [style=dashed color=blue];
+    OGL_Geometry -&gt; HW_Geometry [style=dashed color=blue];
+    OGL_Raster   -&gt; HW_Raster   [style=dashed color=blue];
+    OGL_Fragment -&gt; HW_Fragment [style=dashed color=blue];
+    OGL_PerFrag  -&gt; ROP         [style=dashed color=blue];
+    OGL_Framebuf -&gt; HW_Framebuf [style=dashed color=blue];
+
+    // === Layering for better spacing ===
+    { rank = same; Application; VertexSpec }
+    { rank = same; OGL_Vertex; TessCtrl; TessGen }
+    { rank = same; TessEval; OGL_Geometry }
+    { rank = same; OGL_Raster; OGL_Fragment; OGL_PerFrag; OGL_Framebuf }
+
+    { rank = same; HW_Vertex; HW_Fragment }
+    { rank = same; HW_Geometry; HW_Raster; ROP; HW_Framebuf; TMU }
+    { rank = same; L1; L2; VRAM; Display }
+    { rank = same; Coalescing; GatherScatter }
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 57 </span><span class="caption-text">The stages of OpenGL pipeline and GPU’s acceleration components</span><a class="headerlink" href="#id52" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p><strong>Compute Cluster</strong></p>
+<ul class="simple">
+<li><p><strong>Role:</strong>
+Provide large-scale data-parallel execution. Each GPU contains many
+Streaming Multiprocessors (SMs) or Compute Units (CUs), each capable
+of executing thousands of threads in parallel.</p></li>
+<li><p><strong>Components:</strong></p>
+<ul>
+<li><p><strong>Warp Scheduler</strong> – Schedules groups of threads (Warps/Wavefronts),
+issues instructions in SIMT (Single Instruction, Multiple Threads) fashion.</p></li>
+<li><p><strong>Registers</strong> – Per-thread private storage, the fastest memory level.</p></li>
+<li><p><strong>Shared Memory / L1 Cache</strong> – On-chip memory close to the SM.
+Shared Memory is explicitly managed by the programmer for cooperation
+across threads, while L1 acts as a transparent cache.</p></li>
+<li><p><strong>ALUs (FP/INT)</strong> – Execute floating-point and integer arithmetic.
+They form the bulk of compute resources inside an SM.</p></li>
+<li><p><strong>SFUs (Special Function Units)</strong> – Execute transcendental functions
+such as sin, cos, exp, and reciprocal approximations.</p></li>
+<li><p><strong>Load/Store Units</strong> – Handle global, local, and shared memory access,
+interact with coalescing and caching logic.</p></li>
+<li><p><strong>RegLess Staging Operands (RSO)</strong> – Temporary operand buffers used
+to hide instruction and memory latencies.</p></li>
+</ul>
+</li>
+<li><p><strong>Usage:</strong></p>
+<ul>
+<li><p>Run programmable shaders (vertex, fragment, geometry, compute).</p></li>
+<li><p>Perform general-purpose compute workloads (GPGPU).</p></li>
+<li><p>Issue texture fetch requests to TMUs.</p></li>
+<li><p>Interact with memory hierarchy via load/store units.</p></li>
+<li><p>Offload certain operations to Tensor or Ray-Tracing units.</p></li>
+</ul>
+</li>
+</ul>
+<p><strong>Specialized Units</strong></p>
+<ul>
+<li><p><strong>Role:</strong>
+Accelerate fixed-function or specialized stages of the graphics and
+compute pipeline that are inefficient to run purely in SMs.</p></li>
+<li><p><strong>Components and Usage:</strong></p>
+<ul>
+<li><p><strong>Geometry Units</strong> –
+Assemble input vertices into primitives (points, lines, triangles).
+Perform tessellation (subdivide patches into smaller primitives),
+clipping (discard geometry outside view), and geometry shading.</p>
+<p><em>Usage:</em> Corresponds to the geometry/tessellation stage in the graphics pipeline.</p>
+</li>
+<li><p><strong>Rasterization Units</strong> –
+Convert vector-based primitives into fragments (potential pixels).
+Interpolate per-vertex attributes (texture coordinates, normals, colors)
+across the surface of each primitive.</p>
+<p><em>Usage:</em> Bridge between geometry and fragment stages; produces fragments
+for SM fragment shading.</p>
+</li>
+<li><p><strong>Texture Mapping Units (TMUs)</strong> –
+Fetch texture data from memory, apply filtering (bilinear, trilinear,
+anisotropic), and compute texel addresses (wrap, clamp).</p>
+<p><em>Usage:</em> Invoked during fragment shading inside SMs to provide sampled
+texture values.</p>
+</li>
+<li><p><strong>Render Output Units (ROPs)</strong> –
+Handle late-stage pixel processing. Perform blending operations
+(alpha, additive), depth and stencil tests, and write final pixel values
+to the framebuffer in VRAM.</p>
+<p><em>Usage:</em> Final step of the graphics pipeline before display scanout.</p>
+</li>
+<li><p><strong>Tensor / Matrix Cores</strong> –
+Perform fused-multiply-add (FMA) on large matrix tiles.
+Designed for machine learning, AI inference, and linear algebra.</p>
+<p><em>Usage:</em> Accelerate deep learning workloads or matrix-heavy compute kernels.</p>
+</li>
+<li><p><strong>Ray-Tracing Units (RT Cores)</strong> –
+Traverse bounding volume hierarchies (BVH) and perform ray–primitive
+intersection tests in hardware.</p>
+<p><em>Usage:</em> Enable real-time ray tracing <a class="footnote-reference brackets" href="#wiki-ray-tracing" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a> by offloading
+intersection work from SMs.</p>
+</li>
+<li><p><strong>Video Engines</strong> –
+Dedicated ASICs for video codec operations such as H.264/H.265/AV1 encode
+and decode.</p>
+<p><em>Usage:</em> Media playback, streaming, and video encoding without occupying SMs.</p>
+</li>
+<li><p><strong>Display Controller</strong> –
+Reads final framebuffer images from VRAM and drives display interfaces
+like HDMI and DisplayPort.</p>
+<p><em>Usage:</em> Outputs rendered frames to monitors or VR headsets.</p>
+</li>
+</ul>
+</li>
+</ul>
+<p><strong>Memory Subsystem</strong></p>
+<ul>
+<li><p><strong>Role:</strong>
+Deliver high-bandwidth data access to thousands of threads while
+minimizing latency through caching and access optimization.</p></li>
+<li><p><strong>Components:</strong></p>
+<ul>
+<li><p><strong>L1 / Shared Memory</strong> –
+Closest to SMs. Shared Memory is explicitly used by programs for
+intra-block communication, while L1 acts as an automatic cache.</p>
+<p><em>Usage:</em> Boosts performance by keeping frequently accessed data
+close to execution units.</p>
+</li>
+<li><p><strong>L2 Cache</strong> –
+Shared across all SMs. Reduces redundant traffic to VRAM and
+improves latency for reused data.</p>
+<p><em>Usage:</em> Provides intermediate caching layer for both compute and graphics.</p>
+</li>
+<li><p><strong>VRAM (GDDR / HBM)</strong> –
+External high-bandwidth DRAM. Stores textures, framebuffers,
+vertex/index buffers, and large compute datasets.</p>
+<p><em>Usage:</em> The main memory backing for all GPU workloads.</p>
+</li>
+<li><p><strong>Interconnect / Memory Controller</strong> –
+Orchestrates memory requests, manages access to VRAM,
+and ensures fairness between SMs.</p>
+<p><em>Usage:</em> Handles scheduling and distribution of memory transactions.</p>
+</li>
+<li><p><strong>Memory Coalescing Unit</strong> –
+Combines multiple per-thread memory requests from a Warp into fewer,
+wider transactions. Most effective for contiguous access patterns.</p>
+<p><em>Usage:</em> Improves memory bandwidth efficiency and reduces wasted cycles.</p>
+</li>
+<li><p><strong>Gather–Scatter Unit</strong> –
+Handles irregular or sparse memory accesses where coalescing is not possible.
+May break requests into multiple smaller transactions.</p>
+<p><em>Usage:</em> Supports workloads such as sparse matrix operations, graph traversal,
+or irregular data structures.</p>
+</li>
+</ul>
+</li>
+</ul>
+<p><strong>Data Flow Highlights</strong></p>
+<ul class="simple">
+<li><p><strong>Graphics pipeline path:</strong>
+Vertex data → Geometry Units → Rasterization Units → Fragment Shading (SMs)
+→ TMUs (texture fetch) → ROPs (blend/depth/stencil) → VRAM (framebuffer).</p></li>
+<li><p><strong>Compute path:</strong>
+SMs execute general-purpose kernels → optional offload to Tensor or RT cores
+→ interact with caches → VRAM.</p></li>
+<li><p><strong>Memory behavior:</strong>
+SMs issue memory requests → Coalescing Unit optimizes if possible → L2 cache →
+VRAM. For irregular access (e.g., sparse data), Gather–Scatter generates
+multiple VRAM transactions.</p></li>
+<li><p><strong>Display path:</strong>
+Final framebuffer stored in VRAM → Display Controller → HDMI / DP scanout.</p></li>
+</ul>
+<p><strong>All Together</strong></p>
+<p><strong>GPU provides the following hardware to accelerate graphics rendering pipeline as follows:</strong></p>
+<dl class="simple">
+<dt>✅ Simplified Flow (OpenGL → Hardware)</dt><dd><ol class="arabic simple">
+<li><p>Vertex Fetch → VRAM &amp; Memory Controllers.</p></li>
+<li><p>Vertex Shader → SM cores + Geometry Units.</p></li>
+<li><p>Geometry/Tessellation → SM core + Geometry Units.</p></li>
+<li><p>Rasterization → Rasterization units.</p></li>
+<li><p>Fragment Shader → SM cores + TMUs (texture sampling).</p></li>
+<li><p>Depth/Stencil/Blending → ROPs.</p></li>
+<li><p>Framebuffer Write → L2 cache &amp; VRAM → Display Controller.</p></li>
+</ol>
+</dd>
+</dl>
+<p><strong>Variable Rate Shading (VRS) Support</strong></p>
+<p>By utilizing certain GPU units as outlined below, Variable Rate Shading (VRS) can be
+supported <a class="footnote-reference brackets" href="#vrs" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>.</p>
+<ul class="simple">
+<li><p>Rasterizer (Rasterization Units):</p>
+<ul>
+<li><p>Decides how many fragments per pixel (or group of pixels) will actually be shaded.</p></li>
+<li><p>Instead of generating 1 fragment per pixel, it may shade 1 fragment for a 2×2 or 4×4 block and reuse that result.</p></li>
+</ul>
+</li>
+<li><p>Fragment Shader Cores (SMs/CUs):</p>
+<ul>
+<li><p>Still run the shading code, but at a reduced frequency (fewer fragment invocations).</p></li>
+</ul>
+</li>
+<li><p>ROPs (and pipeline integration):</p>
+<ul>
+<li><p>Apply results to the framebuffer, handling blending/depth as usual.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="sm-simt">
+<h2><a class="toc-backref" href="#id87" role="doc-backlink">SM (SIMT)</a><a class="headerlink" href="#sm-simt" title="Link to this heading">¶</a></h2>
+<p>Single instruction, multiple threads (SIMT) is an execution model used in
+parallel computing where a single central “Control Unit” broadcasts an
+instruction to multiple “Processing Units” for them to all optionally perform
+simultaneous synchronous and fully-independent parallel execution of that one
+instruction. <strong>Each PU has its own independent data and address registers, its
+own independent Memory, but no PU in the array has a Program counter</strong>
+<a class="footnote-reference brackets" href="#simt-wiki" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a>.</p>
+<p>Summary:</p>
+<ul class="simple">
+<li><p>Each Control Unit has a Program Counter (PC) and  has tens of Processor Unit
+(PU).</p></li>
+<li><p>Each Processor Unit (PU) has it’s General Purpose Register Set (GPR) and stack
+memory.</p></li>
+<li><p>The PU is a pipleline execution unit compared to CPU architecture.</p></li>
+</ul>
+<section id="sm-hardware">
+<h3><a class="toc-backref" href="#id88" role="doc-backlink">SM Hardware</a><a class="headerlink" href="#sm-hardware" title="Link to this heading">¶</a></h3>
+<p>The leading NVIDIA GPU architecture is illustrated in <a class="reference internal" href="#gpu-sched"><span class="std std-numref">Fig. 58</span></a>,
+<strong>where the scoreboard is shown without the mask field</strong>.
+This represents a SIMT pipeline with a scoreboard.</p>
+<figure class="align-center" id="id53">
+<span id="gpu-sched"></span><a class="reference internal image-reference" href="_images/gpu-sched.png"><img alt="_images/gpu-sched.png" height="556" src="_images/gpu-sched.png" width="606" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 58 </span><span class="caption-text">Simplified block diagram of a Multithreaded SIMD Processor. (figure from book
+<a class="footnote-reference brackets" href="#quantitative-threads-lanes" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></a>)</span><a class="headerlink" href="#id53" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A SIMD Thread executed by SIMD Processor, a.k.a. SM, has 16 Lanes.</p>
+</div>
+<table class="docutils align-center">
+<colgroup>
+<col style="width: 60.0%" />
+<col style="width: 40.0%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><figure class="align-default" id="id54">
+<span id="sm-left"></span><a class="reference internal image-reference" href="_images/sm.png"><img alt="_images/sm.png" height="603" src="_images/sm.png" width="468" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 59 </span><span class="caption-text">Streaming Multiprocessor SM figure from book <a class="footnote-reference brackets" href="#quantitative-gpu-sm" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id54" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</td>
+<td><figure class="align-default" id="id55">
+<span id="sm-right"></span><a class="reference internal image-reference" href="_images/sm2.png"><img alt="_images/sm2.png" height="552" src="_images/sm2.png" width="349" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 60 </span><span class="caption-text">SM figure from websites <a class="footnote-reference brackets" href="#cuda-sm" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#fermi" id="id9" role="doc-noteref"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id55" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><p>Streaming Multiprocessor SM has two 16-way SIMD units and four special
+function units.
+Fermi has 32 SIMD Lanes and Cuda cores.
+SM has L1 and Read Only Cache (Uniform Cache)
+GTX480 has 48 SMs.</p></li>
+<li><p>In Fermi,
+ALUs run at twice the clock rate of rest of chip. So each
+decoded instruction runs on 32 pieces of data on the 16 ALUs over two ALU
+clocks <a class="footnote-reference brackets" href="#chime" id="id10" role="doc-noteref"><span class="fn-bracket">[</span>10<span class="fn-bracket">]</span></a>. However after Fermi, the ALUs run at the same clock rate
+of rest of chip.</p></li>
+<li><p>As <a class="reference internal" href="#sm-left"><span class="std std-numref">Fig. 59</span></a> in Fermi and Volta, it can dual-issue “float + integer” or
+“integer + load/store” but cannot dual-issue “float + float” or “int + int”.</p></li>
+<li><p>Uniform cache: used for storing constant variables in OpenGL (see
+<a class="reference internal" href="opengl.html#pipeline-qualifier"><span class="std std-ref">uniform of Pipeline Qualifiers</span></a>) and in OpenCL/CUDA.</p></li>
+</ul>
+<p id="cfg-warps"><strong>Configurable maximum resident warps and allocated registers per thread</strong> as
+follows:</p>
+<ul class="simple">
+<li><p>Example: Fermi SM (SM 2.x)</p>
+<ul>
+<li><p>Hawdware limit:</p>
+<ul>
+<li><p>Total registers per SM = 32,768 × 32-bit</p></li>
+<li><p>Max Warps per SM = 48</p></li>
+<li><p>Max threads per SM = 1536</p></li>
+<li><p>Max registers/thread = 63</p></li>
+</ul>
+</li>
+<li><p>Configuration: If each thread uses R registers:</p>
+<ul>
+<li><p>Max resident threads = floor(32768 / R)</p></li>
+<li><p>Max resident Warps   = floor(Max resident threads / 32)</p></li>
+<li><p>E.g. <strong>R=32: Max resident threads = 32768/32 = 1024, Max resident Warps =
+1024/32 = 32.</strong></p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>After Fermi, the hardware limit for Maxwell, Pascal, Volta and Ampere are:</p>
+<ul>
+<li><p>Hawdware limit:</p>
+<ul>
+<li><p>Each SM includes 32 Cuda cores and Lanes → 32 active threads.</p></li>
+<li><p>Total registers per SM = 64K x 32-bit</p></li>
+<li><p>Max Warps per SM = 64</p></li>
+<li><p>Max threads per SM = 2048 (64 Warps x 32 threads)</p></li>
+<li><p>Max registers/thread = 255</p></li>
+</ul>
+</li>
+<li><p>Notes:</p>
+<ul>
+<li><p>Registers per thread: max number of registers <strong>compiler can allocate to
+a thread</strong>.</p></li>
+<li><p>The “registers per thread” limit (255) is a hardware/compiler limit, but
+the actual number used depends on the kernel.
+If a kernel uses too many registers per thread, occupancy drops (fewer
+threads can be resident).</p></li>
+<li><p>The “max threads per SM = 2048” is a theoretical upper limit; actual
+resident threads will also depend on shared memory usage, number of
+thread-blocks per SM, and register usage.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A SIMD thread executed by a Multithreaded SIMD processor, also known as an SM,
+processes 32 elements.</p>
+<p>As configuation above, the 32,768 registers per SM can be configured to  each
+thread alllocated 32 registers, Max resident Warps = 32.</p>
+<p>Fermi has a mode bit that offers the choice of using 64 KB of SRAM as
+a 16 KB L1 cache with 48 KB of Local Memory or as a 48 KB L1 cache
+with 16 KB of Local Memory <a class="footnote-reference brackets" href="#quantitative-gpu-l1" id="id11" role="doc-noteref"><span class="fn-bracket">[</span>11<span class="fn-bracket">]</span></a>.</p>
+</div>
+<table class="docutils align-center">
+<colgroup>
+<col style="width: 60.0%" />
+<col style="width: 40.0%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><figure class="align-default" id="id56">
+<span id="threadblock"></span><a class="reference internal image-reference" href="_images/threadblock.jpg"><img alt="_images/threadblock.jpg" height="295" src="_images/threadblock.jpg" width="596" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 61 </span><span class="caption-text">SM select Thread Blocks to run <a class="footnote-reference brackets" href="#wiki-tbcp" id="id12" role="doc-noteref"><span class="fn-bracket">[</span>12<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id56" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</td>
+<td><figure class="align-default" id="id57">
+<span id="threadblocks-map"></span><a class="reference internal image-reference" href="_images/threadblocks-map.png"><img alt="_images/threadblocks-map.png" height="400" src="_images/threadblocks-map.png" width="389" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 62 </span><span class="caption-text">Mapping Thread Block to SMs <a class="footnote-reference brackets" href="#mapping-blocks-to-sm" id="id13" role="doc-noteref"><span class="fn-bracket">[</span>13<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id57" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="sm-scheduling">
+<h3><a class="toc-backref" href="#id89" role="doc-backlink">SM Scheduling</a><a class="headerlink" href="#sm-scheduling" title="Link to this heading">¶</a></h3>
+<ul>
+<li><p>A GPU is built around an array of Streaming Multiprocessors (SMs).
+A multithreaded program is partitioned into blocks of threads that execute
+independently from each other, so that a GPU with more multiprocessors will
+automatically execute the program in less time than a GPU with fewer
+multiprocessors <a class="footnote-reference brackets" href="#mapping-blocks-to-sm" id="id14" role="doc-noteref"><span class="fn-bracket">[</span>13<span class="fn-bracket">]</span></a>.</p></li>
+<li><p>Nvidia’s GPUs:</p>
+<p>Fermi (2010), Kepler (2012), Maxwell (2014), Pascal (2016), Volta (2017),
+Turing (2018), Ampere (2020), Ada Lovelace (2022), and Hopper (2022, for data
+centers).</p>
+</li>
+<li><p>Two levels of scheduling:</p>
+<ul>
+<li><p>Level 1: Thread Block Scheduler</p>
+<p>For Fermi/Kepler/Maxwell/Pascal (pre-Volta): Warp-synchronous SIMT
+(lock-step in Warp):</p>
+<p>A Warp includes 32 threads in Fermi GPU.
+Each Streaming Multiprocessor SM includes 32 Lanes in Fermi GPU, as shown
+in <a class="reference internal" href="#threadblock"><span class="std std-numref">Fig. 61</span></a>, the Thread Block includes a Warp (32 threads).
+According <a class="reference internal" href="#threadblocks-map"><span class="std std-numref">Fig. 62</span></a>, more than one block can be assigned
+and run on a same SM.</p>
+<p id="l1-warp-sched">When an SM executes a Thread Block, all the threads within the block are
+are executed at the same time. If any thread in a Warp is not ready due to
+operand data dependencies, the scheduler switches context between Warps.
+During a context switch, all the data of the current Warp remains in the
+register file so it can resume quickly once its operands are ready
+<a class="footnote-reference brackets" href="#wiki-tbcp" id="id15" role="doc-noteref"><span class="fn-bracket">[</span>12<span class="fn-bracket">]</span></a>.</p>
+<p>Once a Thread Block is launched on a multiprocessor (SM), all
+of its Warps are <strong>resident</strong> until their execution finishes.
+Thus a new block is not launched on an SM until there is sufficient
+number of free registers for all Warps of the new block, and until there
+is enough free shared memory for the new block <a class="footnote-reference brackets" href="#wiki-tbcp" id="id16" role="doc-noteref"><span class="fn-bracket">[</span>12<span class="fn-bracket">]</span></a>.</p>
+</li>
+<li><p>Level 2: Warp Scheduler</p>
+<p>Manages CUDA threads (resident threads) within the same Warp.</p>
+<p>A <strong>resident thread</strong> is a thread whose execution context has been
+allocated on an SM (registers, Warp slot, shared memory).  Once resident,
+the thread is always in exactly one of the following execution states.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Resident Thread
+├── Ready
+│     Thread is eligible to execute; no pending dependencies.
+│
+├── Running
+│     Warp containing the thread is currently issued by the scheduler.
+│
+│     ├── Active (mask = 1)
+│     │     Thread participates in the current instruction.
+│     │
+│     └── Inactive (mask = 0)
+│           Thread is masked off due to branch divergence and
+│           will re-activate at a reconvergence point.
+│
+├── Stalled
+│     Warp cannot issue due to memory latency, synchronization,
+│     or scoreboard dependency.
+│
+└── Exited
+      Thread has completed execution but its Warp has not yet been
+      released from the SM.
+</pre></div>
+</div>
+<p>Threads retain their registers and per-thread local memory during the
+stalled state.
+Therefore, <strong>the context switch incurs almost no overhead compared to CPU
+threads</strong>.</p>
+<ul class="simple">
+<li><p>No pipeline flush: illustrate below.</p></li>
+<li><p>No register save/restore</p></li>
+<li><p>No stack frame swapping</p></li>
+<li><p><strong>No OS involvement</strong></p></li>
+<li><p>Takes roughly <strong>1 cycle</strong></p></li>
+</ul>
+<p>No pipeline flush because:</p>
+<p>For Fermi/Kepler/Maxwell/Pascal (pre-Volta): Warp-synchronous SIMT
+(lock-step in Warp):</p>
+<ul>
+<li><p>No data is saved/restored when switching to another Warp</p></li>
+<li><p>Switching Warps = selecting a different Warp in the Warp scheduler</p></li>
+<li><p>No pipeline flush</p>
+<p>On an NVIDIA GPU, no pipeline flush occurs when a Warp stalls because
+the Warp’s next instruction is <strong>never issued until its operands are
+ready</strong> as illustrated in
+<a class="reference internal" href="#l1-warp-sched"><span class="std std-ref">Warp scheduling in Level 1</span></a>.
+The stalled Warp simply stops issuing instructions, and its
+pipeline slot is taken by another ready Warp.
+When the stall condition clears, the Warp re-enters the pipeline by
+issuing the stalled instruction anew. No state is saved or restored.</p>
+</li>
+</ul>
+<p>For Volta, Turing, Ampere, Hopper: Independent Thread Scheduling:</p>
+<ul class="simple">
+<li><p>No pipeline flush</p>
+<ul>
+<li><p>Stalled threads simply do not issue instructions.</p></li>
+<li><p>Other threads in the same warp continue issuing independently.</p></li>
+<li><p>No pipeline flush needed and No data is saved/restored because
+instructions are tracked per thread, not per warp.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="simt-and-spmd-pipelines">
+<h3><a class="toc-backref" href="#id90" role="doc-backlink">SIMT and SPMD Pipelines</a><a class="headerlink" href="#simt-and-spmd-pipelines" title="Link to this heading">¶</a></h3>
+<p>This section illustrates the difference between SIMT and SPMD
+pipelines using the same pipeline stages: Fetch (F), Decode (D),
+Execute (E), Memory (M), and Writeback (W).</p>
+<p>A GPU contains many SMs.
+The execution model between SMs is MIMD (Multiple Instructions, Multiple Data)
+when running different programs, or SPMD (Single Program, Multiple Data).
+However, within a single SM, the execution model is SIMD/SIMT.”</p>
+<p>Low-end GPUs implement SIMD in their pipelines, where all instructions are
+executed in lockstep. High-end GPUs, however, approximate SPMD in their
+pipelines, meaning that instructions are interleaved within the pipeline, as
+shown below.</p>
+<p><strong>SPMD Programming Model vs SIMD/SIMT Execution</strong></p>
+<p>In the SISD of CPU, a thread is a single pipeline execution unit which can be
+issued at any specific address.</p>
+<p><strong>In a multi-core CPU running SPMD, each core can schedule and execute
+instructions at any program counter (PC)</strong>. For example, core-1 may execute
+I(1–10), while core-2 executes I(31–35).
+<strong>For GPU, however, within an SM, it is not possible to schedule thread-1 to
+execute I(1–10) while thread-2 executes I(31–35)</strong>.</p>
+<p>As result,
+<strong>there is no mainstream GPU that is truly hardware-SPMD</strong> (where each thread
+has its own independent pipeline).
+All modern GPUs (NVIDIA, AMD, Intel) implement SPMD as a programming model, but
+under the hood they execute in SIMD lock-step groups (Warps or Wavefronts).
+GPUs expose an <strong>SPMD programming model</strong> (each thread runs the same kernel on
+different data). However, the hardware actually executes instructions in
+<strong>SIMD/SIMT lock-step groups</strong>.</p>
+<p class="rubric">An example to illustrate the difference between Pascal SIMT, Volta
+SIMT and SPMD.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Divergent Kernel Example:
+-------------------------
+if (tid % 2 == 0) {         // even threads: long loop
+  for (...) { loop_body } // many iterations
+} else {                    // odd threads: short path
+  C[tid] = A[tid] + B[tid];
+}
+
+Legend: F=Fetch, D=Decode, E=Execute, M=Memory, W=Writeback
+        S=Stall/masked-off, &quot;...&quot; = loop continues
+
+
+===================================================================
+Pascal (lock-step SIMT with SIMT stack)
+-------------------------------------------------------------------
+Cycle →   0   1   2   3   4   5   6   7   8   9  10  11  12 ...
+T0 even:  F   D   E   M   W   F   D   E   M   W   F   D  ...
+T1 odd :  S   S   S   S   S   S   S   S   S   S   S   S  ...
+          (Odd threads wait until even path completes, then:)
+          ... F D E M W → done
+
+
+===================================================================
+Volta (SIMT with independent thread scheduling)
+-------------------------------------------------------------------
+Cycle →   0   1   2   3   4   5   6   7   8   9  10  11 ...
+T0 even:  F   D   E   M   W   F   D   E   M   W   F   D  ...
+T1 odd :      F   D   E   M   W   done
+          (Odd thread issues its short path early,
+           interleaved with even loop instructions)
+
+
+===================================================================
+True SPMD (CPU-like, fully independent threads)
+-------------------------------------------------------------------
+Cycle →   0   1   2   3   4   5   6   7   8   9 ...
+T0 even:  F   D   E   M   W   F   D   E   M   W  ...
+T1 odd :  F   D   E   M   W   done
+          (Threads fetch/execute independently —
+           odd thread finishes immediately)
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>SPMD and MIMD</strong></p>
+<p>When run a single program across all cores, SPMD and MIMD pipelines look the
+same.</p>
+</div>
+<p><a class="reference internal" href="sw.html#mapping-data-in-gpu"><span class="std std-ref">The subection Mapping data in GPU</span></a> includes more
+details in Lanes masked.</p>
+<p><strong>Scoreboard purpose:</strong></p>
+<ul class="simple">
+<li><p>GPU scoreboard = in-order issue, out-of-order completion</p></li>
+<li><p>CPU reorder buffer (ROB) = out-of-order issue + completion, but retire in-order
+- CPUs use a ROB to support out-of-order issue and retirement.</p></li>
+</ul>
+<p><strong>Comparsion of Volta and Pascal</strong></p>
+<p>In a lock-step GPU without divergence support, the scoreboard entries include
+only {Warp-ID, PC (Instruction Address), …}. With divergence support (as in
+real-world GPUs), the scoreboard entries expand to {Warp-ID, PC, mask, …}.</p>
+<p><strong>Volta (Cuda thread/SIMD Lane with PC, Program Couner and Call Stack)</strong></p>
+<p><strong>GPU scoreboard = in-order issue, out-of-order completion</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>SIMT GPU before Volta = scoreboard contains: { Warp ID + PC + Active Mask }</p></li>
+<li><p>Volta = scoreboard contains: { Warp ID + PC per thread (+ readiness per thread) }</p></li>
+</ul>
+</div></blockquote>
+<p><strong>Example for mutex</strong> <a class="footnote-reference brackets" href="#volta" id="id17" role="doc-noteref"><span class="fn-bracket">[</span>14<span class="fn-bracket">]</span></a></p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">//</span>
+<span class="n">__device__</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">insert_after</span><span class="p">(</span><span class="n">Node</span><span class="w"> </span><span class="o">*</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">Node</span><span class="w"> </span><span class="o">*</span><span class="n">b</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">  </span><span class="n">Node</span><span class="w"> </span><span class="o">*</span><span class="n">c</span><span class="p">;</span>
+<span class="w">  </span><span class="n">lock</span><span class="p">(</span><span class="n">a</span><span class="p">);</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">a</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">);</span>
+<span class="w">  </span><span class="p">...</span>
+<span class="w">  </span><span class="n">unlock</span><span class="p">(</span><span class="n">c</span><span class="p">);</span><span class="w"> </span><span class="n">unlock</span><span class="p">(</span><span class="n">a</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Assume that the mutex is contended across SMs but not within the same SM. On
+average, each thread spends 10 cycles executing the insert_after operation
+without resource contention, and 20 cycles when accounting for contention.
+Therefore, the average total execution time for 32 threads in an SM is:</p>
+<ul class="simple">
+<li><p>Volta: 20 cycles</p></li>
+<li><p>Pascal: 640 cycles (20 cycles × 32 threads, due to lack of independent
+progress inside a Warp)</p></li>
+</ul>
+</section>
+</section>
+<section id="processor-units-and-memory-hierarchy-in-nvidia-gpu">
+<span id="sec-mem-hierarchy"></span><h2><a class="toc-backref" href="#id91" role="doc-backlink">Processor Units and Memory Hierarchy in NVIDIA GPU <a class="footnote-reference brackets" href="#chatgpt-pumh" id="id18" role="doc-noteref"><span class="fn-bracket">[</span>15<span class="fn-bracket">]</span></a></a><a class="headerlink" href="#processor-units-and-memory-hierarchy-in-nvidia-gpu" title="Link to this heading">¶</a></h2>
+<figure class="align-center" id="id58">
+<span id="gpu-mem"></span><a class="reference internal image-reference" href="_images/memory.png"><img alt="_images/memory.png" height="380" src="_images/memory.png" width="407" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 63 </span><span class="caption-text">GPU memory (figure from book <a class="footnote-reference brackets" href="#quantitative-gpu-mem" id="id19" role="doc-noteref"><span class="fn-bracket">[</span>16<span class="fn-bracket">]</span></a>).</span><a class="headerlink" href="#id58" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-default" id="id59">
+<span id="mem-hierarchy"></span><div class="graphviz"><img src="_images/graphviz-9129d137e73fcdd723d34ed5a499679d424353ff.png" alt="digraph GPU_Memory_Hierarchy {
+    rankdir=TB;
+    node [shape=box, style=rounded, fontname=&quot;Helvetica&quot;];
+
+    // Processing hierarchy
+    GigaThread [label=&quot;GigaThread Engine\n(Chip-wide Scheduler)&quot;];
+    GPC [label=&quot;GPC\n(Graphics Processing Cluster)&quot;];
+    TPC [label=&quot;TPC\n(Texture Processing Cluster)&quot;];
+    SM [label=&quot;SM\n(Streaming Multiprocessor)&quot;];
+    Core [label=&quot;CUDA Cores&quot;];
+
+    // Memory hierarchy
+    Global [label=&quot;Global Memory (HBM/GDDR)\nGPU-wide, slowest&quot;];
+    L2 [label=&quot;L2 Cache\nGPU-wide&quot;];
+    L1 [label=&quot;L1 Cache\nPer-SM, unified with Shared&quot;];
+    Uniform [label=&quot;Uniform / Constant Cache\nPer-SM, Read-only,\nFor Uniform Parameters&quot;];
+    Shared [label=&quot;Shared Memory\nPer-SM, Block-visible&quot;];
+    Local [label=&quot;Local Memory\nPer-thread, in DRAM&quot;];
+    Reg [label=&quot;Registers\nPer-thread, fastest&quot;];
+
+    // Hierarchy connections
+    GigaThread -&gt; GPC -&gt; TPC -&gt; SM -&gt; Core;
+
+    // Memory hierarchy connections
+    Global -&gt; L2;
+    L2 -&gt; L1;
+    L2 -&gt; Uniform;
+
+    L1 -&gt; Core;
+    Uniform -&gt; Core;
+
+    Shared -&gt; SM;
+    Reg -&gt; Core;
+    Local -&gt; Core;
+
+    // Styling groups
+    subgraph cluster_gpu {
+        label=&quot;GPU Processing Units&quot;;
+        style=dashed;
+        GigaThread; GPC; TPC; SM; Core;
+    }
+
+    subgraph cluster_mem {
+        label=&quot;Memory Hierarchy&quot;;
+        style=dashed;
+        Global; L2; L1; Uniform, Shared; Local; Reg;
+    }
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 64 </span><span class="caption-text">Processor Units and Memory Hierarchy in NVIDIA GPU
+<strong>Local Memory is shared by all threads and Cached in L1 and L2.</strong>
+In addition, the <strong>Shared Memory is provided to use per-SM, not
+cacheable</strong>.</span><a class="headerlink" href="#id59" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Illustrate L1, L2 and Global Memory used by SM and whole chip of GPU as
+<a class="reference internal" href="#l1-l2"><span class="std std-numref">Fig. 65</span></a>.</p>
+<figure class="align-center" id="id60">
+<span id="l1-l2"></span><a class="reference internal image-reference" href="_images/l1-l2.png"><img alt="_images/l1-l2.png" height="362" src="_images/l1-l2.png" width="632" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 65 </span><span class="caption-text"><strong>L1 Cache: Per-SM, Coherent across all 16 Lanes in the same SM.</strong>
+L2 Cache: Coherent across all SMs and GPCs.
+Global Memory (DRAM: HBM/GDDR). Both HBM and GDDR are DRAM.
+GDDR (Graphics DDR) – optimized for GPUs (GDDR5, GDDR6, GDDR6X).
+HBM (High Bandwidth Memory) – 3D-stacked DRAM connected via TSVs
+(Through-Silicon Vias) for extremely high bandwidth and wide buses
+<a class="footnote-reference brackets" href="#mapping-blocks-to-sm" id="id20" role="doc-noteref"><span class="fn-bracket">[</span>13<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id60" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The <a class="reference internal" href="#mem-hierarchy"><span class="std std-numref">Fig. 64</span></a> <strong>illustrates the memory hierarchy in NVIDIA GPU</strong>.
+The Cache flow for 3D Model Information, Animation Parameters, and GLSL Variables
+is as follows:</p>
+<dl class="simple">
+<dt>3D Model Information:</dt><dd><ul class="simple">
+<li><p>VBO/IBO → Global → L2 → L1 → Registers</p></li>
+<li><p>Material constants → Uniform Cache → Registers</p></li>
+</ul>
+</dd>
+<dt>Animation Parameters:</dt><dd><ul class="simple">
+<li><p>Bone matrices → Uniform Cache → Registers</p></li>
+<li><p>Morph targets → Global → L2 → L1 → Registers</p></li>
+<li><p>Shared bone data (compute) → Shared Memory</p></li>
+</ul>
+</dd>
+<dt>GLSL Variables:</dt><dd><ul class="simple">
+<li><p>uniform → Uniform Cache</p></li>
+<li><p>in (vertex attributes) → Global → L2 → L1</p></li>
+<li><p>out (varyings) → Registers → Interpolators</p></li>
+<li><p>buffer (SSBO) → Global → L2 → L1</p></li>
+<li><p>shared → Shared Memory</p></li>
+<li><p>local arrays → Registers or Local Memory</p></li>
+</ul>
+</dd>
+</dl>
+<p>More details of the NVIDIA GPU memory hierarchy are described as follows:</p>
+<ul class="simple">
+<li><p><strong>Registers</strong></p>
+<ul>
+<li><p>Per-thread, fastest memory, located in CUDA cores, as illustrated also in
+<a class="reference internal" href="#sm-left"><span class="std std-numref">Fig. 59</span></a>.</p></li>
+<li><p><a class="reference internal" href="#cfg-warps"><span class="std std-ref">Configurable maximum resident warps and
+allocated registers per thread</span></a> following
+<a class="reference internal" href="#sm-left"><span class="std std-numref">Fig. 59</span></a>.</p></li>
+<li><p>Latency: ~1 cycle.</p></li>
+</ul>
+</li>
+<li><p><strong>Uniform / Constant cache</strong></p>
+<ul>
+<li><p>Stored constant variables in OpenGL and OpenCL/CUDA, as illustrated in
+<a class="reference internal" href="#sm-left"><span class="std std-numref">Fig. 59</span></a>.</p></li>
+</ul>
+</li>
+<li><p><strong>Local Memory</strong></p>
+<ul>
+<li><p>Per-thread, stored in global DRAM.</p></li>
+<li><p>Cached in L1 and L2.</p></li>
+<li><p>Latency: high, depends on cache hit/miss.</p></li>
+</ul>
+</li>
+<li><p><strong>Shared Memory</strong></p>
+<ul>
+<li><p><strong>Per-SM, shared across threads in a Thread Block as shown in</strong>
+<a class="reference internal" href="#sm-left"><span class="std std-numref">Fig. 59</span></a>.</p></li>
+<li><p><strong>On-chip, programmer-controlled.</strong></p></li>
+<li><p>Latency: ~20 cycles.</p></li>
+</ul>
+</li>
+<li><p><strong>L1 Cache</strong></p>
+<ul>
+<li><p>Per-SM, unified with shared memory.</p></li>
+<li><p>Hardware-managed.</p></li>
+<li><p>Latency: ~20 cycles.</p></li>
+</ul>
+</li>
+<li><p><strong>L2 Cache</strong></p>
+<ul>
+<li><p>Shared across the entire GPU chip.</p></li>
+<li><p><strong>Coherent across all SMs and GPCs as shown in</strong> <a class="reference internal" href="#l1-l2"><span class="std std-numref">Fig. 65</span></a>.</p></li>
+</ul>
+</li>
+<li><p><strong>Global Memory (DRAM: HBM/GDDR)</strong></p>
+<ul>
+<li><p>Visible to all SMs across all GPCs.</p></li>
+<li><p>Highest latency (~400–800 cycles).</p></li>
+</ul>
+</li>
+</ul>
+<p><strong>GPU Hierarchy Context</strong></p>
+<ul class="simple">
+<li><p><strong>GigaThread Engine (chip-wide scheduler)</strong></p>
+<ul>
+<li><p>Contains multiple GPCs.</p>
+<ul>
+<li><p>Fermi (2010): up to 4 GPCs per chip.</p></li>
+<li><p>Pascal GP100 (Tesla P100): 6 GPCs.</p></li>
+<li><p>Volta GV100 (Tesla V100): 6 GPCs.</p></li>
+</ul>
+</li>
+<li><p>Distributes Thread Blocks to all GPCs.</p></li>
+</ul>
+</li>
+<li><p><strong>GPC (Graphics Processing Cluster)</strong></p>
+<ul>
+<li><p>Contains multiple TPCs.</p></li>
+</ul>
+</li>
+<li><p><strong>TPC (Texture Processing Cluster)</strong></p>
+<ul>
+<li><p>Groups 1–2 SMs.</p></li>
+</ul>
+</li>
+<li><p><strong>SM (Streaming Multiprocessor)</strong></p>
+<ul>
+<li><p>Contains CUDA cores, registers, shared memory, L1 cache.</p></li>
+</ul>
+</li>
+<li><p><strong>CUDA Cores</strong></p>
+<ul>
+<li><p>Execute threads with registers and access the memory hierarchy.</p></li>
+</ul>
+</li>
+</ul>
+<figure class="align-center" id="id61">
+<span id="gpu-terms"></span><a class="reference internal image-reference" href="_images/gpu-terms.png"><img alt="_images/gpu-terms.png" height="721" src="_images/gpu-terms.png" width="621" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 66 </span><span class="caption-text">Terms in Nvidia’s gpu (figure from book <a class="footnote-reference brackets" href="#quantitative-gpu-terms" id="id21" role="doc-noteref"><span class="fn-bracket">[</span>17<span class="fn-bracket">]</span></a>)</span><a class="headerlink" href="#id61" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-default" id="id62">
+<span id="warp-sched-pipeline"></span><div class="graphviz"><img src="_images/graphviz-d4fcbf76501cd0140e34ee122ac690d71005d91d.png" alt="digraph WarpSchedulerPipeline {
+    rankdir=TB;
+    node [shape=box, style=filled, fillcolor=lightgray];
+
+    WarpScheduler -&gt; InstructionIssue;
+    InstructionIssue -&gt; Lane0;
+    InstructionIssue -&gt; Lane1;
+    InstructionIssue -&gt; Lane2;
+    InstructionIssue -&gt; Lane3;
+    InstructionIssue -&gt; Lane4;
+    InstructionIssue -&gt; Lane5;
+    InstructionIssue -&gt; Placeholder;
+    InstructionIssue -&gt; Lane30;
+    InstructionIssue -&gt; Lane31;
+
+    Lane0 [label=&quot;Lane 0\n(Chime A / Chime B)&quot;, fillcolor=lightyellow];
+    Lane1 [label=&quot;Lane 1\n(Chime A / Chime B)&quot;, fillcolor=lightyellow];
+    Lane2 [label=&quot;Lane 2\n(Chime A / Chime B)&quot;, fillcolor=lightyellow];
+    Lane3 [label=&quot;Lane 3\n(Chime A / Chime B)&quot;, fillcolor=lightyellow];
+    Lane4 [label=&quot;Lane 4\n(Chime A / Chime B)&quot;, fillcolor=lightyellow];
+    Lane5 [label=&quot;Lane 5\n(Chime A / Chime B)&quot;, fillcolor=lightyellow];
+    Placeholder [label=&quot;………………&quot;, shape=plaintext, fillcolor=white];
+    Lane30 [label=&quot;Lane 30\n(Chime A / Chime B)&quot;, fillcolor=lightyellow];
+    Lane31 [label=&quot;Lane 31\n(Chime A / Chime B)&quot;, fillcolor=lightyellow];
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 67 </span><span class="caption-text">In <strong>dual-issue mode</strong>, Chime A carries floating-point data while Chime
+B carries integer data—both issued by the same CUDA thread.
+In contrast, under <strong>time-sliced execution</strong>, Chime A and Chime B carry
+either floating-point or integer data independently, and are
+assigned to separate CUDA threads.</span><a class="headerlink" href="#id62" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<ul class="simple">
+<li><p>A Warp of 32 threads is mapped across 16 Lanes. If each Lane has 2 Chimes,
+it may support dual-issue or time-sliced execution as
+<a class="reference internal" href="#warp-sched-pipeline"><span class="std std-numref">Fig. 67</span></a>.</p></li>
+</ul>
+<p>In the following matrix multiplication code, the 8096 elements of matrix
+A = B × C are mapped to Thread Blocks, SIMD Threads, Lanes, and Chimes as
+illustrated in the <a class="reference internal" href="#grid"><span class="std std-numref">Fig. 68</span></a>. In this example, it run on
+<strong>time-sliced execution</strong>.</p>
+<div class="literal-block-wrapper docutils container" id="id63">
+<span id="matmul-cuda"></span><div class="code-block-caption"><span class="caption-number">Listing 2 </span><span class="caption-text">MATMUL CUDA Example</span><a class="headerlink" href="#id63" title="Link to this code">¶</a></div>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// Invoke MATMUL with 256 threads per Thread Block</span>
+<span class="n">__host__</span>
+<span class="kt">int</span><span class="w"> </span><span class="n">nblocks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">512</span><span class="p">;</span>
+<span class="n">matmul</span><span class="o">&lt;&lt;&lt;</span><span class="n">nblocks</span><span class="p">,</span><span class="w"> </span><span class="mi">255</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">A</span><span class="p">,</span><span class="w"> </span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="n">C</span><span class="p">);</span>
+<span class="c1">// MATMUL in CUDA</span>
+<span class="n">__device__</span>
+<span class="kt">void</span><span class="w"> </span><span class="n">matmul</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">A</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="n">C</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="n">blockDim</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">C</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<figure class="align-center" id="id64">
+<span id="grid"></span><a class="reference internal image-reference" href="_images/grid.png"><img alt="_images/grid.png" height="694" src="_images/grid.png" width="558" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 68 </span><span class="caption-text">Mapping 8192 elements of matrix multiplication for Nvidia’s GPU
+(figure from <a class="footnote-reference brackets" href="#quantitative-grid" id="id22" role="doc-noteref"><span class="fn-bracket">[</span>18<span class="fn-bracket">]</span></a>).
+SIMT: 16 SIMD threads in one Thread Block.</span><a class="headerlink" href="#id64" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Explain the mapping and execution in <a class="reference internal" href="#grid"><span class="std std-numref">Fig. 68</span></a> for <a class="reference internal" href="#matmul-cuda"><span class="std std-ref">MATMUL CUDA Example</span></a> using the terminology from
+<a class="reference internal" href="#gpu-terms"><span class="std std-numref">Fig. 66</span></a> and the previous sections of this book, presented in the
+table below.</p>
+<table class="docutils align-default" id="id65">
+<caption><span class="caption-number">Table 9 </span><span class="caption-text">Summary terms for GPU.</span><a class="headerlink" href="#id65" title="Link to this table">¶</a></caption>
+<colgroup>
+<col style="width: 13.3%" />
+<col style="width: 20.0%" />
+<col style="width: 66.7%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Terms</p></th>
+<th class="head"><p>Structure</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Grid, Giga Thread Engine</p></td>
+<td><p>Each loop (Grid) consists of multiple Thread Blocks.</p></td>
+<td><p>Grid is Vectorizable Loop as <a class="reference internal" href="#gpu-terms"><span class="std std-numref">Fig. 66</span></a>.
+The hardware scheduler Guda Thread Engine schedules the Thread Blocks to
+SMs.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Thread Block</p></td>
+<td><p>In this example, each Grid has 16 Giga Thread <a class="footnote-reference brackets" href="#quantitative-gpu-threadblock" id="id23" role="doc-noteref"><span class="fn-bracket">[</span>19<span class="fn-bracket">]</span></a>.</p></td>
+<td><p>Each Thread Block is assigned 512 elements of the vectors to
+work on.
+As <a class="reference internal" href="#grid"><span class="std std-numref">Fig. 68</span></a>, it assigns 16 Thread Block to 16 SMs.
+Giga Thread is the name of the scheduler that distributes Thread Blocks
+to Multiprocessors, each of which has its own SIMD Thread Scheduler
+<a class="footnote-reference brackets" href="#quantitative-gpu-threadblock" id="id24" role="doc-noteref"><span class="fn-bracket">[</span>19<span class="fn-bracket">]</span></a>.
+More than one Block can be mapped to a same SM as the explanation in
+“Level 1: Thread Block Scheduler” for <a class="reference internal" href="#threadblocks-map"><span class="std std-numref">Fig. 62</span></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p>Streaming Multiprocessor, <strong>SM</strong>, GPU Core (Warp) <a class="footnote-reference brackets" href="#gpu-core" id="id25" role="doc-noteref"><span class="fn-bracket">[</span>20<span class="fn-bracket">]</span></a></p></td>
+<td><p>Each SIMD Processor has 16 SIMD Threads.</p></td>
+<td><p>Each SIMD processor includes local memory, as in <a class="reference internal" href="#gpu-mem"><span class="std std-numref">Fig. 63</span></a>. Local
+memory is shared among SIMD Lanes within a SIMD processor but not across
+different SIMD processors. A Warp has its own PC and may correspond to a
+whole function or part of a function. Compiler and runtime may assign
+functions to the same or different Warps <a class="footnote-reference brackets" href="#quantitative-gpu-warp" id="id26" role="doc-noteref"><span class="fn-bracket">[</span>21<span class="fn-bracket">]</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Cuda core</p></td>
+<td><p>Fermi has 32 Cuda cores in a SM as <a class="reference internal" href="#sm-right"><span class="std std-numref">Fig. 60</span></a>.</p></td>
+<td><p>A CUDA core is the scalar execution unit inside an SM.
+It is capable of executing one integer or floating-point instruction from
+one Lane of a Warp.
+The CUDA core is analogous to an ALU pipeline stage in a CPU.</p></td>
+</tr>
+<tr class="row-even"><td><p>Cuda Thread</p></td>
+<td><p>Each SM can configure to have different number of resident threads.</p></td>
+<td><p>Fermi can configure Max resident threads = 32768/32 = 1024 for 32
+registers/per thread in a SM as memtioned eariler.
+A CUDA thread is the basic unit of execution defined in CUDA’s programming
+model.
+Each thread executes the kernel code independently with its own registers,
+program counter (PC), and per-thread local memory.
+Each Thread has its TLR
+(Thread Level Registers) allocated from Register file (32768 x
+32-bit) by SIMD Processor (SM) as <a class="reference internal" href="#sm-left"><span class="std std-numref">Fig. 59</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p>SIMD Lane</p></td>
+<td><p>Each SIMD Thread has 32 Lanes.</p></td>
+<td><p>A vertical cut of a thread of SIMD instructions corresponding to
+one element executed by one SIMD Lane. It is a vector instruction with
+processing 32-elements.
+A Warp of 32 threads is mapped across 32 Lanes.
+Lane = per-thread execution slot inside a Warp.
+If each Lane has 2 Chimes, it may support dual-issue or time-sliced
+execution as <a class="reference internal" href="#warp-sched-pipeline"><span class="std std-numref">Fig. 67</span></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p>Chime</p></td>
+<td><p>Each Lane has 2 Chimes.</p></td>
+<td><p>A Chime represents one “attempt” or opportunity for issuing instructions
+from Warps.
+In Fermi (SM2.x): Each SM has 2 Warp schedulers. Each Warp scheduler has 2
+dispatch units (dual-issue, but with constraints, it can issue “float +
+load/store” for “fadd and load C[i]” in this example).</p></td>
+</tr>
+</tbody>
+</table>
+<p>References</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://developer.nvidia.com/blog/nvidia-ampere-architecture-in-depth/">NVIDIA GPU Architecture Overview</a></p></li>
+<li><p><a class="reference external" href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#Warps">Understanding Warps and Threads</a></p></li>
+</ul>
+</section>
+<section id="memory-subsystem">
+<h2><a class="toc-backref" href="#id92" role="doc-backlink">Memory Subsystem</a><a class="headerlink" href="#memory-subsystem" title="Link to this heading">¶</a></h2>
+<section id="address-coalescing-and-gather-scatter">
+<h3><a class="toc-backref" href="#id93" role="doc-backlink">Address Coalescing and Gather-scatter</a><a class="headerlink" href="#address-coalescing-and-gather-scatter" title="Link to this heading">¶</a></h3>
+<p>Brief description is shown in <a class="reference internal" href="#coalescing-gather"><span class="std std-numref">Fig. 69</span></a>.</p>
+<figure class="align-default" id="id66">
+<span id="coalescing-gather"></span><div class="graphviz"><img src="_images/graphviz-d9fea9549f1cbe50dc6738ecc80dd695b5dfcce8.png" alt="digraph GPU_Memory {
+    rankdir=LR;
+    node [shape=box, style=rounded, fontsize=12];
+
+    subgraph cluster_gather {
+        label=&quot;Gather-Scatter (Sparse Matrix Access): \nIndirect index of LD/ST&quot;;
+        color=green;
+
+        Idx [label=&quot;Index Array A[]:\nA[0]=200\nA[1]=400\nA[2]=1200\nA[3]=320&quot;, shape=note, style=filled, fillcolor=lightyellow];
+
+        G1 [label=&quot;Thread 1\nMem[A[0]]&quot;];
+        G2 [label=&quot;Thread 2\nMem[A[1]]&quot;];
+        G3 [label=&quot;Thread 3\nMem[A[2]]&quot;];
+        G4 [label=&quot;Thread 4\nMem[A[3]]&quot;];
+
+        Idx -&gt; G1;
+        Idx -&gt; G2;
+        Idx -&gt; G3;
+        Idx -&gt; G4;
+    }
+
+    subgraph cluster_coalescing {
+        label=&quot;Address Coalescing: \nMerge memory transcations into a contiguous memory access&quot;;
+        color=blue;
+
+        T1 [label=&quot;Thread 1\nAddr 100&quot;];
+        T2 [label=&quot;Thread 2\nAddr 104&quot;];
+        T3 [label=&quot;Thread 3\nAddr 108&quot;];
+        T4 [label=&quot;Thread 4\nAddr 112&quot;];
+
+        MT [label=&quot;Merged Transaction&quot;, shape=ellipse, style=filled, fillcolor=lightblue];
+
+        T1 -&gt; MT;
+        T2 -&gt; MT;
+        T3 -&gt; MT;
+        T4 -&gt; MT;
+
+        T5 [label=&quot;Addr[100..112]&quot;, shape=ellipse, style=filled, fillcolor=lightblue];
+
+        MT -&gt; T5;
+    }
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 69 </span><span class="caption-text">Coalescing and Gather-scatter</span><a class="headerlink" href="#id66" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The Load/Store Units (LD/ST) is important because memory latency is huge
+compared to ALU ops.
+Some GPUs provide Address Coalescing and gather-scatter to accelerate memory
+access.</p>
+<ul class="simple">
+<li><p>Address Coalescing: <strong>Memory coalescing is the process of merging memory
+requests from threads in a Warp (NVIDIA: 32 threads, AMD: 64 threads) into as
+few memory transactions as possible.</strong></p>
+<ul>
+<li><p>Cache miss (global memory/DRAM): Coalescing = big performance improvement.</p></li>
+<li><p>Cache hit (L1/L2): Coalescing = smaller benefit, since cache line fetch
+already amortizes cost.</p></li>
+<li><p>Note that unlike vector architectures, GPUs don’t have separate instructions
+for sequential data transfers, strided data transfers, and gather-scatter
+data transfers. All data transfers are gather-scatter! To regain the
+efficiency of sequential (unit-stride) data transfers, GPUs include special
+Address Coalescing hardware to recognize when the SIMD Lanes within a thread
+of SIMD instructions are collectively issuing sequential addresses. That
+runtime hardware then notifies the Memory Interface Unit to request a block
+transfer of 32 sequential words. To get this important performance
+improvement, the GPU programmer must ensure that adjacent CUDA Threads access
+nearby addresses at the same time that can be coalesced into one or a
+few memory or cache blocks, which our example does <a class="footnote-reference brackets" href="#quantitative-gpu-ac" id="id27" role="doc-noteref"><span class="fn-bracket">[</span>22<span class="fn-bracket">]</span></a>.</p></li>
+</ul>
+</li>
+<li><p>Gather-scatter data transfer: <strong>HW support sparse vector access is called
+gather-scatter.</strong> The VMIPS instructions are LVI (load vector indexed or gather)
+and SVI (store vector indexed or scatter) <a class="footnote-reference brackets" href="#quantitative-gpu-gs" id="id28" role="doc-noteref"><span class="fn-bracket">[</span>23<span class="fn-bracket">]</span></a>.</p></li>
+</ul>
+<p><strong>1. Address Coalescing in GPU Memory Transactions</strong></p>
+<p><strong>Definition:</strong>
+Memory coalescing is the process of merging memory requests from threads
+in a Warp (NVIDIA: 32 threads, AMD: 64 threads) into as few memory
+transactions as possible.</p>
+<p><strong>How It Works:</strong></p>
+<ul class="simple">
+<li><p>If threads access <strong>contiguous and aligned addresses</strong>, the hardware
+combines them into a single memory transaction.</p></li>
+<li><p>If threads access <strong>strided or random addresses</strong>, the GPU must issue
+multiple transactions, wasting bandwidth.</p></li>
+</ul>
+<p><strong>Examples:</strong></p>
+<ul>
+<li><p><em>Coalesced (efficient):</em></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// Each thread accesses consecutive elements</span>
+<span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">A</span><span class="p">[</span><span class="n">threadId</span><span class="p">];</span>
+</pre></div>
+</div>
+<p>→ One transaction for 32 threads.</p>
+</li>
+<li><p><em>Non-coalesced (inefficient):</em></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// Each thread accesses strided elements</span>
+<span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">A</span><span class="p">[</span><span class="n">threadId</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">];</span>
+</pre></div>
+</div>
+<p>→ Many transactions required due to striding.</p>
+</li>
+</ul>
+<p><strong>2. Gather–Scatter in Sparse Matrix Access</strong></p>
+<p><strong>Definition:</strong>
+Gather–scatter refers to memory operations where each GPU thread in a Warp
+loads from or stores to irregular memory addresses. This is common in sparse
+matrix operations, where non-zero elements are stored in compressed formats.</p>
+<p><strong>Sparse Matrix Example (CSR format):</strong></p>
+<ul>
+<li><p><em>CSR (Compressed Sparse Row)</em> stores three arrays:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">values[]</span></code>: non-zero entries of the matrix</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">colIndex[]</span></code>: column indices for each non-zero</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rowPtr[]</span></code>: index into <code class="docutils literal notranslate"><span class="pre">values[]</span></code> for each row</p></li>
+</ul>
+</li>
+<li><p>Sparse matrix-vector multiplication (SpMV):</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">for</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="n">matrix</span><span class="o">:</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="n">idx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rowPtr</span><span class="p">[</span><span class="n">row</span><span class="p">]</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">rowPtr</span><span class="p">[</span><span class="n">row</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">:</span>
+<span class="w">        </span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">colIndex</span><span class="p">[</span><span class="n">idx</span><span class="p">];</span><span class="w">      </span><span class="c1">// gather index</span>
+<span class="w">        </span><span class="n">val</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">values</span><span class="p">[</span><span class="n">idx</span><span class="p">];</span><span class="w">        </span><span class="c1">// gather nonzero</span>
+<span class="w">        </span><span class="n">y</span><span class="p">[</span><span class="n">row</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">x</span><span class="p">[</span><span class="n">col</span><span class="p">];</span><span class="w">   </span><span class="c1">// scatter result</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p><strong>Characteristics:</strong></p>
+<ul class="simple">
+<li><p><strong>Gather:</strong> Each thread loads from potentially scattered locations
+(<code class="docutils literal notranslate"><span class="pre">values[idx]</span></code> or <code class="docutils literal notranslate"><span class="pre">x[col]</span></code>).</p></li>
+<li><p><strong>Scatter:</strong> Results may be written back to irregular output locations
+(<code class="docutils literal notranslate"><span class="pre">y[row]</span></code>).</p></li>
+<li><p><strong>Challenge: These accesses often break memory coalescing, leading to
+multiple memory transactions. An example is shown as follows:</strong></p></li>
+</ul>
+<p><strong>Summary:</strong></p>
+<ul class="simple">
+<li><p>Gather–scatter is fundamental for sparse matrix access but typically
+results in non-coalesced memory patterns.</p></li>
+<li><p>Address coalescing is critical for high GPU throughput; restructuring
+data to improve coalescing often provides significant performance gains.</p></li>
+</ul>
+</section>
+<section id="vram-dgpu">
+<h3><a class="toc-backref" href="#id94" role="doc-backlink">VRAM dGPU</a><a class="headerlink" href="#vram-dgpu" title="Link to this heading">¶</a></h3>
+<figure class="align-default" id="id67">
+<span id="mem"></span><div class="graphviz"><img src="_images/graphviz-b15d10ede9aed5eda2be8f259ad29270b1cced99.png" alt="digraph gpu_memory {
+  rankdir=LR;
+  node [shape=box style=rounded fontsize=10];
+
+  subgraph cluster_shared {
+    label = &quot;Shared Memory (Integrated GPU)&quot;;
+    CPU [label=&quot;CPU\n(Caches, DMA)&quot;];
+    GPU [label=&quot;iGPU\n(DMA Engine)&quot;];
+    MC [label=&quot;Shared\nMemory Controller&quot;];
+    DRAM [label=&quot;System RAM\n(DDR/LPDDR)&quot;];
+
+    CPU -&gt; MC -&gt; DRAM;
+    GPU -&gt; MC;
+    GPU -&gt; DRAM [style=dashed, label=&quot;DMA&quot;];
+  }
+
+  subgraph cluster_dedicated {
+    label = &quot;Dedicated Memory (Discrete GPU)&quot;;
+    CPU2 [label=&quot;CPU\n(Caches)&quot;];
+    SYS_RAM [label=&quot;System RAM&quot;];
+    GPU2 [label=&quot;dGPU\n(Caches, DMA)&quot;];
+    VRAM [label=&quot;VRAM\n(GDDR/HBM)&quot;];
+
+    CPU2 -&gt; SYS_RAM;
+    GPU2 -&gt; VRAM;
+  }
+
+  edge [style=invis];
+  DRAM -&gt; CPU2;
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 70 </span><span class="caption-text">iGPU versus dGPU</span><a class="headerlink" href="#id67" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p><strong>Reason:</strong></p>
+<p><strong>1. Since CPU and GPU have different requirements, a shared memory design cannot
+match the performance of dedicated GPU memory.</strong></p>
+<p><strong>2. In systems with shared memory (like integrated GPUs), both the CPU and GPU
+access the same physical memory (DRAM). This leads to several forms of
+contention:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><ol class="loweralpha simple">
+<li><p>Cache Coherency Overhead</p></li>
+</ol>
+</li>
+<li><ol class="loweralpha simple" start="2">
+<li><p>DMA Contention</p></li>
+</ol>
+</li>
+<li><ol class="loweralpha simple" start="3">
+<li><p>Bus &amp; Memory Controller Bottleneck</p></li>
+</ol>
+</li>
+</ul>
+</div></blockquote>
+<p><strong>Advantages:</strong></p>
+<p>A discrete GPU has its own dedicated memory (VRAM) while an integrated GPU (iGPU)
+shares memory with the CPU as shown in <a class="reference internal" href="#mem"><span class="std std-numref">Fig. 70</span></a>.</p>
+<p>Dedicated GPU memory (VRAM) outperforms shared CPU-GPU memory due to
+higher bandwidth, lower latency, parallel access optimization, and no
+contention with CPU resources.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Feature</p></th>
+<th class="head"><p>Shared Memory (CPU + iGPU)</p></th>
+<th class="head"><p>Dedicated GPU Memory (dGPU)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Bandwidth</p></td>
+<td><p>Lower (DDR/LPDDR)</p></td>
+<td><p>Higher (GDDR/HBM)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Latency</p></td>
+<td><p>Higher</p></td>
+<td><p>Lower</p></td>
+</tr>
+<tr class="row-even"><td><p>Parallel Access</p></td>
+<td><p>Limited</p></td>
+<td><p>Optimized for many threads</p></td>
+</tr>
+<tr class="row-odd"><td><p>Cache Coherency</p></td>
+<td><p>Required (with CPU)</p></td>
+<td><p>Not required</p></td>
+</tr>
+<tr class="row-even"><td><p>DMA Bandwidth</p></td>
+<td><p>Shared with CPU</p></td>
+<td><p>GPU has exclusive DMA access</p></td>
+</tr>
+<tr class="row-odd"><td><p>Memory Contention</p></td>
+<td><p>Yes</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-even"><td><p>Performance</p></td>
+<td><p>Lower:
+Bandwidth bottlenecks,
+CPU-GPU interference and
+Cache/DMA conflicts</p></td>
+<td><p>Higher:
+Wide memory bandwidth,
+Parallel thread access and
+Low latency memory access</p></td>
+</tr>
+</tbody>
+</table>
+<p>Dedicated memory allows the GPU to run high-throughput workloads without
+interference from the CPU. It provides <strong>(1). wide bandwidth, (2). optimized
+parallel access, and (3). low-latency paths</strong>, avoiding cache and DMA
+conflicts for superior performance.**</p>
+<p><strong>(1). Wide bandwidth:</strong> Dedicated GPU memory (VRAM) is often based on GDDR6,
+GDDR6X, or HBM2/3, which are much faster than standard system RAM (DDR4/DDR5).</p>
+<blockquote>
+<div><p>Typical bandwidths:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>GDDR6: ~448–768 GB/s</p></li>
+<li><p>HBM2: up to 1 TB/s+</p></li>
+<li><p>DDR5 (shared memory): ~50–80 GB/s</p></li>
+</ul>
+</div></blockquote>
+<p>Impact: Faster access to textures, vertex buffers, and framebuffers—critical for rendering and compute tasks.</p>
+</div></blockquote>
+<p><strong>(2). Optimized parallel access:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>VRAM is optimized for the massively parallel architecture of GPUs.</p></li>
+<li><p>It allows thousands of threads to access memory simultaneously without stalling.</p></li>
+</ul>
+<p>Shared system memory is optimized for CPU access patterns, not thousands of GPU threads.</p>
+</div></blockquote>
+<p><strong>(3). Low-latency paths:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Dedicated memory is physically closer to the GPU die.</p></li>
+<li><p>No need to traverse the PCIe bus like discrete GPUs accessing system RAM.</p></li>
+</ul>
+<p>In shared memory systems (like integrated GPUs), memory access may have to go through a memory controller shared with the CPU, adding delay.</p>
+</div></blockquote>
+</section>
+<section id="regless-style-architectures">
+<h3><a class="toc-backref" href="#id95" role="doc-backlink">RegLess-style architectures <a class="footnote-reference brackets" href="#reg-less" id="id29" role="doc-noteref"><span class="fn-bracket">[</span>24<span class="fn-bracket">]</span></a></a><a class="headerlink" href="#regless-style-architectures" title="Link to this heading">¶</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>RegLess remains a research concept, not (as far as public evidence shows) a
+commercial design in shipping GPUs.</strong></p>
+</div>
+<p><strong>Difference:</strong> Add <strong>Staging Buffer</strong> between Register Files and Execution Unit.</p>
+<p>This section outlines the transition from traditional GPU operand coherence
+using a monolithic register file and L1 data cache, to a RegLess-style
+architecture that employs operand staging and register file-local coherence.</p>
+<p>✅ Operand Delivery in Traditional GPU: <a class="reference internal" href="#no-regless"><span class="std std-numref">Fig. 71</span></a>:</p>
+<figure class="align-default" id="id68">
+<span id="no-regless"></span><div class="graphviz"><img src="_images/graphviz-bd33b042318ecfdaa386dbde3588947469e0c564.png" alt="digraph TraditionalOperandDelivery {
+     rankdir=LR;       
+     node [shape=box, style=filled, fontname=&quot;Helvetica&quot;, fontsize=10];
+
+     subgraph cluster_memory {
+       label=&quot;Memory Hierarchy&quot;;                     
+       style=filled;
+       color=lightgray;
+       GMEM [label=&quot;Global Memory&quot;];
+       L1 [label=&quot;L1 Cache&quot;, fillcolor=lightyellow]; 
+     }
+
+     subgraph cluster_registers {
+       label=&quot;Register File&quot;;                        
+       style=filled;
+       color=lightblue;
+       RF [label=&quot;Register File&quot;]; 
+     }                 
+
+     subgraph cluster_execution {
+       label=&quot;Execution Pipeline&quot;;
+       style=filled;
+       color=lightgreen;
+       EU [label=&quot;Execution Unit&quot;];
+     }
+
+     GMEM -&gt; L1 [label=&quot;Coherence (Hardware-managed)&quot;, color=blue];
+     L1 -&gt; RF [label=&quot;LD/ST (Compiler-controlled)&quot;, style=dashed];
+     RF -&gt; EU [label=&quot;Operands&quot;];
+     L1 -&gt; EU [label=&quot;Cached Data (optional)&quot;, style=dashed];
+   }" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 71 </span><span class="caption-text"><strong>Operand Delivery in Traditional GPU
+(Traditional Model: Register File + L1 Cache)</strong></span><a class="headerlink" href="#id68" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<dl class="simple">
+<dt><strong>Architecture</strong>:</dt><dd><ul class="simple">
+<li><p>Large monolithic register file per SM (e.g., 256KB, Maxwell, Pascal, Volta
+and Ampere have 64K x 32-bit register file per SM, see
+<a class="reference internal" href="#cfg-warps"><span class="std std-ref">Configurable maximum resident warps and allocated registers per
+thread</span></a>)</p></li>
+<li><p>Coherent with L1 data cache via write-through or write-back policies</p></li>
+</ul>
+</dd>
+<dt><strong>Challenges</strong>:</dt><dd><ul class="simple">
+<li><p>High energy cost due to cache coherence traffic</p></li>
+<li><p>Complex invalidation and synchronization logic</p></li>
+<li><p>Register pressure limits Warp occupancy (limit the number of ative Warps)</p></li>
+<li><p>Redundant operand tracking across register file and cache</p></li>
+</ul>
+</dd>
+</dl>
+<p><strong>Example</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">v1</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+<span class="n">v2</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">L</span><span class="p">)</span>
+<span class="n">v3</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">)</span>
+<span class="n">v4</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">v3</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+<span class="n">v5</span> <span class="o">=</span> <span class="n">mul</span><span class="p">(</span><span class="n">v4</span><span class="p">,</span> <span class="n">color</span><span class="p">)</span>
+
+<span class="c1"># All operands reside in register file and may be cached in L1</span>
+</pre></div>
+</div>
+<p>✅ Operand Delivery in RegLess GPU (with L1 Cache in LD Path): <a class="reference internal" href="#regless"><span class="std std-numref">Fig. 72</span></a>:</p>
+<figure class="align-default" id="id69">
+<span id="regless"></span><div class="graphviz"><img src="_images/graphviz-046ca113194c53e32adcabaed1f027734e64e7a4.png" alt="digraph RegLessOperandDeliveryWithL1 {
+     rankdir=LR;
+     node [shape=box, style=filled, fontname=&quot;Helvetica&quot;, fontsize=10];
+
+     subgraph cluster_memory {
+       label=&quot;Memory Hierarchy&quot;;
+       style=filled;
+       color=lightgray;
+       GMEM [label=&quot;Global Memory&quot;];
+       L1 [label=&quot;L1 Cache&quot;, fillcolor=lightyellow];
+     }    
+
+     subgraph cluster_registers {
+       label=&quot;Register File&quot;;
+       style=filled;
+       color=lightblue;
+       RF [label=&quot;Register File&quot;];
+     }    
+
+     subgraph cluster_execution {
+       label=&quot;Execution Pipeline&quot;;
+       style=filled;
+       color=lightgreen;
+       SB [label=&quot;Staging Buffer&quot;];
+       EU [label=&quot;Execution Unit&quot;];
+     }    
+
+     GMEM -&gt; L1 [label=&quot;Coherence (Hardware-managed)&quot;, color=blue];
+     L1 -&gt; RF [label=&quot;Operand Fetch (via LD)&quot;, style=dashed];
+     RF -&gt; SB [label=&quot;Staging (Just-in-Time)&quot;, style=dashed];
+     SB -&gt; EU [label=&quot;Transient Operands&quot;];
+     RF -&gt; EU [label=&quot;Persistent Operands&quot;];
+     RF -&gt; RF [label=&quot;Internal Coherence&quot;, color=green];
+   }" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 72 </span><span class="caption-text"><strong>Operand Delivery in RegLess GPU (with L1 Cache in LD Path)</strong></span><a class="headerlink" href="#id69" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Description</p>
+<ul class="simple">
+<li><p><strong>Global Memory</strong>: Source of all operands and data.</p></li>
+<li><p><strong>L1 Cache</strong>: Participates in memory hierarchy; may serve LD requests.</p></li>
+<li><p><strong>Register File</strong>: Receives operands via LD; stages them into Staging Buffer
+for Transient Operands.</p></li>
+<li><p><strong>Staging Buffer</strong>: Holds transient operands for immediate execution.</p></li>
+<li><p><strong>Execution Unit</strong>: Consumes operands from Staging Buffer for Transient
+Operands and Register File for Persistent Operands.</p></li>
+</ul>
+<p>Notes</p>
+<ul class="simple">
+<li><p><strong>L1 Cache is not part of staging</strong>—it only serves LDs.</p></li>
+<li><p><strong>Dashed arrows</strong>: Compiler-controlled operand movement.</p></li>
+<li><p><strong>Solid arrows</strong>: Operand delivery to execution.</p></li>
+<li><p><strong>Green self-loop</strong>: Internal coherence within Register File.</p></li>
+</ul>
+<p>RegLess Model: Staging-Aware Register File</p>
+<dl class="simple">
+<dt><strong>Architecture</strong>:</dt><dd><ul class="simple">
+<li><p>Smaller register file (e.g., 64–128KB per SM)</p></li>
+<li><p>For Transient Operands, no L1 cache coherence required</p></li>
+<li><p>Operands staged dynamically based on lifetime</p></li>
+</ul>
+</dd>
+<dt><strong>Key Concepts</strong>:</dt><dd><ul class="simple">
+<li><p>Region slicing: compiler divides computation into operand regions</p></li>
+<li><p>Operand tagging: transient, intermediate, persistent</p></li>
+<li><p>Metadata compression: region-level hints, not per-instruction lifetimes</p></li>
+</ul>
+</dd>
+<dt><strong>Benefits</strong>:</dt><dd><ul class="simple">
+<li><p>~75% reduction in register file size</p></li>
+<li><p>~11% energy savings</p></li>
+<li><p>Simplified coherence model</p></li>
+<li><p>Improved Warp occupancy</p></li>
+</ul>
+</dd>
+</dl>
+<p><strong>Example with Operand Staging</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">v1</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>         <span class="c1"># transient</span>
+<span class="n">v2</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">L</span><span class="p">)</span>         <span class="c1"># transient</span>
+<span class="n">v3</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">)</span>          <span class="c1"># intermediate</span>
+<span class="n">v4</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">v3</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>         <span class="c1"># intermediate</span>
+<span class="n">v5</span> <span class="o">=</span> <span class="n">mul</span><span class="p">(</span><span class="n">v4</span><span class="p">,</span> <span class="n">color</span><span class="p">)</span>       <span class="c1"># persistent</span>
+
+<span class="c1"># v1 and v2 staged briefly, v3–v4 may be staged or registered, v5 fully</span>
+<span class="c1"># registered</span>
+</pre></div>
+</div>
+<p>Compiler-Hardware Interface</p>
+<dl class="simple">
+<dt><strong>Compiler Responsibilities</strong>:</dt><dd><ul class="simple">
+<li><p>Emit structured IR with operand usage hints</p></li>
+<li><p>Slice computation graph into regions</p></li>
+<li><p>Avoid explicit staging register allocation</p></li>
+</ul>
+</dd>
+<dt><strong>Hardware Responsibilities</strong>:</dt><dd><ul class="simple">
+<li><p>Interpret operand lifetime metadata</p></li>
+<li><p>Dynamically stage operands or allocate registers</p></li>
+<li><p>For Transient Operands, eliminate L1 cache coherence logic</p></li>
+</ul>
+</dd>
+<dt><strong>Metadata Compression Techniques</strong>:</dt><dd><ul class="simple">
+<li><p>Region-level tagging</p></li>
+<li><p>Operand class encoding</p></li>
+<li><p>Profile-guided optimization</p></li>
+<li><p>Off-chip metadata tables (e.g., DEER)</p></li>
+</ul>
+</dd>
+</dl>
+<p>Conclusion</p>
+<p>The move to RegLess-style coherence simplifies GPU operand management, reduces
+energy,
+and enables more efficient shader execution. Compiler-guided operand staging and
+region slicing allow hardware to dynamically optimize operand placement without
+burdening the instruction stream with excessive metadata.</p>
+</section>
+</section>
+<section id="specialized-units">
+<h2><a class="toc-backref" href="#id96" role="doc-backlink">Specialized Units</a><a class="headerlink" href="#specialized-units" title="Link to this heading">¶</a></h2>
+<p>As shown in <cite>section GPU Hardware Units</cite>,
+the stages of the OpenGL rendering pipeline and the GPU hardware units
+that accelerate them as shown in <a class="reference internal" href="#ogl-pipeline-hw2"><span class="std std-numref">Fig. 73</span></a>:</p>
+<figure class="align-default" id="id70">
+<span id="ogl-pipeline-hw2"></span><div class="graphviz"><img src="_images/graphviz-c9358e8b6218d8f7f1a13fac7ddd6a4772b42720.png" alt="digraph OpenGL_GPU_Mapping {
+    rankdir=TB;
+
+    // Use HTML-like label for the whole graph
+    label=&lt;
+        &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
+            &lt;TR&gt;&lt;TD&gt;&lt;/TD&gt;&lt;/TR&gt;
+            &lt;TR&gt;&lt;TD&gt;&lt;/TD&gt;&lt;/TR&gt;
+            &lt;TR&gt;&lt;TD&gt;&lt;FONT POINT-SIZE=&quot;16&quot; COLOR=&quot;darkblue&quot;&gt;&lt;B&gt;• OpenGL pipeline stages = Yellow&lt;/B&gt;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+            &lt;TR&gt;&lt;TD&gt;&lt;FONT POINT-SIZE=&quot;16&quot; COLOR=&quot;darkblue&quot;&gt;&lt;B&gt;• GPU hardware units = Blue&lt;/B&gt;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+            &lt;TR&gt;&lt;TD&gt;&lt;FONT POINT-SIZE=&quot;16&quot; COLOR=&quot;darkblue&quot;&gt;&lt;B&gt;• GPU-only internals = Gray&lt;/B&gt;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+            &lt;TR&gt;&lt;TD&gt;&lt;FONT POINT-SIZE=&quot;16&quot; COLOR=&quot;darkblue&quot;&gt;&lt;B&gt;• Dashed arrows indicate mapping from OpenGL stages to hardware&lt;/B&gt;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+        &lt;/TABLE&gt;
+    &gt;;
+
+    node [shape=box style=&quot;rounded,filled&quot; fontsize=16];
+
+    // === OpenGL Pipeline (multi-rows) ===
+    Application   [label=&quot;Application\n(CPU Side)&quot;, fillcolor=lightyellow];
+    VertexSpec    [label=&quot;Vertex Specification\n(glDraw, VBOs)&quot;, fillcolor=lightyellow];
+
+    OGL_Vertex    [label=&quot;Vertex Shader&quot;, fillcolor=lightyellow];
+    TessCtrl      [label=&quot;Tessellation \nControl Shader&quot;, fillcolor=lightyellow];
+    TessGen       [label=&quot;Tessellation \nPrimitive Generator&quot;, fillcolor=lightyellow];
+    TessEval      [label=&quot;Tessellation \nEvaluation Shader&quot;, fillcolor=lightyellow];
+    OGL_Geometry  [label=&quot;Geometry Shader / Clipping&quot;, fillcolor=lightyellow];
+
+    OGL_Raster    [label=&quot;Rasterization&quot;, fillcolor=lightyellow];
+    OGL_Fragment  [label=&quot;Fragment Shader&quot;, fillcolor=lightyellow];
+    OGL_PerFrag   [label=&quot;Per-Fragment Ops\n(Depth, Stencil, Blend)&quot;, fillcolor=lightyellow];
+    OGL_Framebuf  [label=&quot;Framebuffer&quot;, fillcolor=lightyellow];
+
+    // OpenGL flow
+    Application -&gt; VertexSpec -&gt; OGL_Vertex -&gt; TessCtrl -&gt; TessGen -&gt; TessEval -&gt; OGL_Geometry -&gt; OGL_Raster -&gt; OGL_Fragment -&gt; OGL_PerFrag -&gt; OGL_Framebuf;
+
+    // === GPU Hardware Units (multi-rows) ===
+    HW_Vertex    [label=&quot;SMs (Vertex Shader)\n(ALUs, SFUs, Load/Store)&quot;, fillcolor=lightblue];
+    HW_Fragment  [label=&quot;SMs (Fragment Shader)\n(ALUs, SFUs, TMUs)&quot;, fillcolor=lightblue];
+    HW_Geometry  [label=&quot;Geometry Units\n(Primitive Assembly, Clipping)&quot;, fillcolor=lightblue];
+    HW_Raster    [label=&quot;Rasterization Units\n(Triangle → Fragments)&quot;, fillcolor=lightblue];
+    ROP          [label=&quot;Render Output Units (ROPs)\n(Depth, Stencil, Blend)&quot;, fillcolor=lightblue];
+    HW_Framebuf  [label=&quot;Framebuffer in VRAM&quot;, fillcolor=lightblue];
+    TMU          [label=&quot;Texture Mapping Units (TMUs)\n(Texture Fetch/Filter)&quot;, fillcolor=lightgray];
+    Display      [label=&quot;Display Controller\n(Output to Screen)&quot;, fillcolor=lightgray];
+
+    // Memory hierarchy
+    L1           [label=&quot;L1 / Shared Memory&quot;, fillcolor=lightgray];
+    L2           [label=&quot;L2 Cache&quot;, fillcolor=lightgray];
+    VRAM         [label=&quot;VRAM (GDDR/HBM)&quot;, fillcolor=lightgray];
+    Coalescing   [label=&quot;Coalescing Unit&quot;, fillcolor=lightgray];
+    GatherScatter[label=&quot;Gather–Scatter Unit&quot;, fillcolor=lightgray];
+
+    // GPU flow
+    HW_Vertex -&gt; HW_Geometry -&gt; HW_Raster -&gt; HW_Fragment;
+    HW_Fragment -&gt; TMU;
+    HW_Fragment -&gt; ROP -&gt; HW_Framebuf -&gt; Display;
+
+    // Memory path
+    HW_Vertex -&gt; L1;
+    HW_Fragment -&gt; L1;
+    L2 -&gt; Coalescing;
+    L1 -&gt; L2 -&gt; VRAM;
+    L2 -&gt; GatherScatter;
+    TMU -&gt; L1 [label=&quot;Texture Fetch&quot;];
+    VRAM -&gt; Display;
+
+    // === Mapping edges (OpenGL → Hardware) ===
+    OGL_Vertex   -&gt; HW_Vertex   [style=dashed color=blue];
+    TessCtrl     -&gt; HW_Vertex   [style=dashed color=blue];
+    TessEval     -&gt; HW_Vertex   [style=dashed color=blue];
+    OGL_Geometry -&gt; HW_Geometry [style=dashed color=blue];
+    OGL_Raster   -&gt; HW_Raster   [style=dashed color=blue];
+    OGL_Fragment -&gt; HW_Fragment [style=dashed color=blue];
+    OGL_PerFrag  -&gt; ROP         [style=dashed color=blue];
+    OGL_Framebuf -&gt; HW_Framebuf [style=dashed color=blue];
+
+    // === Layering for better spacing ===
+    { rank = same; Application; VertexSpec }
+    { rank = same; OGL_Vertex; TessCtrl; TessGen }
+    { rank = same; TessEval; OGL_Geometry }
+    { rank = same; OGL_Raster; OGL_Fragment; OGL_PerFrag; OGL_Framebuf }
+
+    { rank = same; HW_Vertex; HW_Fragment }
+    { rank = same; HW_Geometry; HW_Raster; ROP; HW_Framebuf; TMU }
+    { rank = same; L1; L2; VRAM; Display }
+    { rank = same; Coalescing; GatherScatter }
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 73 </span><span class="caption-text">The stages of OpenGL pipeline and GPU’s acceleration components</span><a class="headerlink" href="#id70" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>We now explain how these GPU hardware acceleration units—Geometry Units,
+Rasterization Units, Texture Mapping Units (TMUs), and Render Output Units (ROPs)
+—- work together with SMs to provide GPU-ISA instructions that accelerate the
+graphics pipeline illustrated in <a class="reference internal" href="#short-rendering-pipeline2"><span class="std std-numref">Fig. 74</span></a> of
+section <a class="reference internal" href="opengl.html#rendering3d"><span class="std std-ref">3D Rendering</span></a>.</p>
+<p class="rubric">Figure illustrated in section 3D Rendering</p>
+<figure class="align-center" id="id71">
+<span id="short-rendering-pipeline2"></span><a class="reference internal image-reference" href="_images/short-rendering-pipeline.png"><img alt="_images/short-rendering-pipeline.png" height="347" src="_images/short-rendering-pipeline.png" width="915" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 74 </span><span class="caption-text">3D Graphics Rendering Pipeline <a class="footnote-reference brackets" href="#cg-basictheory" id="id30" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id71" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<section id="geometry-units">
+<h3><a class="toc-backref" href="#id97" role="doc-backlink">Geometry Units</a><a class="headerlink" href="#geometry-units" title="Link to this heading">¶</a></h3>
+<p><strong>Function:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Raw Vertices &amp; Primitives → Transformed Vertices &amp; Primitives
+</pre></div>
+</div>
+<p>Suppose the GLSL geometry shader looks like this:</p>
+<p class="rubric">An example of GLSL geometry shader</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#version 450</span>
+<span class="n">layout</span><span class="p">(</span><span class="n">triangles</span><span class="p">)</span><span class="w"> </span><span class="n">in</span><span class="p">;</span>
+<span class="n">layout</span><span class="p">(</span><span class="n">line_strip</span><span class="p">,</span><span class="w"> </span><span class="n">max_vertices</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="n">out</span><span class="p">;</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">gl_Position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gl_in</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">gl_Position</span><span class="p">;</span>
+<span class="w">  </span><span class="n">EmitVertex</span><span class="p">();</span>
+
+<span class="w">  </span><span class="n">gl_Position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gl_in</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">gl_Position</span><span class="p">;</span>
+<span class="w">  </span><span class="n">EmitVertex</span><span class="p">();</span>
+
+<span class="w">  </span><span class="n">EndPrimitive</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The corresponding PTX instructions and pipeline flow as <a class="reference internal" href="#sm-geometry"><span class="std std-numref">Fig. 75</span></a>.</p>
+<figure class="align-default" id="id72">
+<span id="sm-geometry"></span><div class="graphviz"><img src="_images/graphviz-3520d4c71614f02e3751f7366f08dc83bbc2df60.png" alt="digraph SM_Geometry_Assembly {
+  rankdir=LR;
+  bgcolor=&quot;white&quot;;
+  node [shape=box, style=&quot;rounded,filled&quot;, fontname=&quot;Arial&quot;, fontsize=11];
+
+  /* Graph-level title (left-aligned, bold) */
+  label=&lt;
+    &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT POINT-SIZE=&quot;14&quot; COLOR=&quot;#003366&quot;&gt;&lt;B&gt;SM → Geometry Unit: PTX-like Assembly Flow&lt;/B&gt;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT POINT-SIZE=&quot;10&quot; COLOR=&quot;#003366&quot;&gt;Example sequence showing loads/moves and {&#64;code call emit}/{&#64;code call cut} dispatching primitives&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+    &lt;/TABLE&gt;
+  &gt;;
+  labelloc=top;
+
+  /* SM thread node */
+  SMThread [fillcolor=&quot;#FFF2CC&quot; label=&lt;
+    &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Thread running in SM&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Executes geometry shader program&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Issues compiled PTX-style microcode&lt;/TD&gt;&lt;/TR&gt;
+    &lt;/TABLE&gt;
+  &gt;];
+
+  /* Instruction Fetch / Decoder */
+  InstFetch [fillcolor=&quot;#E6F2FF&quot; label=&lt;
+    &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Instruction Fetch &amp;amp; Decode&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Fetches micro-instructions from shader code&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Decodes into ALU / LD / CALL operations&lt;/TD&gt;&lt;/TR&gt;
+    &lt;/TABLE&gt;
+  &gt;];
+
+  /* Assembly sequence node showing PTX-like lines */
+  AsmSeq [fillcolor=&quot;#FFFFFF&quot; penwidth=&quot;1&quot; label=&lt;
+    &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Compiled (PTX-like) Instruction Sequence&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;ld.global.v4.f32 {r0, r1, r2, r3}, [in_attr0];&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;mov.f32 o0, r0;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;mov.f32 o1, r1;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;mov.f32 o2, r2;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;mov.f32 o3, r3;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;&lt;B&gt;call emit;&lt;/B&gt;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;ld.global.v4.f32 {r4, r5, r6, r7}, [in_attr1];&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;mov.f32 o0, r4;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;mov.f32 o1, r5;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;mov.f32 o2, r6;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;mov.f32 o3, r7;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;&lt;B&gt;call emit;&lt;/B&gt;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;&lt;B&gt;call cut;&lt;/B&gt;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+    &lt;/TABLE&gt;
+  &gt;];
+
+  /* Output registers / buffers that hold emitted vertex data */
+  OutRegs [shape=note, fillcolor=&quot;#FFFFE0&quot;, label=&lt;
+    &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Output Registers / Emit Buffer&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• o0..oN hold per-vertex outputs (position, attrs)&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Emit buffer queues vertices for Geometry Unit&lt;/TD&gt;&lt;/TR&gt;
+    &lt;/TABLE&gt;
+  &gt;];
+
+  /* Geometry Unit with internal stages (simplified) */
+  GeoUnit [fillcolor=&quot;#D9E8FF&quot; label=&lt;
+    &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Geometry Unit (hardware)&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Accepts emitted vertices from SM output regs&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Primitive Assembly / Tessellation / GS handling&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Culling, Clipping, Viewport transform&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Primitive Setup → send to Rasterizer&lt;/TD&gt;&lt;/TR&gt;
+    &lt;/TABLE&gt;
+  &gt;];
+
+  Rasterizer [fillcolor=&quot;#F2F8FF&quot; label=&lt;
+    &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Rasterizer&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Consumes prepared primitives&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Produces fragments for fragment shading&lt;/TD&gt;&lt;/TR&gt;
+    &lt;/TABLE&gt;
+  &gt;];
+
+  /* Dataflow edges */
+  SMThread -&gt; InstFetch [label=&quot; compiled microcode / instruction pointer&quot; fontsize=10];
+  InstFetch -&gt; AsmSeq [label=&quot; decode -&gt; micro-ops&quot; fontsize=10];
+  AsmSeq -&gt; OutRegs [label=&quot; write outputs (o0..oN)&quot; fontsize=10];
+  OutRegs -&gt; GeoUnit [label=&quot; Emit vertex(s) (emit/cut triggers)&quot; fontsize=10];
+  GeoUnit -&gt; Rasterizer [label=&quot; prepared primitives&quot; fontsize=10];
+
+  /* Control arrows (illustrate call emit/cut semantics) */
+  AsmSeq -&gt; GeoUnit [label=&quot; call emit / call cut (control msgs)&quot;, style=dashed, color=&quot;#3333CC&quot;];
+
+  /* layout hints */
+  { rank = same; SMThread; InstFetch; AsmSeq }
+  { rank = same; OutRegs; GeoUnit; Rasterizer }
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 75 </span><span class="caption-text">Fetch a sequence of Geometry instructions and pass to Geometry Unit</span><a class="headerlink" href="#id72" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The <strong>Geometry Unit</strong> in a GPU is a collection of fixed-function and programmable stages
+responsible for transforming assembled primitives (points, lines, triangles, patches)
+into screen-space primitives ready for rasterization.
+The emit and cut are compiler intrinsics that map to control messages to the
+Geometry Unit.
+When we say emit and cut in NVIDIA PTX (or HLSL/GLSL geometry shaders), they’re
+not ALU instructions that run in the SM like add or mul. Instead, they act like
+special control instructions that tell the GPU’s fixed-function Geometry Unit
+what to do with the vertex data currently in the SM’s output registers
+illustrated in <a class="reference internal" href="#emit-cut-flow"><span class="std std-numref">Fig. 76</span></a>.</p>
+<figure class="align-default" id="id73">
+<span id="emit-cut-flow"></span><div class="graphviz"><img src="_images/graphviz-29decf5480a0516f56f24779af6154d2a5a50c3f.png" alt="digraph EmitCut_Flow {
+    rankdir=LR;
+    fontsize=12;
+    labelloc=&quot;t&quot;;
+    label=&quot;GPU Geometry Shader Dataflow — EmitVertex() and EndPrimitive()&quot;;
+
+    node [shape=box, style=rounded, fontname=&quot;Helvetica&quot;];
+
+    subgraph cluster_shader {
+        label=&quot;Streaming Multiprocessor (SM)&quot;;
+        color=lightblue;
+        style=filled;
+        fillcolor=&quot;#D8EFFF&quot;;
+
+        thread [label=&quot;Shader Thread\n(Geometry Shader Instructions)&quot;, shape=box];
+        emit [label=&quot;EmitVertex()\n• write varyings\n• commit vertex&quot;, shape=box];
+        cut [label=&quot;EndPrimitive()\n• mark primitive boundary&quot;, shape=box];
+        thread -&gt; emit -&gt; cut;
+    }
+
+    subgraph cluster_fifo {
+        label=&quot;On-Chip FIFO / URB / LDS Buffer&quot;;
+        color=gray;
+        style=filled;
+        fillcolor=&quot;#EEEEEE&quot;;
+        fifo [label=&quot;FIFO Buffer\n(Holds emitted vertices\nand primitive markers)&quot;, shape=box];
+    }
+
+    subgraph cluster_geom {
+        label=&quot;Geometry Unit / Primitive Assembler&quot;;
+        color=lightgreen;
+        style=filled;
+        fillcolor=&quot;#E0FFE0&quot;;
+        geom [label=&quot;Geometry Unit\n• reads FIFO entries\n• assembles primitives&quot;, shape=box];
+    }
+
+    subgraph cluster_rast {
+        label=&quot;Rasterization Pipeline&quot;;
+        color=lightgray;
+        style=dashed;
+        rast [label=&quot;Rasterizer\n• receives completed\ntriangles/lines&quot;, shape=box];
+    }
+
+    // Dataflow edges
+    emit -&gt; fifo [label=&quot;write vertex data&quot;];
+    cut -&gt; fifo [label=&quot;write primitive end marker&quot;];
+    fifo -&gt; geom [label=&quot;fetch vertex packets&quot;];
+    geom -&gt; rast [label=&quot;assembled primitives&quot;];
+
+    // Control flow notes
+    thread -&gt; emit [style=dashed, color=gray, label=&quot;shader executes intrinsics&quot;];
+    geom -&gt; fifo [style=dotted, color=gray, label=&quot;read signals / ready flags&quot;];
+
+    // Legend
+    legend [shape=note, label=&quot;LEGEND:\nEmitVertex() = vertex data write\nEndPrimitive() = mark primitive end\nSM → FIFO → Geometry Unit → Rasterizer&quot;, fontsize=10];
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 76 </span><span class="caption-text">Micro-level flow: SM → Geometry Unit via Emit/Cut</span><a class="headerlink" href="#id73" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Unlike GLSL textures, which are converted into a specific hardware ISA, the
+Geometry Shader in <a class="reference internal" href="#ogl-pipeline-hw2"><span class="std std-numref">Fig. 73</span></a> maps directly to the Geometry
+Units instead of the SMs.</p>
+<p>Geometry Unit bridges the <strong>vertex shading</strong> stage and the <strong>rasterization</strong>
+stage as shown in <a class="reference internal" href="#geometry-unit"><span class="std std-numref">Fig. 77</span></a>.</p>
+<figure class="align-default" id="id74">
+<span id="geometry-unit"></span><div class="graphviz"><img src="_images/graphviz-13c3d7422428bc9890e18baa9b965b70ae1a63b2.png" alt="digraph Geometry_Unit {
+  rankdir=TB;
+  bgcolor=&quot;white&quot;;
+  node [shape=box, style=&quot;rounded,filled&quot;, fontname=&quot;Arial&quot;, fontsize=14];
+
+  /* Graph-level left-aligned title (bold, dark blue) */
+  label=&lt;
+    &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
+      &lt;TR&gt;
+        &lt;TD&gt;
+          &lt;FONT POINT-SIZE=&quot;18&quot; COLOR=&quot;#003366&quot;&gt;&lt;B&gt;GPU Geometry Unit - internal stages &amp;amp; dataflow&lt;/B&gt;&lt;/FONT&gt;
+        &lt;/TD&gt;
+      &lt;/TR&gt;
+      &lt;TR&gt;
+        &lt;TD&gt;
+          &lt;FONT POINT-SIZE=&quot;14&quot; COLOR=&quot;#003366&quot;&gt;Flow: Vertex output - Primitive Assembly - (Tessellation) - Geometry Shader - Clipping - Viewport Transform - Primitive Setup - Rasterizer&lt;/FONT&gt;
+        &lt;/TD&gt;
+      &lt;/TR&gt;
+    &lt;/TABLE&gt;
+  &gt;;
+  labelloc=top;
+
+  /* External stages (vertex / rasterizer) */
+  VertexOut [fillcolor=&quot;#FFF2CC&quot; label=&lt;
+    &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Vertex Shader Output&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Transformed vertices (clip/NDC)&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Per-vertex attributes (normals, UVs, colors)&lt;/TD&gt;&lt;/TR&gt;
+    &lt;/TABLE&gt;
+  &gt;];
+
+  Rasterizer [fillcolor=&quot;#F2F8FF&quot; label=&lt;
+    &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Rasterizer&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Consumes prepared primitives&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Produces fragments for fragment shading&lt;/TD&gt;&lt;/TR&gt;
+    &lt;/TABLE&gt;
+  &gt;];
+
+  /* Geometry Unit core blocks */
+  Assembly [fillcolor=&quot;#D9E8FF&quot; label=&lt;
+    &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Primitive Assembly / Input Assembler&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Group vertices into primitives \n(triangles, lines, patches)&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Fetch index buffers, vertex attributes&lt;/TD&gt;&lt;/TR&gt;
+    &lt;/TABLE&gt;
+  &gt;];
+
+  Tessellation [fillcolor=&quot;#E8F7E8&quot; label=&lt;
+    &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Tessellation (optional)&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Tessellation Control + Primitive Gen + Eval&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Patch subdivision, generate new vertices/primitives&lt;/TD&gt;&lt;/TR&gt;
+    &lt;/TABLE&gt;
+  &gt;];
+
+  GeoShader [fillcolor=&quot;#D9E8FF&quot; label=&lt;
+    &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Geometry Shader / Stream Output (optional)&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Programmable stage: modify or emit primitives&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Can amplify primitives (performance cost)&lt;/TD&gt;&lt;/TR&gt;
+    &lt;/TABLE&gt;
+  &gt;];
+
+  Culling [fillcolor=&quot;#FFF4D9&quot; label=&lt;
+    &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Primitive Culling &amp;amp; Clipping&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Frustum clipping, user-space frustum tests&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Back-face culling, scissor tests&lt;/TD&gt;&lt;/TR&gt;
+    &lt;/TABLE&gt;
+  &gt;];
+
+  Viewport [fillcolor=&quot;#FFF4D9&quot; label=&lt;
+    &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Viewport / Screen Transform&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• NDC → screen coordinates (viewport scale + offset)&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Apply depth range mapping&lt;/TD&gt;&lt;/TR&gt;
+    &lt;/TABLE&gt;
+  &gt;];
+
+  Setup [fillcolor=&quot;#FFF4D9&quot; label=&lt;
+    &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Primitive Setup / Scan-conversion Prep&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Compute edge equations, slopes, barycentrics&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Prepare interpolants (dx/dy) for attributes&lt;/TD&gt;&lt;/TR&gt;
+    &lt;/TABLE&gt;
+  &gt;];
+
+  /* Resource boxes / notes */
+  Resources [shape=note, fillcolor=&quot;#FFFFE0&quot;, label=&lt;
+    &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Resources / HW considerations&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Shared scheduling with vertex units&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Dedicated small caches / FIFOs for index/vertex fetch&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Fixed-function blocks for edge setup (for performance)&lt;/TD&gt;&lt;/TR&gt;
+    &lt;/TABLE&gt;
+  &gt;];
+
+  /* Edges: dataflow */
+  VertexOut -&gt; Assembly [label=&quot; vertices + attributes&quot; fontsize=14];
+  Assembly -&gt; Tessellation [label=&quot; primitives\n / patches&quot; fontsize=14];
+  Tessellation -&gt; GeoShader [label=&quot; subdivided\n primitives&quot; fontsize=14];
+  Assembly -&gt; GeoShader [label=&quot; primitives (if tess disabled)&quot; fontsize=14];
+  GeoShader -&gt; Culling [label=&quot; emitted primitives&quot; fontsize=14];
+  Culling -&gt; Viewport [label=&quot; clipped\n primitives&quot; fontsize=14];
+  Viewport -&gt; Setup [label=&quot; screen-space verts\n + interpolants&quot; fontsize=14];
+  Setup -&gt; Rasterizer [label=&quot; prepared primitives (edge eqns)&quot; fontsize=14];
+
+  /* Optional arrows for control / fallback */
+  Tessellation -&gt; Setup [label=&quot; bypass (if no geometry shader)&quot;, style=dashed];
+  GeoShader -&gt; Setup [label=&quot; direct -&gt; setup (if no culling)&quot;, style=dashed];
+
+  /* Resources placement */
+  Resources -&gt; Assembly [style=dotted];
+  Resources -&gt; Tessellation [style=dotted];
+  Resources -&gt; GeoShader [style=dotted];
+
+  /* Layout tweaks */
+  { rank = same; Assembly; Tessellation; GeoShader }
+  { rank = same; Culling; Viewport; Setup }
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 77 </span><span class="caption-text">Geometry Unit with its sub-functions (assembly, tessellation,
+clipping, viewport transform, etc.)</span><a class="headerlink" href="#id74" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Role</p>
+<ul class="simple">
+<li><p>Organize and process geometry data after vertex shading.</p></li>
+<li><p>Perform primitive-level operations such as assembly, tessellation, clipping,
+viewport transform, and primitive setup.</p></li>
+<li><p>Provide hardware acceleration for geometry amplification or reduction
+before rasterization.</p></li>
+</ul>
+<p>Components</p>
+<ul class="simple">
+<li><p><strong>Primitive Assembly (Input Assembler)</strong></p>
+<ul>
+<li><p>Groups vertices into primitives (triangles, lines, patches).</p></li>
+<li><p>Fetches indices and vertex attributes from memory.</p></li>
+<li><p>Prepares data structures for downstream geometry stages.</p></li>
+</ul>
+</li>
+<li><p><strong>Tessellation Engine (optional, OpenGL 4.0+ / DirectX 11+)</strong></p>
+<ul>
+<li><p>Subdivides patches into finer primitives.</p></li>
+<li><p>Contains Tessellation Control Shader, Primitive Generator, and
+Tessellation Evaluation Shader.</p></li>
+<li><p>Used in terrain rendering, displacement mapping, and adaptive LOD.</p></li>
+</ul>
+</li>
+<li><p><strong>Geometry Shader (optional, programmable stage)</strong></p>
+<ul>
+<li><p>Can generate new primitives or discard existing ones.</p></li>
+<li><p>Enables shadow volume extrusion, point sprite expansion, or procedural geometry.</p></li>
+<li><p>High flexibility but often limited in performance due to amplification.</p></li>
+</ul>
+</li>
+<li><p><strong>Culling &amp; Clipping</strong></p>
+<ul>
+<li><p>Removes back-facing or out-of-view primitives.</p></li>
+<li><p>Clips primitives against the view frustum or user-defined clipping planes.</p></li>
+<li><p>Optimizes rendering by reducing fragment processing workload.</p></li>
+</ul>
+</li>
+<li><p><strong>Viewport Transform</strong></p>
+<ul>
+<li><p>Maps Normalized Device Coordinates (NDC) to screen-space pixel coordinates.</p></li>
+<li><p>Applies viewport scaling, offset, and depth range mapping.</p></li>
+</ul>
+</li>
+<li><p><strong>Primitive Setup</strong></p>
+<ul>
+<li><p>Converts screen-space primitives into edge equations and interpolation rules.</p></li>
+<li><p>Prepares slopes and barycentric coefficients for attribute interpolation in rasterization.</p></li>
+<li><p>Ensures that per-fragment attributes (e.g., texture coordinates, normals)
+are interpolated correctly.</p></li>
+</ul>
+</li>
+</ul>
+<p>Usage</p>
+<ul class="simple">
+<li><p>Reduces workload on the fragment stage by culling invisible primitives.</p></li>
+<li><p>Provides tessellation and geometry shaders for advanced rendering effects.</p></li>
+<li><p>Ensures efficient and accurate rasterization setup.</p></li>
+<li><p>Works closely with specialized GPU fixed-function blocks such as
+<strong>PolyMorph Engines</strong> (NVIDIA) or <strong>Geometry Processors</strong> (AMD).</p></li>
+</ul>
+<p>References</p>
+<ul class="simple">
+<li><p>Wikipedia – <a class="reference external" href="https://en.wikipedia.org/wiki/Graphics_pipeline">Graphics pipeline</a></p></li>
+<li><p>NVIDIA – <a class="reference external" href="https://developer.nvidia.com/content/directx-11-gpu-architecture">DirectX 11 GPU Architecture (Geometry and PolyMorph Engine)</a></p></li>
+<li><p>Intel – <a class="reference external" href="https://www.intel.com/content/www/us/en/developer/articles/technical/introduction-to-3d-pipeline.html">3D Pipeline Overview (including Geometry Stage)</a></p></li>
+<li><p>LearnOpenGL – <a class="reference external" href="https://learnopengl.com/Advanced-OpenGL/Geometry-Shader">Geometry Shader</a></p></li>
+<li><p>Microsoft Docs – <a class="reference external" href="https://learn.microsoft.com/en-us/windows/win32/direct3d11/overviews-direct3d-11-graphics-pipeline">Tessellation and Geometry Pipeline</a></p></li>
+</ul>
+</section>
+<section id="rasterization-units">
+<h3><a class="toc-backref" href="#id98" role="doc-backlink">Rasterization Units <a class="footnote-reference brackets" href="#raster-unit" id="id31" role="doc-noteref"><span class="fn-bracket">[</span>25<span class="fn-bracket">]</span></a></a><a class="headerlink" href="#rasterization-units" title="Link to this heading">¶</a></h3>
+<p><strong>Function:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Transformed Vertices &amp; Primitives → Fragments
+</pre></div>
+</div>
+<p>Overview</p>
+<p>The rasterization unit is a critical component of the graphics pipeline in
+modern GPUs. It converts geometric primitives (typically triangles) into
+fragments that correspond to pixels on the screen. This process is essential
+for rendering 3D scenes into 2D images.</p>
+<p>The pipeline flow for Rasterization Units is shown as
+<a class="reference internal" href="#rasterization-pipeline"><span class="std std-numref">Fig. 78</span></a>.</p>
+<figure class="align-default" id="id75">
+<span id="rasterization-pipeline"></span><div class="graphviz"><img src="_images/graphviz-e4e264eb12ed55639b742c87dc6a166c299316ea.png" alt="digraph RasterizationPipeline {
+    rankdir=TB;
+    node [shape=box, style=filled, fillcolor=lightgray];
+
+    FragmentShader [label=&quot;Fragment Shader (Pixel Shader)&quot;, fillcolor=lightblue];
+    GeometryUnit [label=&quot;Geometry Unit\n(Vertex + Geometry Shader)&quot;, fillcolor=lightyellow];
+    GeometryUnit -&gt; PreparedPrimitives;
+    PreparedPrimitives [label=&quot;Prepared Primitives&quot;, shape=ellipse, fillcolor=white];
+
+    PreparedPrimitives -&gt; TriangleSetup;
+    TriangleSetup -&gt; ScanConversion;
+    ScanConversion -&gt; AttributeInterpolation;
+    AttributeInterpolation -&gt; EarlyZCulling;
+    EarlyZCulling -&gt; FragmentGeneration;
+    FragmentGeneration -&gt; FragmentShader;
+
+    // === Layering for better spacing ===
+    { rank = same; GeometryUnit; PreparedPrimitives; TriangleSetup }
+    { rank = same; ScanConversion; AttributeInterpolation; EarlyZCulling }
+    { rank = same; FragmentGeneration; FragmentShader }
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 78 </span><span class="caption-text">Rasterization pipeline</span><a class="headerlink" href="#id75" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Key Functions</p>
+<ul class="simple">
+<li><p><strong>Triangle Setup</strong>: Computes edge equations and bounding boxes for each
+triangle.</p></li>
+<li><p><strong>Scan Conversion</strong>: Determines which pixels are covered by the triangle.</p></li>
+<li><p><strong>Attribute Interpolation</strong>: Calculates interpolated values (e.g., texture
+coordinates, depth) for each fragment.</p></li>
+<li><p><strong>Fragment Generation</strong>: Produces fragment data for downstream shading and
+blending stages.</p></li>
+</ul>
+<p>Hardware Architecture</p>
+<p>Modern GPUs implement rasterization in highly parallel hardware blocks to
+maximize throughput. A simplified block diagram includes:</p>
+<ul class="simple">
+<li><p><strong>Primitive Assembly Unit</strong>: Groups vertices into triangles.</p></li>
+<li><p><strong>Triangle Setup Engine</strong>: Prepares edge equations and bounding boxes.</p></li>
+<li><p><strong>Rasterizer Core</strong>: Performs scan conversion and fragment generation.</p></li>
+<li><p><strong>Early-Z Unit</strong>: Performs early depth testing to discard hidden fragments.</p></li>
+<li><p><strong>Fragment Queue</strong>: Buffers fragments for shading.</p></li>
+</ul>
+<p>Optimization Techniques</p>
+<ul class="simple">
+<li><p><strong>Tile-Based Rasterization</strong>: Divides the screen into tiles to reduce memory
+bandwidth.</p></li>
+<li><p><strong>Early-Z Culling</strong>: Discards fragments before shading if they fail depth
+tests.</p></li>
+<li><p><strong>Compression</strong>: Reduces data transfer costs between pipeline stages.</p></li>
+</ul>
+<p>Use Cases</p>
+<ul class="simple">
+<li><p>Real-time rendering in games and simulations.</p></li>
+<li><p>3D Gaussian Splatting acceleration for AI-based rendering.</p></li>
+<li><p>Mobile GPUs with power-efficient rasterization pipelines.</p></li>
+</ul>
+<p>References</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://arxiv.org/html/2503.16681v1">GauRast: Enhancing GPU Triangle Rasterizers</a></p></li>
+<li><p><a class="reference external" href="https://images.nvidia.com/aem-dam/Solutions/geforce/ada/nvidia-ada-gpu-architecture.pdf">NVIDIA Ada GPU Architecture PDF</a></p></li>
+<li><p><a class="reference external" href="https://gfxcourses.stanford.edu/cs248a/winter23content/media/gpuhardware/19_mobilegpu.pdf">Stanford CS248A Lecture on Rasterization</a></p></li>
+</ul>
+</section>
+<section id="texture-mapping-units-tmus">
+<h3><a class="toc-backref" href="#id99" role="doc-backlink">Texture Mapping Units (TMUs) <a class="footnote-reference brackets" href="#tpu" id="id32" role="doc-noteref"><span class="fn-bracket">[</span>26<span class="fn-bracket">]</span></a></a><a class="headerlink" href="#texture-mapping-units-tmus" title="Link to this heading">¶</a></h3>
+<p><strong>Function:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Fragments → Processed Fragments
+</pre></div>
+</div>
+<p>Overview</p>
+<p>A Texture Mapping Unit (TMU) is a fixed-function hardware block inside a GPU
+responsible for <em>fetching, filtering, and preparing texture data</em> that shaders
+(sampled in fragment or compute stages) use during rendering.</p>
+<p>As explained in previous
+<a class="reference internal" href="opengl.html#opengl-shader-compiler"><span class="std std-ref">section OpenGL Shader Compiler</span></a>, the texture
+instruction using TMU to accelerate calculation as the following explanation
+with <a class="reference internal" href="#texture-fetch"><span class="std std-numref">Fig. 79</span></a>.</p>
+<p>TMUs sit between the shader cores (SMs/CUs) and the memory subsystem.
+They provide high-performance, specialized texture access operations that
+would be too slow or costly to emulate in general-purpose ALUs is shown as
+<a class="reference internal" href="#texture-fetch"><span class="std std-numref">Fig. 79</span></a>.</p>
+<figure class="align-default" id="id76">
+<span id="texture-fetch"></span><div class="graphviz"><img src="_images/graphviz-1bc38c98eb64118abe67a5585e6045ed178dc3d4.png" alt="digraph TextureFetch {
+  rankdir=TB;
+  node [shape=box, fontname=&quot;Helvetica&quot;, fontsize=10, style=rounded];
+
+  Thread [label=&quot;Thread in SM\n(executes texture() instr)&quot;];
+  Instr [label=&quot;Decoded Texture Instruction\n(coords + sampler state)&quot;];
+  TMU [label=&quot;Texture Mapping Unit (TMU)\n- Addressing\n- Filtering\n- LOD calc&quot;];
+  TCache [label=&quot;Texture Cache (L1/L2)&quot;];
+  VRAM [label=&quot;Texture Memory (VRAM)\n(GDDR/HBM)&quot;];
+  Result [label=&quot;Sampled Texel(s)\n(return to SM thread)&quot;];
+
+  Thread -&gt; Instr [label=&quot;1. issue\n texture()&quot;];
+  Instr -&gt; TMU [label=&quot;2. send coords\n + state&quot;];
+  TMU -&gt; TCache [label=&quot;3. fetch\n texels&quot;];
+  TCache -&gt; VRAM [label=&quot;4. on\n cache miss&quot;];
+  VRAM -&gt; TCache [label=&quot;5. load\n texels&quot;];
+  TCache -&gt; TMU [label=&quot;6. return\n texels&quot;];
+  TMU -&gt; Result [label=&quot;7. filtered\n texel&quot;];
+  Result -&gt; Thread [label=&quot;8. write back result&quot;];
+
+  { rank = same; Thread; Instr; TMU }
+  { rank = same; TCache; Result }
+  { rank = same; VRAM }
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 79 </span><span class="caption-text">The flow of issuing texture instruction from SM to TMU.</span><a class="headerlink" href="#id76" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Pipeline Role</p>
+<ul class="simple">
+<li><p>In the <strong>OpenGL / Direct3D graphics pipeline</strong>, TMUs are mainly used in the
+<em>fragment shading stage</em>, where textured surfaces are shaded with data
+from 2D/3D textures.</p></li>
+<li><p>In <strong>compute shaders</strong>, TMUs are also used for image load/store operations
+and texture sampling.</p></li>
+</ul>
+<p>Key Responsibilities</p>
+<ol class="arabic">
+<li><p>Texture Addressing</p>
+<ul>
+<li><p>Compute the correct texture coordinate for a given fragment or pixel.</p></li>
+<li><p>Handle the following wrapping modes are shown as <a class="reference internal" href="#texture-wrap-2"><span class="std std-numref">Fig. 80</span></a>
+and as <a class="reference internal" href="#texture-wrap"><span class="std std-numref">Fig. 81</span></a>:</p>
+<p>Texture coordinates usually range from (0,0) to (1,1) but what happens if
+we specify coordinates outside this range? OpenGL provides the following
+wrapping modes for outside this range.</p>
+<ul class="simple">
+<li><p>Clamp-to-border (GL_CLAMP_TO_BORDER)</p>
+<ul>
+<li><p>When a texture coordinate falls outside the [0,1] range, the GPU
+does not sample the nearest texel.</p></li>
+<li><p>Instead, it returns a user-defined border color for that texture.</p></li>
+<li><p>This is useful for effects like shadow maps, where sampling outside
+the valid area should produce a consistent value.</p></li>
+</ul>
+</li>
+<li><p>Repeat (GL_REPEAT): Wraps coordinates around (tiles the texture).</p></li>
+<li><p>Clamp-to-edge (GL_CLAMP_TO_EDGE): Uses the edge texel when coordinates
+are out of range.</p></li>
+<li><p>Mirrored repeat (GL_MIRRORED_REPEAT): Mirrors the texture each repetition.</p>
+<ul>
+<li><p>For the middle row (t(V) in the range 0.0 to 1.0), the mirroring
+operation applies only a left-right swap. For the top and bottom rows,
+the mirroring includes both left-right and up-down swaps.</p></li>
+</ul>
+</li>
+</ul>
+<figure class="align-center" id="id77">
+<span id="texture-wrap-2"></span><a class="reference internal image-reference" href="_images/texture-wrap-2.png"><img alt="_images/texture-wrap-2.png" height="186" src="_images/texture-wrap-2.png" width="669" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 80 </span><span class="caption-text">Texture Warpping</span><a class="headerlink" href="#id77" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id78">
+<span id="texture-wrap"></span><a class="reference internal image-reference" href="_images/texture-wrap.png"><img alt="_images/texture-wrap.png" height="168" src="_images/texture-wrap.png" width="597" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 81 </span><span class="caption-text">Texture Warpping <a class="footnote-reference brackets" href="#texturewrapper" id="id33" role="doc-noteref"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id78" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</li>
+<li><p>Convert normalized texture coordinates into actual memory addresses.</p></li>
+</ul>
+</li>
+<li><p>Texture Fetching</p>
+<ul class="simple">
+<li><p>Retrieve texels (texture elements) from texture memory (L1 texture cache,
+then L2/VRAM on miss).</p></li>
+<li><p>Handle different texture layouts:
+- 1D, 2D, 3D textures
+- Cubemaps
+- Texture arrays</p></li>
+<li><p>Support compressed texture formats (e.g., DXT, ASTC, ETC2).</p></li>
+</ul>
+</li>
+<li><p>Texture Filtering</p>
+<p>Give a Texture coordinates, OpenGL has to figure out which <strong>texture pixel
+(also known as a texel)</strong> to map the texture coordinate to.</p>
+<ul>
+<li><p>Perform <em>interpolation</em> between texels to produce smooth visual results.</p></li>
+<li><p>Filtering requires multiple texel reads + weighted average calculations.</p></li>
+<li><p>Common filtering modes as the following are shown as
+<a class="reference internal" href="#texture-filter"><span class="std std-numref">Fig. 84</span></a>:</p>
+<ul>
+<li><p>Nearest-neighbor (point sampling) (GL_NEAREST)</p>
+<ul>
+<li><p>When set to GL_NEAREST, OpenGL selects the color of the texel that
+center is closest to the texture coordinate shown as the example in
+<a class="reference internal" href="#nearest"><span class="std std-numref">Fig. 82</span></a>. ‘+’ is the coordinates of texel.
+‘Returns’ is the color of result.</p>
+<figure class="align-center" id="id79">
+<span id="nearest"></span><a class="reference internal image-reference" href="_images/nearest.png"><img alt="_images/nearest.png" height="98" src="_images/nearest.png" width="162" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 82 </span><span class="caption-text">GL_NEAREST <a class="footnote-reference brackets" href="#texturewrapper" id="id34" role="doc-noteref"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id79" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</li>
+</ul>
+</li>
+<li><p>Bilinear (GL_LINEAR)</p>
+<ul>
+<li><p>The return color is the mix of four neighboring pixels. The smaller
+the distance from the texture coordinate to a texel’s center, the more
+that texel’s color contributes to the sampled color shown as the
+example in <a class="reference internal" href="#linear"><span class="std std-numref">Fig. 83</span></a>.</p>
+<figure class="align-center" id="id80">
+<span id="linear"></span><a class="reference internal image-reference" href="_images/linear.png"><img alt="_images/linear.png" height="97" src="_images/linear.png" width="152" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 83 </span><span class="caption-text">GL_LINEAR <a class="footnote-reference brackets" href="#texturewrapper" id="id35" role="doc-noteref"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id80" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</li>
+</ul>
+</li>
+<li><p>Trilinear (with mipmaps)</p></li>
+<li><p>Anisotropic filtering (for angled surfaces)</p></li>
+<li><p>Let’s see how these methods work when using a texture with a low
+resolution on a large object (texture is therefore scaled upwards and
+individual texels are noticeable). The GL_NEAREST and GL_LINEAR as the
+following <a class="reference internal" href="#texture-filter"><span class="std std-numref">Fig. 84</span></a>.
+As result, GL_LINEAR produces a more blurred color and smooth edge’s
+output.</p>
+<figure class="align-center" id="id81">
+<span id="texture-filter"></span><a class="reference internal image-reference" href="_images/texture-filter.png"><img alt="_images/texture-filter.png" height="534" src="_images/texture-filter.png" width="1080" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 84 </span><span class="caption-text">Texture Filter: GL_NEAREST has sharp color and jagged edge
+<a class="footnote-reference brackets" href="#texturewrapper" id="id36" role="doc-noteref"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id81" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Mipmap Level of Detail (LOD) Selection</p>
+<ul class="simple">
+<li><p>Choose the correct mipmap level based on screen-space derivatives of
+texture coordinates.</p></li>
+<li><p>Prevent aliasing and improve cache efficiency.</p></li>
+<li><p>Optionally blend between mip levels for trilinear filtering.</p></li>
+</ul>
+</li>
+<li><p>Texture Caching</p>
+<ul class="simple">
+<li><p>TMUs have a <strong>dedicated texture cache</strong> optimized for 2D/3D spatial
+locality.</p></li>
+<li><p>Neighboring threads in a Warp often fetch adjacent texels, improving cache
+hits.</p></li>
+<li><p>Caches reduce memory latency and improve bandwidth utilization.</p></li>
+</ul>
+</li>
+<li><p>Specialized Operations</p>
+<ul class="simple">
+<li><p>Texture gather: fetch 4 neighboring texels around a coordinate.</p></li>
+<li><p>Shadow mapping: compare fetched depth texel against reference value.</p></li>
+<li><p>Multisample textures: fetch per-sample data for MSAA.</p></li>
+<li><p>Border color application for out-of-bounds accesses.</p></li>
+</ul>
+</li>
+</ol>
+<p>Microarchitecture Aspects</p>
+<ul class="simple">
+<li><p>Each <strong>Streaming Multiprocessor (SM)</strong> or <strong>Compute Unit (CU)</strong> is paired
+with several TMUs.</p></li>
+<li><p>The number of TMUs is a key spec in GPU datasheets (e.g., “64 TMUs”).</p></li>
+<li><p>TMU throughput is often measured in <strong>texels per clock cycle</strong>.</p></li>
+<li><p>Modern GPUs balance <strong>TMUs per ALU</strong> to ensure shading and texture workloads
+are not bottlenecked.</p></li>
+</ul>
+<p>Performance Considerations</p>
+<ul class="simple">
+<li><p><strong>Bandwidth-limited</strong>: TMUs rely heavily on memory bandwidth. Mipmapping
+and caches reduce this pressure.</p></li>
+<li><p><strong>Latency hiding</strong>: texture fetches may take hundreds of cycles, so GPUs
+rely on massive multithreading to hide stalls.</p></li>
+<li><p><strong>Workload dependent</strong>: texture-heavy games or rendering pipelines are
+often limited by TMU throughput.</p></li>
+</ul>
+<p>Summary</p>
+<p>TMUs are highly specialized GPU units that:</p>
+<ul class="simple">
+<li><p>Translate texture coordinates into addresses.</p></li>
+<li><p>Fetch texels efficiently with dedicated caches.</p></li>
+<li><p>Perform filtering and LOD computations in hardware.</p></li>
+<li><p>Deliver high throughput for texture operations that are essential
+in realistic rendering.</p></li>
+</ul>
+<p>Without TMUs, all these operations would fall on general-purpose ALUs,
+resulting in drastically lower performance and efficiency.</p>
+</section>
+<section id="render-output-units-rops">
+<h3><a class="toc-backref" href="#id100" role="doc-backlink">Render Output Units (ROPs) <a class="footnote-reference brackets" href="#rops" id="id37" role="doc-noteref"><span class="fn-bracket">[</span>28<span class="fn-bracket">]</span></a></a><a class="headerlink" href="#render-output-units-rops" title="Link to this heading">¶</a></h3>
+<p><strong>Function:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Processed Fragments → Pixels
+</pre></div>
+</div>
+<p>Overview</p>
+<p>Render Output Units (ROPs), also known as Raster Operations Pipelines, are the
+final stage in the GPU graphics pipeline before pixel data is written to the
+framebuffer. ROPs handle pixel-level operations such as blending, depth and
+stencil testing, multisample resolve, and writing to memory. They are crucial
+for assembling the final image that appears on screen.</p>
+<p>Pipeline Responsibilities</p>
+<ul class="simple">
+<li><p><strong>Fragment Reception</strong>: Accepts shaded fragments from the pixel shader.</p></li>
+<li><p><strong>Depth and Stencil Testing</strong>: Compares fragment depth/stencil values against
+buffers.</p></li>
+<li><p><strong>Blending</strong>: Combines fragment color with existing framebuffer data.</p></li>
+<li><p><strong>Multisample Resolve</strong>: Merges multiple samples into a final pixel (for MSAA).</p></li>
+<li><p><strong>Framebuffer Write</strong>: Commits final pixel data to memory for display.</p></li>
+</ul>
+<p>The pipeline flow is shown as <a class="reference internal" href="#render-output-pipeline"><span class="std std-numref">Fig. 85</span></a>.</p>
+<figure class="align-default" id="id82">
+<span id="render-output-pipeline"></span><div class="graphviz"><img src="_images/graphviz-1920b7fefd29ca5ab8e864cb21aa89e42bb5c963.png" alt="digraph RenderOutputPipeline {
+    rankdir=LR;
+    node [shape=box, style=filled, fillcolor=lightgray];
+
+    FragmentShader -&gt; ROP_Unit;
+    ROP_Unit -&gt; DepthStencilTest;
+    DepthStencilTest -&gt; Blending;
+    Blending -&gt; MSAAResolve;
+    MSAAResolve -&gt; FramebufferWrite;
+
+    ROP_Unit [label=&quot;ROP Unit&quot;, fillcolor=lightyellow];
+    FramebufferWrite [label=&quot;Framebuffer Write&quot;, fillcolor=lightblue];
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 85 </span><span class="caption-text">The pipeline for Render Output Units (ROPs)</span><a class="headerlink" href="#id82" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Performance Considerations</p>
+<ul class="simple">
+<li><p><strong>ROP Count</strong>: More ROPs can increase pixel throughput, especially at high
+resolutions.</p></li>
+<li><p><strong>Memory Bandwidth</strong>: ROPs are tightly coupled with memory controllers;
+bandwidth limits can bottleneck performance.</p></li>
+<li><p><strong>Antialiasing Support</strong>: Hardware MSAA and resolve operations are often
+implemented in ROPs.</p></li>
+<li><p><strong>Compression</strong>: Some GPUs use framebuffer compression to reduce bandwidth
+usage.</p></li>
+</ul>
+<p>Vendor-Specific Notes</p>
+<ul class="simple">
+<li><p><strong>NVIDIA</strong>: Refers to these units as ROPs; tightly integrated with memory
+partitions.</p></li>
+<li><p><strong>AMD</strong>: Calls them Render Backends (RBs); RDNA architecture decouples ROPs
+from shader engines.</p></li>
+<li><p><strong>Intel &amp; ARM</strong>: Implement simplified ROPs for power-efficient mobile
+rendering.</p></li>
+</ul>
+<p>References</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://en.wikipedia.org/wiki/Render_output_unit">Render Output Unit - Wikipedia</a></p></li>
+<li><p><a class="reference external" href="https://www.corsair.com/us/en/explorer/gamer/gaming-pcs/what-is-a-rop-on-a-gpu/">What is a ROP on a GPU? - CORSAIR</a></p></li>
+<li><p><a class="reference external" href="https://www.techpowerup.com/forums/threads/rops-and-tmus-what-is-it.227596/">TechPowerUp Forums: ROPs and TMUs</a></p></li>
+</ul>
+</section>
+</section>
+<section id="system-features-buffers">
+<h2><a class="toc-backref" href="#id101" role="doc-backlink">System Features – Buffers</a><a class="headerlink" href="#system-features-buffers" title="Link to this heading">¶</a></h2>
+<p>CPU and GPU provides different
+Buffers to speedup OpenGL pipeline rendering <a class="footnote-reference brackets" href="#buffers-redbook" id="id38" role="doc-noteref"><span class="fn-bracket">[</span>30<span class="fn-bracket">]</span></a>.</p>
+<table class="docutils align-default" id="id83">
+<caption><span class="caption-number">Table 10 </span><span class="caption-text">Graphics Buffers</span><a class="headerlink" href="#id83" title="Link to this table">¶</a></caption>
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 10.0%" />
+<col style="width: 14.0%" />
+<col style="width: 16.0%" />
+<col style="width: 20.0%" />
+<col style="width: 20.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Buffer Type</p></th>
+<th class="head"><p>Access</p></th>
+<th class="head"><p>Location</p></th>
+<th class="head"><p>API/Usage</p></th>
+<th class="head"><p>Function</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Vertex Buffer (VBO)</p></td>
+<td><p>Read</p></td>
+<td><p>GPU</p></td>
+<td><p>OpenGL, Vulkan</p></td>
+<td><p>Store vertex attributes</p></td>
+<td><p>Holds data like position, normal, and texture coords for drawing geometry.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Index Buffer (IBO/EBO)</p></td>
+<td><p>Read</p></td>
+<td><p>GPU</p></td>
+<td><p>OpenGL, Vulkan</p></td>
+<td><p>Reuse vertex data</p></td>
+<td><p>Stores indices into the vertex buffer to avoid duplication.</p></td>
+</tr>
+<tr class="row-even"><td><p>Uniform Buffer (UBO)</p></td>
+<td><p>Read</p></td>
+<td><p>GPU or Shared</p></td>
+<td><p>OpenGL, Vulkan</p></td>
+<td><p>Constant input data</p></td>
+<td><p>Shares transformation matrices, lighting, or material data across shaders.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Shader Storage Buffer (SSBO)</p></td>
+<td><p>Read/Write</p></td>
+<td><p>GPU or Shared</p></td>
+<td><p>OpenGL, Vulkan</p></td>
+<td><p>General data exchange</p></td>
+<td><p>Flexible, large buffers accessible for structured shader I/O.</p></td>
+</tr>
+<tr class="row-even"><td><p>Constant Buffer</p></td>
+<td><p>Read</p></td>
+<td><p>GPU or Shared</p></td>
+<td><p>DirectX, Vulkan</p></td>
+<td><p>Fast uniform access</p></td>
+<td><p>Optimized for fast access to frequently read small data.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Image / Texture Buffer</p></td>
+<td><p>Read/Write</p></td>
+<td><p>GPU</p></td>
+<td><p>OpenGL, Vulkan</p></td>
+<td><p>Sample/store pixels</p></td>
+<td><p>Stores image data for sampling or read/write image operations in shaders.</p></td>
+</tr>
+<tr class="row-even"><td><p>Color Buffer</p></td>
+<td><p>Write</p></td>
+<td><p>GPU</p></td>
+<td><p>OpenGL, Vulkan</p></td>
+<td><p>Store final pixel color</p></td>
+<td><p>Stores output of fragment shaders; used for display or post-processing.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Depth Buffer (Z-Buffer)</p></td>
+<td><p>Write/Read</p></td>
+<td><p>GPU</p></td>
+<td><p>OpenGL, Vulkan</p></td>
+<td><p>Visibility testing</p></td>
+<td><p>Stores per-pixel depth values for hidden surface removal.</p></td>
+</tr>
+<tr class="row-even"><td><p>Frame Buffer</p></td>
+<td><p>Write</p></td>
+<td><p>GPU</p></td>
+<td><p>OpenGL, Vulkan</p></td>
+<td><p>Store render output</p></td>
+<td><p>Holds final color, depth, or other rendered output.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Stencil Buffer</p></td>
+<td><p>Read/Write</p></td>
+<td><p>GPU</p></td>
+<td><p>OpenGL, Vulkan</p></td>
+<td><p>Pixel masking</p></td>
+<td><p>Used to conditionally discard or preserve pixels in the pipeline.</p></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><p>Color buffer</p>
+<p>They contain the RGB or sRGB color data and may also contain alpha values for
+each pixel in the framebuffer. There may be multiple color buffers in a
+framebuffer.
+You’ve already used double buffering for animation. Double buffering is done
+by making the main color buffer have two parts: a front buffer that’s displayed
+in your window; and a back buffer, which is where you render the new image
+<a class="footnote-reference brackets" href="#redbook-p155" id="id39" role="doc-noteref"><span class="fn-bracket">[</span>31<span class="fn-bracket">]</span></a>.</p>
+</li>
+<li><p>Depth buffer (Z buffer)</p>
+<p>Depth is measured in terms of distance to the eye, so pixels with larger
+depth-buffer values are overwritten by pixels with smaller values
+<a class="footnote-reference brackets" href="#redbook-p156" id="id40" role="doc-noteref"><span class="fn-bracket">[</span>32<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#z-buffer-wiki" id="id41" role="doc-noteref"><span class="fn-bracket">[</span>33<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#depthstencils-ogl" id="id42" role="doc-noteref"><span class="fn-bracket">[</span>34<span class="fn-bracket">]</span></a>.</p>
+</li>
+<li><p>Frame Buffer</p>
+<p>OpenGL offers: the color, depth and stencil buffers.
+This combination of buffers is known as the default framebuffer and as you’ve
+seen, a framebuffer is an area in memory that can be rendered to
+<a class="footnote-reference brackets" href="#framebuffers-ogl" id="id43" role="doc-noteref"><span class="fn-bracket">[</span>35<span class="fn-bracket">]</span></a>.</p>
+</li>
+<li><p>Stencil Buffer</p>
+<p>In the simplest case, the stencil buffer is used to limit the area of
+rendering (stenciling) <a class="footnote-reference brackets" href="#stencils-buffer-wiki" id="id44" role="doc-noteref"><span class="fn-bracket">[</span>36<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#depthstencils-ogl" id="id45" role="doc-noteref"><span class="fn-bracket">[</span>34<span class="fn-bracket">]</span></a>.</p>
+</li>
+</ul>
+<table class="docutils align-default" id="id84">
+<caption><span class="caption-number">Table 11 </span><span class="caption-text">Compute Buffers</span><a class="headerlink" href="#id84" title="Link to this table">¶</a></caption>
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 10.0%" />
+<col style="width: 14.0%" />
+<col style="width: 16.0%" />
+<col style="width: 20.0%" />
+<col style="width: 20.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Buffer Type</p></th>
+<th class="head"><p>Access</p></th>
+<th class="head"><p>Location</p></th>
+<th class="head"><p>API/Usage</p></th>
+<th class="head"><p>Function</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Compute Buffer</p></td>
+<td><p>Read/Write</p></td>
+<td><p>GPU or Shared</p></td>
+<td><p>OpenCL, Vulkan, CUDA</p></td>
+<td><p>Parallel compute data</p></td>
+<td><p>Buffers used in compute kernels or shaders for general processing.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Atomic Buffer</p></td>
+<td><p>Read/Write (Atomic)</p></td>
+<td><p>GPU</p></td>
+<td><p>OpenGL, Vulkan</p></td>
+<td><p>Shared counters/data</p></td>
+<td><p>Used with atomic ops for synchronization or accumulation.</p></td>
+</tr>
+<tr class="row-even"><td><p>Acceleration Structure Buffer</p></td>
+<td><p>Read</p></td>
+<td><p>GPU</p></td>
+<td><p>Vulkan RT, DXR</p></td>
+<td><p>Ray tracing acceleration</p></td>
+<td><p>Holds spatial hierarchy (BVH) for ray traversal efficiency.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Indirect Draw Buffer</p></td>
+<td><p>Read</p></td>
+<td><p>GPU</p></td>
+<td><p>Vulkan, DirectX</p></td>
+<td><p>GPU-issued draw</p></td>
+<td><p>Stores draw/dispatch args to issue commands without CPU.</p></td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><p>DXR: DirectX Raytracing — a D3D12 extension for real-time ray tracing using
+GPU acceleration.</p></li>
+<li><p>Indirect Draw Buffer: A GPU-side buffer holding draw parameters so that GPU
+(not CPU) can issue rendering work dynamically.</p></li>
+</ul>
+<table class="docutils align-default" id="id85">
+<caption><span class="caption-number">Table 12 </span><span class="caption-text">System-Level and Utility Buffers</span><a class="headerlink" href="#id85" title="Link to this table">¶</a></caption>
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 10.0%" />
+<col style="width: 14.0%" />
+<col style="width: 16.0%" />
+<col style="width: 20.0%" />
+<col style="width: 20.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Buffer Type</p></th>
+<th class="head"><p>Access</p></th>
+<th class="head"><p>Location</p></th>
+<th class="head"><p>API/Usage</p></th>
+<th class="head"><p>Function</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Command Buffer</p></td>
+<td><p>Write (CPU) / Read (GPU)</p></td>
+<td><p>Host → GPU</p></td>
+<td><p>Vulkan, DirectX12</p></td>
+<td><p>Submit work</p></td>
+<td><p>Encapsulates commands like draw, dispatch, and memory ops.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Parking / Staging Buffer</p></td>
+<td><p>Read/Write</p></td>
+<td><p>Host-visible</p></td>
+<td><p>Vulkan, CUDA</p></td>
+<td><p>Temporary transfer</p></td>
+<td><p>Temporary CPU-visible buffer for uploading/downloading GPU data.</p></td>
+</tr>
+</tbody>
+</table>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="cg-basictheory" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id30">2</a>)</span>
+<p><a class="reference external" href="https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_BasicsTheory.html">https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_BasicsTheory.html</a></p>
+</aside>
+<aside class="footnote brackets" id="wiki-gpu" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Graphics_processing_unit">https://en.wikipedia.org/wiki/Graphics_processing_unit</a></p>
+</aside>
+<aside class="footnote brackets" id="wiki-ray-tracing" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">3</a><span class="fn-bracket">]</span></span>
+<p>&lt;<a class="reference external" href="https://en.wikipedia.org/wiki/Ray_tracing_(graphics)">https://en.wikipedia.org/wiki/Ray_tracing_(graphics)</a>&gt;</p>
+</aside>
+<aside class="footnote brackets" id="vrs" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">4</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://developer.nvidia.com/vrworks/graphics/variablerateshading">https://developer.nvidia.com/vrworks/graphics/variablerateshading</a></p>
+</aside>
+<aside class="footnote brackets" id="simt-wiki" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">5</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Single_instruction,_multiple_threads">https://en.wikipedia.org/wiki/Single_instruction,_multiple_threads</a></p>
+</aside>
+<aside class="footnote brackets" id="quantitative-threads-lanes" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">6</a><span class="fn-bracket">]</span></span>
+<p>The SIMD Thread Scheduler includes a scoreboard that lets it know which threads of SIMD instructions are ready to run, and then it sends them off to a dispatch unit to be run on the multithreaded SIMD Processor. It is identical to a hardware thread scheduler in a traditional multithreaded processor (see Chapter 3), just that it is scheduling threads of SIMD instructions. Thus, GPU hardware has two levels of hardware schedulers: (1) the Thread Block Scheduler that assigns Thread Blocks (bodies of vectorized loops) to multi- threaded SIMD Processors, which ensures that Thread Blocks are assigned to the processors whose local memories have the corresponding data, and (2) the SIMD Thread Scheduler within a SIMD Processor, which schedules when threads of SIMD instructions should run.
+Book Figure 4.14 of Computer Architecture: A Quantitative Approach 5th edition (The
+Morgan Kaufmann Series in Computer Architecture and Design)</p>
+</aside>
+<aside class="footnote brackets" id="quantitative-gpu-sm" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id7">7</a><span class="fn-bracket">]</span></span>
+<p>Book Figure 4.20 of Computer Architecture: A Quantitative Approach 5th edition (The
+Morgan Kaufmann Series in Computer Architecture and Design)</p>
+</aside>
+<aside class="footnote brackets" id="cuda-sm" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id8">8</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://www.tomshardware.com/reviews/geforce-gtx-480,2585-18.html">https://www.tomshardware.com/reviews/geforce-gtx-480,2585-18.html</a></p>
+</aside>
+<aside class="footnote brackets" id="fermi" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id9">9</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://www.nvidia.com/content/PDF/fermi_white_papers/NVIDIA_Fermi_Compute_architecture_Whitepaper.pdf?utm_source=chatgpt.com">https://www.nvidia.com/content/PDF/fermi_white_papers/NVIDIA_Fermi_Compute_architecture_Whitepaper.pdf?utm_source=chatgpt.com</a></p>
+</aside>
+<aside class="footnote brackets" id="chime" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id10">10</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://www.cs.cmu.edu/afs/cs/academic/class/15418-s12/www/lectures/02_multicore.pdf">https://www.cs.cmu.edu/afs/cs/academic/class/15418-s12/www/lectures/02_multicore.pdf</a></p>
+</aside>
+<aside class="footnote brackets" id="quantitative-gpu-l1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id11">11</a><span class="fn-bracket">]</span></span>
+<p>Page 306 of Computer Architecture: A Quantitative Approach 5th edition (The
+Morgan Kaufmann Series in Computer Architecture and Design)</p>
+</aside>
+<aside class="footnote brackets" id="wiki-tbcp" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>12<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id12">1</a>,<a role="doc-backlink" href="#id15">2</a>,<a role="doc-backlink" href="#id16">3</a>)</span>
+<p>&lt;<a class="reference external" href="https://en.wikipedia.org/wiki/Thread_block_(CUDA_programming)">https://en.wikipedia.org/wiki/Thread_block_(CUDA_programming)</a>&gt;</p>
+</aside>
+<aside class="footnote brackets" id="mapping-blocks-to-sm" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>13<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id13">1</a>,<a role="doc-backlink" href="#id14">2</a>,<a role="doc-backlink" href="#id20">3</a>)</span>
+<p>&lt;<a class="reference external" href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#warps">https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#warps</a>&gt;</p>
+</aside>
+<aside class="footnote brackets" id="volta" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id17">14</a><span class="fn-bracket">]</span></span>
+<p>See the same Figures from <a class="reference external" href="https://images.nvidia.com/content/volta-architecture/pdf/volta-architecture-whitepaper.pdf">https://images.nvidia.com/content/volta-architecture/pdf/volta-architecture-whitepaper.pdf</a></p>
+</aside>
+<aside class="footnote brackets" id="chatgpt-pumh" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id18">15</a><span class="fn-bracket">]</span></span>
+<p>chatgpt: Give me a memory hierarchy for L1, L2, local memory,
+shared memory for these processing units of hierarchy in reST and
+seperate dot graph.</p>
+</aside>
+<aside class="footnote brackets" id="quantitative-gpu-mem" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id19">16</a><span class="fn-bracket">]</span></span>
+<p>Book Figure 4.17 of Computer Architecture: A Quantitative Approach 5th edition (The
+Morgan Kaufmann Series in Computer Architecture and Design)</p>
+</aside>
+<aside class="footnote brackets" id="quantitative-gpu-terms" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id21">17</a><span class="fn-bracket">]</span></span>
+<p>Book Figure 4.12 of Computer Architecture: A Quantitative Approach 5th edition (The
+Morgan Kaufmann Series in Computer Architecture and Design)</p>
+</aside>
+<aside class="footnote brackets" id="quantitative-grid" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id22">18</a><span class="fn-bracket">]</span></span>
+<p>Book Figure 4.13 of Computer Architecture: A Quantitative Approach 5th edition (The
+Morgan Kaufmann Series in Computer Architecture and Design)</p>
+</aside>
+<aside class="footnote brackets" id="quantitative-gpu-threadblock" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>19<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id23">1</a>,<a role="doc-backlink" href="#id24">2</a>)</span>
+<p>Figure 4.15 Floor plan of the Fermi GTX 480
+GPU of A Quantitative Approach 5th edition (The Morgan Kaufmann Series in
+Computer Architecture and Design). <strong>Giga Thread</strong> is the name of the
+scheduler that distributes Thread Blocks to Multiprocessors, each of
+which has its own SIMD Thread Scheduler.</p>
+</aside>
+<aside class="footnote brackets" id="gpu-core" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id25">20</a><span class="fn-bracket">]</span></span>
+<p>Copilot: Is GPU core meaning SM in NVidia?</p>
+</aside>
+<aside class="footnote brackets" id="quantitative-gpu-warp" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id26">21</a><span class="fn-bracket">]</span></span>
+<p>Book Figure 4.14 and 4.24 of Computer Architecture: A Quantitative Approach 5th edition (The
+Morgan Kaufmann Series in Computer Architecture and Design)</p>
+</aside>
+<aside class="footnote brackets" id="quantitative-gpu-ac" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id27">22</a><span class="fn-bracket">]</span></span>
+<p>Page 300 of Computer Architecture: A Quantitative Approach 5th edition (The
+Morgan Kaufmann Series in Computer Architecture and Design)</p>
+</aside>
+<aside class="footnote brackets" id="quantitative-gpu-gs" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id28">23</a><span class="fn-bracket">]</span></span>
+<p>Page 280 of Computer Architecture: A Quantitative Approach 5th edition (The
+Morgan Kaufmann Series in Computer Architecture and Design)</p>
+</aside>
+<aside class="footnote brackets" id="reg-less" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id29">24</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://cccp.eecs.umich.edu/papers/jklooste-micro17.pdf">https://cccp.eecs.umich.edu/papers/jklooste-micro17.pdf</a></p>
+</aside>
+<aside class="footnote brackets" id="raster-unit" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id31">25</a><span class="fn-bracket">]</span></span>
+<p>copilot: Please provide detailed information about the Rasterization Unit and its pipeline, including a separated dot graph and relevant website references in reStructuredText (reST) format.</p>
+</aside>
+<aside class="footnote brackets" id="tpu" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id32">26</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="http://math.hws.edu/graphicsbook/c6/s4.html">http://math.hws.edu/graphicsbook/c6/s4.html</a></p>
+</aside>
+<aside class="footnote brackets" id="texturewrapper" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id33">1</a>,<a role="doc-backlink" href="#id34">2</a>,<a role="doc-backlink" href="#id35">3</a>,<a role="doc-backlink" href="#id36">4</a>)</span>
+<p><a class="reference external" href="https://learnopengl.com/Getting-started/Textures">https://learnopengl.com/Getting-started/Textures</a></p>
+</aside>
+<aside class="footnote brackets" id="rops" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id37">28</a><span class="fn-bracket">]</span></span>
+<p>copilot: Please provide detailed information about the Render Output Units (ROPs) and its pipeline, including a dot graph and relevant website references in reStructuredText (reST) format.</p>
+</aside>
+<aside class="footnote brackets" id="redbook" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>29<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id46">1</a>,<a role="doc-backlink" href="#id47">2</a>,<a role="doc-backlink" href="#id48">3</a>)</span>
+<p><a class="reference external" href="http://www.opengl-redbook.com">http://www.opengl-redbook.com</a></p>
+</aside>
+<aside class="footnote brackets" id="buffers-redbook" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id38">30</a><span class="fn-bracket">]</span></span>
+<p>Page 155 - 185 of book “OpenGL Programming Guide 9th Edition” <a class="footnote-reference brackets" href="#redbook" id="id46" role="doc-noteref"><span class="fn-bracket">[</span>29<span class="fn-bracket">]</span></a>.</p>
+</aside>
+</aside>
+<p>n Series in Computer Architecture and Design)</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="redbook-p155" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id39">31</a><span class="fn-bracket">]</span></span>
+<p>Page 155 of book “OpenGL Programming Guide 9th Edition” <a class="footnote-reference brackets" href="#redbook" id="id47" role="doc-noteref"><span class="fn-bracket">[</span>29<span class="fn-bracket">]</span></a>.</p>
+</aside>
+<aside class="footnote brackets" id="redbook-p156" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id40">32</a><span class="fn-bracket">]</span></span>
+<p>Page 156 of book “OpenGL Programming Guide 9th Edition” <a class="footnote-reference brackets" href="#redbook" id="id48" role="doc-noteref"><span class="fn-bracket">[</span>29<span class="fn-bracket">]</span></a>.</p>
+</aside>
+<aside class="footnote brackets" id="z-buffer-wiki" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id41">33</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Z-buffering">https://en.wikipedia.org/wiki/Z-buffering</a></p>
+</aside>
+<aside class="footnote brackets" id="depthstencils-ogl" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>34<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id42">1</a>,<a role="doc-backlink" href="#id45">2</a>)</span>
+<p><a class="reference external" href="https://open.gl/depthstencils">https://open.gl/depthstencils</a></p>
+</aside>
+<aside class="footnote brackets" id="framebuffers-ogl" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id43">35</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://open.gl/framebuffers">https://open.gl/framebuffers</a></p>
+</aside>
+<aside class="footnote brackets" id="stencils-buffer-wiki" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id44">36</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Stencil_buffer">https://en.wikipedia.org/wiki/Stencil_buffer</a></p>
+</aside>
+</aside>
+</section>
+</section>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="Bottom">
+      
+        <p>
+        «&#160;&#160;<a href="opengl.html">OpenGL</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="sw.html">Software Structure</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2026, Chen Chung-Shu.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    </div>
+  </body>
+</html>
