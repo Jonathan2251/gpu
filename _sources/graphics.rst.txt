@@ -1,7 +1,7 @@
 .. _graphics:
 
-Concept in Graphics and Systems
-===============================
+Graphics Structure and Principle
+================================
 
 .. contents::
    :local:
