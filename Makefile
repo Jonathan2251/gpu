@@ -244,8 +244,3 @@ gh-pages:
 	rm -rf $(GH_PAGES_SOURCES) build
 	git add -A
 	git commit -m "Generated gh-pages for `git log main -1 --pretty=short --abbrev-commit`" && git push origin gh-pages ; git checkout main
-
-.PHONY: clean
-clean:
-	bash ./clean.sh
-

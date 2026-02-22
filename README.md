@@ -1,1 +1,2 @@
-# gpu
+% make html
+% make latexpdf
