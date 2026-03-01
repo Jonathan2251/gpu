@@ -770,6 +770,31 @@ This yields:
 Projection
 ----------
 
+✅ Reason:
+
+As described in the previous section :ref:`cross-product`,
+each mesh (triangle or primitive) has a fixed “outer” and “inner” side, 
+determined by CCW ordering in object space.
+By reading these CCW-ordered vertices sequentially, the shape and surface 
+orientation of the 3D model can be constructed, and hidden primitives
+can be clipped or discarded.
+
+However primitive clipping and discarding can be performed much
+more efficiently by mapping the view frustum to **clip space**, where the GPU 
+can **easily clip or discard primitives**, as shown :numref:`trans_steps_2` 
+from the earlier section :ref:`transformation` again for clarity. 
+Performing clipping and discarding in **world space** would be significantly 
+more **difficult**.
+
+.. _trans_steps_2: 
+.. figure:: ../Fig/geo-math/trans-steps.png
+  :align: center
+  :scale: 50 %
+
+  Cooridinates Transform Pipeline [#cg_basictheory]_
+
+✅ Projection Area:
+
 .. _ViewFrustum: 
 .. figure:: ../Fig/geo-math/ViewFrustum.png
   :align: center
@@ -802,41 +827,6 @@ Assume a right-handed camera coordinate system as shown in :numref:`ViewFrustum`
   * bottom: :math:`b`
   * top: :math:`t`
 
-A point in camera space is represented as:
-
-.. math::
-
-   (x, y, z, 1), \quad z < 0
-
-The position on the near plane is:
-
-.. math::
-
-   (x_n, y_n, -n) \quad with \quad x_n = \frac{n}{-z}x, \quad \frac{n}{-z}y
-
-✅ Reason:
-
-As described in the previous section :ref:`cross-product`,
-each mesh (triangle or primitive) has a fixed “outer” and “inner” side, 
-determined by CCW ordering in object space.
-By reading these CCW-ordered vertices sequentially, the shape and surface 
-orientation of the 3D model can be constructed, and hidden primitives
-can be clipped or discarded.
-
-However primitive clipping and discarding can be performed much
-more efficiently by mapping the view frustum to **clip space**, where the GPU 
-can **easily clip or discard primitives**, as shown :numref:`trans_steps_2` 
-from the earlier section :ref:`transformation` again for clarity. 
-Performing clipping and discarding in **world space** would be significantly 
-more **difficult**.
-
-.. _trans_steps_2: 
-.. figure:: ../Fig/geo-math/trans-steps.png
-  :align: center
-  :scale: 50 %
-
-  Cooridinates Transform Pipeline [#cg_basictheory]_
-
 ✅ Matrix :math:`P_{\text{persp}}` converts 3D coordinates into clip space:
 
 Perspective projection :math:`P_{\text{persp}}` (general form): 
@@ -852,7 +842,7 @@ Converts 3D → clip space with depth
    0 & 0 & -1 & 0
    \end{bmatrix}
 
-by a homogeneous point
+A point :math:`p` in camera space is represented as:
 
 .. math::
 
@@ -860,7 +850,7 @@ by a homogeneous point
    \begin{bmatrix} x \\ y \\ z \\ 1 \end{bmatrix}
 
 Converting from camera space to cliping space produces a
-homogeneous coordinate of the form :math:`[x, y, z, w_c]`:
+homogeneous coordinate of the form :math:`[x_c, y_c, z_c, w_c]`:
 
 .. math::
 
@@ -885,15 +875,274 @@ A vertex lies inside the view frustum if the following conditions are satisfied:
    -w_c \le y_c \le w_c \
    -w_c \le z_c \le w_c
 
-✅ Where does the matrix :math:`P_{\text{persp}}` from:
+.. _math-proof-clip:
+
+✅ Matrix :math:`P_{\text{persp}}`  Derivation:
+
+★ **Idea**:
 
 The perspective projection matrix :math:`P_{\text{persp}}` is derived by 
 choosing its coefficients such that, after perspective division, the 
-frustum boundaries :math:`l,r,b,t,n and f` are mapped to the **canonical cube**
+frustum boundaries :math:`l,r,b,t,n,f` are mapped to the **canonical cube**
 :math:`\mathbf{[-1,1]^3}`.
 
-The mathematical proof is provided in :ref:`Proof for 
-Perspective Projection <math-proof-clip>`.
+More explicitly, we impose the following constraints:
+
+.. math::
+
+   x = l \rightarrow x_{ndc} = -1
+
+   x = r \rightarrow x_{ndc} = 1
+
+   y = b \rightarrow y_{ndc} = -1
+
+   y = t \rightarrow y_{ndc} = 1
+
+   z = -n \rightarrow z_{ndc} = -1
+
+   z = -f \rightarrow z_{ndc} = 1
+
+These conditions determine the coefficients of the matrix.
+
+**X Coordinate Mapping**
+
+Since the near plane is located at :math:`z = -n`, by similar triangles, the 
+projected x-coordinate on the near plane is proportional to the ratio between
+:math:`-n` and :`math:`z` as follows:
+
+.. math::
+
+   x_n = \frac{-n}{z} x
+
+The near-plane bounds map to NDC such that 
+:math:`x = l \Rightarrow x_{ndc} = -1` and 
+:math:`x = r \Rightarrow x_{ndc} = +1`.
+Since the midpoint :math:`\frac{l + r}{2}` is generally not equal to 0, the 
+mapping is not centered at the origin.
+Therefore, a linear mapping requires an offset term :math:`B_x` as follows:
+
+.. math::
+
+   x_{ndc} = A_x x_n + B_x
+
+Applying the near constraints: substituting :math:`x_n = l\ and\ x_{ndc} = -1`:
+
+.. math::
+
+   -1 = A_x l + B_x
+   \qquad ...(1)
+
+Applying the far constraints: substituting :math:`x_n = r\ and\ x_{ndc} = 1`:
+
+.. math::
+
+   1 = A_x r + B_x
+   \qquad ...(2)
+
+Solving equations (1) and (2) to get :math:`A_x`:
+
+.. math::
+
+  2 = A_x (r-l) \Rightarrow A_x = \frac{2}{r-l} 
+  \qquad ...(3)
+
+Substituting equation (3) to (2):
+
+.. math::
+
+  1 = A_x r + B_x \Rightarrow 1 = \frac{2}{r-l}r + B_x 
+  \Rightarrow B_x = \frac{r-l-2r}{r-1} = -\frac{r+l}{r-l} \qquad ...(4)
+
+From (3) and (4):
+Solving for :math:`A_x` and :math:`B_x` yields:
+
+.. math::
+
+   A_x = \frac{2}{r-l}, \quad
+   B_x = -\frac{r+l}{r-l}
+
+Substituting :math:`x_n = \frac{-n}{z} x` gives the resulting mapping is:
+
+.. math::
+
+   x_{ndc}
+   = A_x x_n + B_x = \frac{-2n}{r-l} \frac{x}{z}
+     - \frac{r+l}{r-l}
+
+Since :math:`x_{ndc} = \frac{x_c}{w_c}` and :math:`w_c = -z`, therefore:
+ 
+.. math::
+
+   x_c = x_{ndc} (-z) = \frac{2n}{r-l} x + \frac{r+l}{r-l} z.
+
+**The physical meaning** of :math:`x_c = x_{ndc} (-z)` is:
+
+Multiplying :math:`x_c = x_{ndc}` by :math:`(-z)` converts the normalized 
+coordinate back into the **real horizontal position at that depth**.
+
+**Y Coordinate Mapping**:
+
+Using the same derivation for the y-axis:
+
+.. math::
+
+   y_n = \frac{-n}{z} y
+
+The resulting mapping is:
+
+.. math::
+
+   A_y = \frac{2}{t-b}, \quad
+   B_y = -\frac{t+b}{t-b}
+
+:math:`y_{ndc}`:
+
+.. math::
+
+   y_{ndc}
+   = A_y y_n + B_y = \frac{-2n}{t-b} \frac{y}{z}
+     - \frac{t+b}{t-b}
+
+:math:`y_c`:
+
+.. math::
+
+   y_c = y_{ndc} (-z) = \frac{2n}{t-b} y + \frac{t+b}{t-b} z.
+
+**Z Coordinate Mapping**
+
+Depth is mapped linearly such that:
+
+.. math::
+
+   z = -n \Rightarrow z_{ndc} = -1
+   \qquad
+   z = -f \Rightarrow z_{ndc} = +1
+
+Assume:
+
+.. math::
+
+   z_c = A_z z + B_z
+
+Then:
+
+.. math::
+
+   z_{ndc} = \frac{A_z z + B_z}{-z}
+
+Applying the near constraints: substituting :math:`z = -n\ and\ z_{ndc} = -1`:
+
+.. math::
+
+   -1 = \frac{A_z(-n) + B_z}{-(-n)} \Rightarrow -n = {A_z(-n) + B_z} 
+   \qquad ...(1)
+
+Applying the far constraints: substituting :math:`z = -f\ and\ z_{ndc} = 1`:
+
+.. math::
+
+   1 = \frac{A_z(-f) + B_z}{-(-f)} \Rightarrow  f = {A_z(-f) + B_z} 
+   \qquad ...(2)
+
+Solving equations (1) and (2) to get :math:`A_z`:
+
+.. math::
+
+  -n-f = {A_z(-n+f)} \Rightarrow {A_z} = \frac{-n-f}{-n+f} = -\frac{f+n}{f-n}
+  \qquad ...(3)
+
+Substituting equation (3) to (2):
+
+.. math::
+
+  f = {A_z(-f) + B_z} \Rightarrow f = {-\frac{f+n}{f-n}(-f) + B_z} 
+
+  \Rightarrow {B_z} = f+\frac{f+n}{f-n}(-f) = \frac{(f^2-fn)+(-f^2-fn)}{f-n} = 
+  -\frac{2fn}{f-n} \qquad ...(4)
+
+From (3) and (4):
+
+.. math::
+
+   A_z = -\frac{f+n}{f-n}, \quad
+   B_z = -\frac{2fn}{f-n}
+
+:math:`z_{ndc}`:
+
+.. math::
+
+   z_{ndc} = \frac{A_z z + B_z}{-z} = \frac{-\frac{f+n}{f-n} z -\frac{2fn}{f-n}}{-z}
+
+:math:`z_c`:
+
+.. math::
+
+   z_c = z_{ndc} (-z) = -\frac{f+n}{f-n} z -\frac{2fn}{f-n}
+
+
+**Perspective Projection Matrix**
+
+Combining all components, the perspective projection matrix is:
+
+.. math::
+
+   P =
+   \begin{bmatrix}
+   \frac{2n}{r-l} & 0 & \frac{r+l}{r-l} & 0 \\
+   0 & \frac{2n}{t-b} & \frac{t+b}{t-b} & 0 \\
+   0 & 0 & -\frac{f+n}{f-n} & -\frac{2fn}{f-n} \\
+   0 & 0 & -1 & 0
+   \end{bmatrix}
+
+A point :math:`p` in camera space is represented as:
+
+.. math::
+
+   \mathbf{p} =
+   \begin{bmatrix} x \\ y \\ z \\ 1 \end{bmatrix}
+
+Converting from camera space to cliping space produces a
+homogeneous coordinate of the form :math:`[x_c, y_c, z_c, w_c]`:
+
+.. math::
+
+   P \mathbf{p} =
+   \begin{bmatrix} x_c \\ y_c \\ z_c \\ w_c \end{bmatrix}
+
+As mentioned the **physical meaning** of 
+:math:`x_c = x_{ndc} (-z), y_c = y_{ndc} (-z), z_c = z_{ndc} (-z)` is:
+
+Converts the normalized coordinate back into the **real horizontal position at
+that depth**.
+
+If :math:`x_c = x_{ndc} (-z_i), y_c = y_{ndc} (-z_i), z_c = z_{ndc} (-z_i)`,
+where :math:`z_i` is the depth of plane :math:`P_i` (a plane located between 
+the near and far planes), then this operation projects NDC corridinates onto 
+**the plane** :math:`P_i`.
+
+For all vertices that survived clipping, the resulting coordinates satisfy:
+
+.. math::
+
+    -1 \le x_{ndc} \le 1 \
+    -1 \le y_{ndc} \le 1 \
+    -1 \le z_{ndc} \le 1
+
+After transforming to **ciip space**, each vertex corrodinate is expressed in 
+**homogeneous** form, and the **view frustum boundaries are encoded in the 
+coordinate values**.
+A vertex lies inside the view frustum if the following conditions are satisfied:
+
+.. math::
+
+   -w_c \le x_c \le w_c \
+   -w_c \le y_c \le w_c \
+   -w_c \le z_c \le w_c
+
+Based on the clip-space representation, when :math:`w_c` is :math:`-z` the 
+coordinates :math:`[x, y, z]` **can be clipped according to their depth 
+values**.
 
 ✅ Map points to NDC:
 
@@ -1127,248 +1376,6 @@ The final step applies the perspective divide:
 
 For these reasons, modern graphics pipelines perform triangle clipping and 
 discarding in clip space, not in world space.
-
-.. _math-proof-clip:
-
-✅ Perspective Projection Matrix Derivation
-
-This section derives the perspective projection matrix by mapping a view
-frustum in camera space to Normalized Device Coordinates (NDC).
-
-A vertex is kept
-only if it satisfies the following inequalities:
-
-.. math::
-
-   -w_c \le x_c \le w_c
-
-.. math::
-
-   -w_c \le y_c \le w_c
-
-.. math::
-
-   -w_c \le z_c \le w_c
-
-These inequalities define the **view frustum in homogeneous coordinates**.
-
-If a vertex violates any of these conditions, it lies outside the view
-frustum (left, right, top, bottom, near, or far plane) and is clipped or
-discarded.
-
-The goal is to map this frustum to Normalized Device Coordinates (NDC):
-
-.. math::
-
-   x_{ndc}, y_{ndc}, z_{ndc} \in [-1, 1]
-
-★ **Idea**:
-
-The idea of deriving the perspective projection matrix 
-:math:`P_{\text{persp}}` is to choose its coefficients such that, after 
-perspective division, the frustum boundaries are mapped to the canonical cube 
-:math:`[-1,1]^3`.
-
-More explicitly, we impose the following constraints:
-
-.. math::
-
-   x = l \rightarrow x_{ndc} = -1
-
-   x = r \rightarrow x_{ndc} = 1
-
-   y = b \rightarrow y_{ndc} = -1
-
-   y = t \rightarrow y_{ndc} = 1
-
-   z = -n \rightarrow z_{ndc} = -1
-
-   z = -f \rightarrow z_{ndc} = 1
-
-These conditions determine the coefficients of the matrix.
-
-**Homogeneous Perspective Divide**
-
-After projection, homogeneous division is applied:
-
-.. math::
-
-   x_{ndc} = \frac{x_c}{w_c}, \quad
-   y_{ndc} = \frac{y_c}{w_c}, \quad
-   z_{ndc} = \frac{z_c}{w_c}
-
-To achieve perspective foreshortening, the homogeneous coordinate must satisfy:
-
-.. math::
-
-   w_c = -z
-
-This requirement determines the last row of the projection matrix.
-
-**X Coordinate Mapping**
-
-.. math::
-
-   A_x = \frac{2}{r-l}, \quad
-   B_x = -\frac{r+l}{r-l}
-
-Since the near plane is located at :math:`z = -n`, by similar triangles, the 
-projected x-coordinate on the near plane is:
-
-.. math::
-
-   x_n = \frac{n}{-z} x
-
-The near-plane bounds map to NDC as follows:
-
-.. math::
-
-   x = l \Rightarrow x_{ndc} = -1
-   \qquad
-   x = r \Rightarrow x_{ndc} = +1
-
-Assume a linear mapping:
-
-.. math::
-
-   x_{ndc} = A_x x_n + B_x
-
-Applying the near constraints: substituting :math:`x_n = l\ and\ x_{ndc} = -1`:
-
-.. math::
-
-   -1 = A_x l + B_x
-   \qquad ...(1)
-
-Applying the far constraints: substituting :math:`x_n = r\ and\ x_{ndc} = 1`:
-
-.. math::
-
-   1 = A_x r + B_x
-   \qquad ...(2)
-
-Solving equations (1) and (2) to get :math:`A_x`:
-
-.. math::
-
-  2 = A_x (r-l) \Rightarrow A_x = \frac{2}{r-l} 
-  \qquad ...(3)
-
-Substituting equation (3) to (2):
-
-.. math::
-
-  1 = A_x r + B_x \Rightarrow 1 = \frac{2}{r-l}r + B_x 
-  \Rightarrow B_x = \frac{r-l-2r}{r-1} = -\frac{r+l}{r-l} \qquad ...(4)
-
-From (3) and (4):
-Solving for :math:`A_x` and :math:`B_x` yields:
-
-.. math::
-
-   A_x = \frac{2}{r-l}, \quad
-   B_x = -\frac{r+l}{r-l}
-
-Substituting :math:`x_n` gives the resulting mapping is:
-
-.. math::
-
-   x_{ndc}
-   = \frac{2n}{r-l} \frac{x}{-z}
-     + \frac{r+l}{r-l}
-
-**Y Coordinate Mapping**:
-
-Using the same derivation for the y-axis:
-
-.. math::
-
-   y_n = \frac{n}{-z} y
-
-The resulting mapping is:
-
-.. math::
-
-   A_y = \frac{2}{t-b}, \quad
-   B_y = -\frac{t+b}{t-b}
-
-   y_{ndc}
-   = \frac{2n}{t-b} \frac{y}{-z}
-     + \frac{t+b}{t-b}
-
-**Z Coordinate Mapping**
-
-Depth is mapped linearly such that:
-
-.. math::
-
-   z = -n \Rightarrow z_{ndc} = -1
-   \qquad
-   z = -f \Rightarrow z_{ndc} = +1
-
-Assume:
-
-.. math::
-
-   z_c = A_z z + B_z
-
-Then:
-
-.. math::
-
-   z_{ndc} = \frac{A_z z + B_z}{-z}
-
-Applying the near constraints: substituting :math:`z = -n\ and\ z_{ndc} = -1`:
-
-.. math::
-
-   -1 = \frac{A_z(-n) + B_z}{-(-n)} \Rightarrow -n = {A_z(-n) + B_z} 
-   \qquad ...(1)
-
-Applying the far constraints: substituting :math:`z = -f\ and\ z_{ndc} = 1`:
-
-.. math::
-
-   1 = \frac{A_z(-f) + B_z}{-(-f)} \Rightarrow  f = {A_z(-f) + B_z} 
-   \qquad ...(2)
-
-Solving equations (1) and (2) to get :math:`A_z`:
-
-.. math::
-
-  -n-f = {A_z(-n+f)} \Rightarrow {A_z} = \frac{-n-f}{-n+f} = -\frac{f+n}{f-n}
-  \qquad ...(3)
-
-Substituting equation (3) to (2):
-
-.. math::
-
-  f = {A_z(-f) + B_z} \Rightarrow f = {-\frac{f+n}{f-n}(-f) + B_z} 
-
-  \Rightarrow {B_z} = f+\frac{f+n}{f-n}(-f) = \frac{(f^2-fn)+(-f^2-fn)}{f-n} = 
-  -\frac{2fn}{f-n} \qquad ...(4)
-
-From (3) and (4):
-
-.. math::
-
-   A_z = -\frac{f+n}{f-n}, \quad
-   B_z = -\frac{2fn}{f-n}
-
-
-**Perspective Projection Matrix**
-
-Combining all components, the perspective projection matrix is:
-
-.. math::
-
-   P =
-   \begin{bmatrix}
-   \frac{2n}{r-l} & 0 & \frac{r+l}{r-l} & 0 \\
-   0 & \frac{2n}{t-b} & \frac{t+b}{t-b} & 0 \\
-   0 & 0 & -\frac{f+n}{f-n} & -\frac{2fn}{f-n} \\
-   0 & 0 & -1 & 0
-   \end{bmatrix}
 
 
 Reference:

@@ -14,6 +14,70 @@ This section introduces the GPU evolved from Graphics GPU to the General
 purpose GPU (GPGPU) and the software architecture of GPUs and explores AI 
 software frameworks designed for GPUs, NPUs, and CPUs.
 
+
+Vector Processor
+----------------
+
+As described in the Computer Architecture: A Quantitative Approach book, the 
+vector processor VMIPS introduces the **Vector Length Register (VLR) and Vector 
+Mask (VM)** to support SIMD execution.
+**The Vector Mask functions similarly to conditional instructions in CPUs**.
+In vector processors, VM acts as a form of conditional execution mechanism.
+
+✅ Vector-Length Registers: Handling Loops Not Equal to 64
+
+.. code:: c++
+
+  for (i=0; i <n; i=i+1)
+    Y[i] = a * X[i] + Y[i];
+
+As above code, the value of n is not known at compile time.
+
+Solution:
+
+Compiler converts loop into multiple iterations of loops, where each iteration 
+processes up to the maximum vector length
+maximum vector length (MVL) as shown as below. 
+For VMIPS, the MVL is 64.
+
+.. code:: c++
+
+  low = 0;
+  VL = (n % MVL); /*find odd-size piece using modulo op % */
+  for (j = 0; j <= (n/MVL); j=j+1) { /*outer loop*/
+    for (i = low; i < (low+VL); i=i+1) /*runs for length VL*/
+      Y[i] = a * X[i] + Y[i] ; /*main operation*/
+    low = low + VL; /*start of next vector*/
+    VL = MVL; /*reset the length to maximum vector length*/
+  }
+
+The inner loop of the preceding code is vectorizable with length VL, which is
+equal to either (n % MVL) or MVL. The VLR register must be set twice in the
+code, once at each place where the variable VL in the code is assigned.
+
+✅ Vector Mask Registers: Handling IF Statements in Vector Loops
+
+.. code:: text
+
+  for (i = 0; i < 64; i=i+1)
+    if (X[i] != 0)
+      X[i] = X[i] – Y[i];
+
+For the VMIPS vector processor, the above code can be implemented using the
+Vector Length Register (VLR) as shown below.
+
+.. rubric:: Assembly code of Vector Processor (from page 276 of Quantitative)
+.. code:: asm
+
+  LV V1,Rx         ;load vector X into V1
+  LV V2,Ry         ;load vector Y
+  L.D F0,#0        ;load FP zero into F0
+  SNEVS.D V1,F0    ;sets VM(i) to 1 if V1(i)!=F0
+  SUBVV.D V1,V1,V2 ;subtract under vector mask 
+  SV V1,Rx         ;store the result in X
+
+- Code reference here [#VMR]_.
+
 General purpose GPU
 -------------------
 
@@ -30,19 +94,19 @@ Mapping data in GPU
 *******************
 
 As described in the previous section on GPUs, the subset of the array
-calculation `y[] = a * x[] + y[]` is shown as follows:
+calculation `y[] = a * x[] + y[]`.
 
 .. code:: text
 
   // Invoke DAXPY with 256 threads per Thread Block
   __host__
   int nblocks = (n+255) / 256;
-  daxpy<<<nblocks, 256>>>(n, 2.0, x, y);
+  daxpy<<<nblocks, 256>>>(2.0, x, y);
   // DAXPY in CUDA
   __device__
-  void daxpy(int n, double a, double *x, double *y) {
+  void daxpy(double a, double *x, double *y) {
     int i = blockIdx.x*blockDim.x + threadIdx.x;
-    if (i < n) y[i] = a*x[i] + y[i];
+    a*x[i] + y[i];
   }
 
 - name<<<dimGrid, dimBlock>>>(... parameter list ...): 
@@ -54,22 +118,20 @@ calculation `y[] = a * x[] + y[]` is shown as follows:
 .. rubric:: Assembly code of PTX (from page 300 of Quantitative book)
 .. code:: text
 
-  // code to set VLR, Vector Length Register, to (n % 256)
-  //   ...
-  // 
+  // The following sequence of PTX instructions is for one iteration of the
+  // DAXPY loop above.
   shl.u32 R8, blockIdx, 9	; Thread Block ID * Block size (512)
   add.u32 R8, R8, threadIdx	; R8 = i = my CUDA Thread ID
   shl.u32 R8, R8, 3		; byte offset
-  setp.neq.s32 P1, RD8, RD3	; RD3 = n, P1 is predicate register 1
   ld.global.f64 RD0, [X+R8]	; RD0 = X[i]
   ld.global.f64 RD2, [Y+R8]	; RD2 = Y[i]
   mul.f64 RD0, RD0, RD4		; Product in RD0 = RD0 * RD4 (scalar a)
   add.f64 RD0, RD0, RD2		; SuminRD0 = RD0 + RD2 (Y[i])
   st.global.f64 [Y+R8], RD0	; Y[i] = sum (X[i]*a + Y[i])
 
-- Need to set VLR if PTX has this instruction. Otherwise, set lane-mask in 
-  the similar way of the code below.
+✅ Conditional Branching in GPUs [#Quantitative-cb]_:
 
+.. rubric:: Assembly code of PTX (from refering page 302 of Quantitative book) 
 .. code:: text
 
   __device__
@@ -79,18 +141,22 @@ calculation `y[] = a * x[] + y[]` is shown as follows:
     else X[i] = Z[i];
   }
 
-.. rubric:: Assembly code of Vector Processor
-.. code:: asm
+- Code from here [#Quantitative-gpu-asm-daxpy]_.
 
-  LV V1,Rx         ;load vector X into V1
-  LV V2,Ry         ;load vector Y
-  L.D F0,#0        ;load FP zero into F0
-  SNEVS.D V1,F0    ;sets VM(i) to 1 if V1(i)!=F0
-  SUBVV.D V1,V1,V2 ;subtract under vector mask 
-  SV V1,Rx         ;store the result in X
+The following two instructions illustrate **conditional (predicated) 
+instruction execution on GPUs**.
 
-.. rubric:: Assembly code of PTX (modified code from refering page 208 - 302 of 
-            Quantitative book)
+.. code:: text
+
+  predicate = cond       // predicate is the mask register
+  @predicate instruction
+
+This IF statement could compile to the following PTX instructions (assuming
+that R8 already has the scaled thread ID), with \*Push, \*Comp, \*Pop indicating the
+branch synchronization markers inserted by the PTX assembler that push the old
+mask, complement the current mask, and pop to restore the old mask:
+
+.. rubric:: Assembly code of PTX (from refering page 302 of Quantitative book) 
 .. code:: text
 
   ld.global.f64 RD0, [X+R9]	; RD0 = X[i]
@@ -106,7 +172,88 @@ calculation `y[] = a * x[] + y[]` is shown as follows:
   ENDIF1: 
   ret, *Pop			; pop to restore old mask
 
-- For Lane Mask, refer to [#VMR]_ [#Quantitative-gpu-asm-daxpy]_.
+The PTX:
+
+.. code:: text
+
+  setp.neq.s32 P1, RD0, #0
+
+On actual NVIDIA hardware (SASS), the instruction typically becomes:
+
+.. code:: text
+
+  ISETP.NE.AND P1, PT, R0, RZ, PT ; PT is always-true predicate
+
+This instruction compares the 32-bit signed integer value in register
+``RD0`` with the constant ``0``. The result of the comparison is written
+to the predicate register ``P1``.
+
+Semantics::
+
+    P1 = (RD0 != 0)
+
+Each thread (lane) in the warp evaluates this comparison independently.
+
+Example (8-thread warp)::
+
+    RD0 values:  [5, 3, 0, 7, 1, 0, 4, 2]
+    P1 result:   [1, 1, 0, 1, 1, 0, 1, 1]
+
+This instruction **does not modify the active thread mask**. It only
+produces a predicate value that will be used by later predicated
+instructions or branches.
+
+::
+
+    @!P1 bra ELSE1, *Push
+
+This is a predicated branch instruction.
+
+The prefix ``@!P1`` means the instruction executes only for threads where
+the predicate ``P1`` is false.
+
+Semantics::
+
+    if (!P1)
+        branch to ELSE1
+
+If all threads agree on the predicate value, the warp simply branches or
+falls through. However, if some threads have ``P1 = 1`` and others have
+``P1 = 0``, **control flow divergence occurs**.
+
+Mask Stack Operation
+
+The ``*Push`` modifier indicates that the hardware must update the SIMT
+control-flow stack.
+
+When divergence occurs:
+
+1. The current active mask is pushed onto the stack.
+2. The warp execution mask is split into two masks:
+
+   - ``mask_then``  = active_mask &  P1
+   - ``mask_else``  = active_mask & !P1
+
+3. Execution proceeds with one mask while the other path is saved for
+   later execution.
+
+Conceptual behavior::
+
+    push(active_mask)
+
+    mask_then = active_mask &  P1
+    mask_else = active_mask & !P1
+
+    execute THEN block using mask_then
+    later execute ELSE block using mask_else
+
+4. Threads in the THEN mask execute the fall-through path, while threads
+   in the ELSE mask branch to ``ELSE1``.
+
+5. Keep in mind, however, that the only choice for a SIMD Lane in a clock cycle 
+is to perform the operation specified in the PTX instruction or be idle; 
+two SIMD Lanes cannot simultaneously execute different instructions 
+[#Quantitative-cb]_.
 
 The following table explains how the elements of `saxpy()` are mapped to the
 Lanes of a SIMD Thread (Warp), which belongs to a Thread Block (Core) within
@@ -514,7 +661,7 @@ Subgroup operations to data parallel programming on Lanes of SIMD processor
 [#vulkan-subgroup]_.
 
 Subgroup operations provide a fast way for moving data between Lanes intra Warp.
-Assuming each Warp has eight Lanes.
+Assuming each Warp has four Lanes.
 The following table lists result of reduce, inclusive and exclusive operations.
 
 .. table:: Lists each Lane's value after **Reduce**, **Inclusive** and 
@@ -637,6 +784,7 @@ SPIR-V.
        physical register model**
 
 ✅ NVIDIA, AMD, ARM and Imagination all have exposed LLVM IR and convert SPIR-V IR to LLVM IR.
+
   - SPIR:
 
     - For OpenCL development, the IR started from SPIR (LLVM-based IR). 
@@ -929,10 +1077,11 @@ programmers** [#paper-graph-on-opencl]_. Cuda graph is an idea  like this
 
 .. [#cudaex] https://devblogs.nvidia.com/easy-introduction-cuda-c-and-c/
 
-.. [#VMR] subsection Vector Mask Registers: Handling IF Statements in Vector Loops of Computer Architecture: A Quantitative Approach 5th edition (The
-       Morgan Kaufmann Series in Computer Architecture and Design)
+.. [#VMR] subsection Vector Mask Registers: Handling IF Statements in Vector Loops of Computer Architecture: A Quantitative Approach 5th edition (The Morgan Kaufmann Series in Computer Architecture and Design)
 
-.. [#Quantitative-gpu-asm-daxpy] Code written by refering page 208 - 302 of Computer Architecture: A Quantitative Approach 5th edition (The
+.. [#Quantitative-cb] subsection Conditional Branching in GPUs, page 300 - 303 of Computer Architecture: A Quantitative Approach 5th edition (The Morgan Kaufmann Series in Computer Architecture and Design)
+
+.. [#Quantitative-gpu-asm-daxpy] Code written by refering page 302 of Computer Architecture: A Quantitative Approach 5th edition (The
        Morgan Kaufmann Series in Computer Architecture and Design)
 
 .. [#Quantitative-gpu-sparse-matrix] Reference "Gather-Scatter: Handling Sparse Matrices in Vector Architectures": section 4.2 Vector Architecture of A Quantitative Approach 5th edition (The

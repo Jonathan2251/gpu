@@ -22,7 +22,12 @@ https://github.com/Jonathan2251/sa/blob/master/README.md
 Revision history
 ----------------
 
-Version 0.3, not released yet.
+Version 0.4, not released yet.
+
+Version 0.3, Released March 14, 2026.
+
+  geo-math.rst: refine 'section Projection' and 'section Mapping data in GPU'.
+  sw.rst: add 'section Vector Processor'.
 
 Version 0.2, Released Febuary 28, 2026.
 
