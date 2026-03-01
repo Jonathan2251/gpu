@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Basic geometry in computer graphics &#8212; The Concept of GPU Compiler</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/haiku.css?v=fce32b03" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+    <script src="_static/documentation_options.js?v=10f1778b"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="OpenGL" href="opengl.html" />
+    <link rel="prev" title="Graphics HW and SW Stack" href="hw-sw-stack.html" /> 
+  </head><body>
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>The Concept of GPU Compiler</span></a></h1>
+        <h2 class="heading"><span>Basic geometry in computer graphics</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="Top">
+      
+        <p>
+        «&#160;&#160;<a href="hw-sw-stack.html">Graphics HW and SW Stack</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="opengl.html">OpenGL</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <section id="basic-geometry-in-computer-graphics">
+<span id="geo-math"></span><h1>Basic geometry in computer graphics<a class="headerlink" href="#basic-geometry-in-computer-graphics" title="Link to this heading">¶</a></h1>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#color" id="id48">Color</a></p></li>
+<li><p><a class="reference internal" href="#transformation" id="id49">Transformation</a></p></li>
+<li><p><a class="reference internal" href="#cross-product" id="id50">Cross Product</a></p></li>
+<li><p><a class="reference internal" href="#dot-product" id="id51">Dot Product</a></p></li>
+<li><p><a class="reference internal" href="#projection" id="id52">Projection</a></p></li>
+</ul>
+</nav>
+<p>This section introduces the fundamental geometry mathematics used in computer
+graphics.
+As discussed in the previous sections, 3D animation primarily based on
+geometric representations such as meshes (vertices) and surface discriptions
+including textures, materials, shaders, and lighting models created in 3D
+content creation tools.
+Consequently, vertex tranformations and lighting-based color computations form
+the mathematical foundation of modern computer graphics and animation.</p>
+<p>The complete concept can be found in the book <em>Computer Graphics: Principles
+and Practice, 3rd Edition</em>, authored by John F. et al. However, the book
+contains over a thousand pages.</p>
+<p>It is very comprehensive and may take considerable time to understand all the
+details.</p>
+<section id="color">
+<h2><a class="toc-backref" href="#id48" role="doc-backlink">Color</a><a class="headerlink" href="#color" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Additive colors in light are shown in <a class="reference internal" href="#additive-colors"><span class="std std-numref">Fig. 14</span></a>
+<a class="footnote-reference brackets" href="#additive-colors-wiki" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#additive-colors-ytube" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</p></li>
+<li><p>In the case of paints, additive colors produce shades and become light gray
+due to the addition of darker pigments <a class="footnote-reference brackets" href="#additive-colors-shade" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>.</p></li>
+</ul>
+<figure class="align-center" id="id29">
+<span id="additive-colors"></span><a class="reference internal image-reference" href="_images/additive-colors.png"><img alt="_images/additive-colors.png" height="346" src="_images/additive-colors.png" width="954" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 14 </span><span class="caption-text">Additive colors in light</span><a class="headerlink" href="#id29" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Additive colors</strong></p>
+<p>I know it doesn’t match human intuition. However, additive RGB colors in
+light combine to produce white light, while additive RGB in paints result in
+light gray paint. This makes sense because light has no shade. This result
+stems from the way human eyes perceive color. Without light, no color can be
+sensed by the eyes.</p>
+<p>Computer engineers should understand that exploring the underlying reasons
+falls into the realms of physics or the biology of the human eye structure.</p>
+</div>
+</section>
+<section id="transformation">
+<span id="id4"></span><h2><a class="toc-backref" href="#id49" role="doc-backlink">Transformation</a><a class="headerlink" href="#transformation" title="Link to this heading">¶</a></h2>
+<p>Overview</p>
+<p>The tranformation matrices have been taught in high school and college.
+However this mathematical details are not always retained clearly in memory.
+The following section reviews the parts relevant to graphics rendering.</p>
+<p>In both 2D and 3D graphics, every object transformation is performed by
+multiplying the object’s vertex coordinates by one or more <strong>transformation
+matrices</strong>. Modern OpenGL uses <strong>homogeneous coordinates</strong> and <strong>4×4 matrices</strong>
+to unify translation, rotation, scaling, projection, and even animation
+(skinning) into a single mathematical framework.</p>
+<p>A vertex in 3D is represented as:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\mathbf{v} =
+\begin{bmatrix}
+x \\ y \\ z \\ 1
+\end{bmatrix}\end{split}\]</div>
+<p>A transformation is applied by matrix multiplication:</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{v}' = M \mathbf{v}\]</div>
+<p>Multiple transformations are combined by multiplying matrices:</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{v}' = P \, V \, M \, \mathbf{v}\]</div>
+<p>Where:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">M</span></code> = Model matrix (object → world)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">V</span></code> = View matrix (world → camera)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">P</span></code> = Projection matrix (camera → clip space)</p></li>
+</ul>
+<p>This is the core of the OpenGL rendering pipeline, as shown in
+<a class="reference internal" href="#trans-steps"><span class="std std-numref">Fig. 15</span></a>.</p>
+<figure class="align-center" id="id30">
+<span id="trans-steps"></span><a class="reference internal image-reference" href="_images/trans-steps.png"><img alt="_images/trans-steps.png" height="156" src="_images/trans-steps.png" width="877" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 15 </span><span class="caption-text">Cooridinates Transform Pipeline <a class="footnote-reference brackets" href="#cg-basictheory" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id30" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<ul class="simple">
+<li><p>Model space: The is the vertices position mentioned under <a class="reference internal" href="3d-model.html#movement"><span class="std std-ref">Root bone in
+Animation flow</span></a>. All vertex coordinates are calcuated relative to the
+root bone.</p></li>
+<li><p>Model Rranform: <code class="docutils literal notranslate"><span class="pre">M</span></code> = Model matrix (object → world). This represents the
+vertex positions mentioned under <a class="reference internal" href="3d-model.html#movement"><span class="std std-ref">Transform Animation in Animation flow</span></a>.</p></li>
+</ul>
+<p>Details for <a class="reference internal" href="#trans-steps"><span class="std std-numref">Fig. 15</span></a> can be found on “4.  Vertex Processing” of
+the website <a class="footnote-reference brackets" href="#cg-basictheory" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>.</p>
+<p>Transformation Matrices <a class="footnote-reference brackets" href="#wiki-transformation" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a></p>
+<ul>
+<li><p>Translation: Moves an object in 3D space.</p>
+<p><span class="math notranslate nohighlight">\(T(x,y,z)=\begin{bmatrix}1&amp;0&amp;0&amp;x\\0&amp;1&amp;0&amp;y\\0&amp;0&amp;1&amp;z\\0&amp;0&amp;0&amp;1\end{bmatrix}
+\begin{bmatrix}X\\Y\\Z\\1\end{bmatrix}
+=
+\begin{bmatrix}X+x\\Y+y\\Z+z\\1\end{bmatrix}\)</span></p>
+</li>
+<li><p>Scaling: Resizes an object.</p>
+<p><span class="math notranslate nohighlight">\(S(s_x,s_y,s_z)=\begin{bmatrix}s_x&amp;0&amp;0&amp;0\\0&amp;s_y&amp;0&amp;0\\0&amp;0&amp;s_z&amp;0\\0&amp;0&amp;0&amp;1\end{bmatrix}
+\begin{bmatrix}X\\Y\\Z\\1\end{bmatrix}
+=
+\begin{bmatrix}s_x X\\s_y Y\\s_z Z\\1\end{bmatrix}\)</span></p>
+</li>
+<li><p>Rotation X: Rotates around the X-axis.</p>
+<p><span class="math notranslate nohighlight">\(R_x(\theta)=\begin{bmatrix}1&amp;0&amp;0&amp;0\\0&amp;\cos\theta&amp;-\sin\theta&amp;0\\0&amp;\sin\theta&amp;\cos\theta&amp;0\\0&amp;0&amp;0&amp;1\end{bmatrix}
+\begin{bmatrix}X\\Y\\Z\\1\end{bmatrix}
+=
+\begin{bmatrix}X\\Y\cos\theta - Z\sin\theta\\Y\sin\theta + Z\cos\theta\\1\end{bmatrix}\)</span></p>
+</li>
+<li><p>Rotation Y: Rotates around the Y-axis.</p>
+<p><span class="math notranslate nohighlight">\(R_y(\theta)=\begin{bmatrix}\cos\theta&amp;0&amp;\sin\theta&amp;0\\0&amp;1&amp;0&amp;0\\-\sin\theta&amp;0&amp;\cos\theta&amp;0\\0&amp;0&amp;0&amp;1\end{bmatrix}
+\begin{bmatrix}X\\Y\\Z\\1\end{bmatrix}
+=
+\begin{bmatrix}X\cos\theta + Z\sin\theta\\Y\\-X\sin\theta + Z\cos\theta\\1\end{bmatrix}\)</span></p>
+</li>
+<li><p>Rotation Z: Rotates around the Z-axis.</p>
+<p><span class="math notranslate nohighlight">\(R_z(\theta)=\begin{bmatrix}\cos\theta&amp;-\sin\theta&amp;0&amp;0\\\sin\theta&amp;\cos\theta&amp;0&amp;0\\0&amp;0&amp;1&amp;0\\0&amp;0&amp;0&amp;1\end{bmatrix}
+\begin{bmatrix}X\\Y\\Z\\1\end{bmatrix}
+=
+\begin{bmatrix}X\cos\theta - Y\sin\theta\\X\sin\theta + Y\cos\theta\\Z\\1\end{bmatrix}\)</span></p>
+</li>
+<li><p>Shear in X: - Skews geometry along axis X.</p>
+<p><span class="math notranslate nohighlight">\(\text{Shear}_X(a,b)=
+\begin{bmatrix}1&amp;a&amp;b&amp;0\\0&amp;1&amp;0&amp;0\\0&amp;0&amp;1&amp;0\\0&amp;0&amp;0&amp;1\end{bmatrix}
+\begin{bmatrix}X\\Y\\Z\\1\end{bmatrix}
+=
+\begin{bmatrix}X + aY + bZ\\Y\\Z\\1\end{bmatrix}\)</span></p>
+</li>
+<li><p>Shear in Y: Skews geometry along axis Y.</p>
+<p><span class="math notranslate nohighlight">\(\text{Shear}_Y(c,d)=
+\begin{bmatrix}1&amp;0&amp;0&amp;0\\c&amp;1&amp;d&amp;0\\0&amp;0&amp;1&amp;0\\0&amp;0&amp;0&amp;1\end{bmatrix}
+\begin{bmatrix}X\\Y\\Z\\1\end{bmatrix}
+=
+\begin{bmatrix}X\\cX + Y + dZ\\Z\\1\end{bmatrix}\)</span></p>
+</li>
+<li><p>Shear in Z: Skews geometry along axis Z.</p>
+<p><span class="math notranslate nohighlight">\(\text{Shear}_Z(e,f)=
+\begin{bmatrix}1&amp;0&amp;0&amp;0\\0&amp;1&amp;0&amp;0\\e&amp;f&amp;1&amp;0\\0&amp;0&amp;0&amp;1\end{bmatrix}
+\begin{bmatrix}X\\Y\\Z\\1\end{bmatrix}
+=
+\begin{bmatrix}X\\Y\\eX + fY + Z\\1\end{bmatrix}\)</span></p>
+</li>
+<li><p>Reflection: Mirrors across a plane.</p>
+<p><span class="math notranslate nohighlight">\(\text{Reflect}_{XY},\ \text{Reflect}(\mathbf{n})\)</span></p>
+</li>
+</ul>
+<p>The “4.2  Model Transform (or Local Transform, or World Transform)” of on the
+website <a class="footnote-reference brackets" href="#cg-basictheory" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a> provides conceptual coverage of transformations.
+List the websites that provide proofs of the non-obvious transformation
+formulas below.</p>
+<p><strong>Rotation</strong></p>
+<p>The mathematical proof is given below.</p>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://en.wikipedia.org/wiki/Rotation_matrix">https://en.wikipedia.org/wiki/Rotation_matrix</a></p></li>
+</ol>
+<ul class="simple">
+<li><p>Prove the 2D formula and then intutively extend it to 3D along the X, Y, and
+Z axes <a class="footnote-reference brackets" href="#wiki-rotation" id="id9" role="doc-noteref"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></a>.</p></li>
+</ul>
+<ol class="arabic simple" start="2">
+<li><p>Proof in greater details:</p></li>
+</ol>
+<p><a class="reference external" href="https://austinmorlan.com/posts/rotation_matrices/">https://austinmorlan.com/posts/rotation_matrices/</a></p>
+<p><strong>Shear (Skew)</strong></p>
+<p>Shear is a skewing transformation as shown in <a class="reference internal" href="#shear"><span class="std std-numref">Fig. 16</span></a>.</p>
+<figure class="align-center" id="id31">
+<span id="shear"></span><a class="reference internal image-reference" href="_images/shear.png"><img alt="_images/shear.png" height="157" src="_images/shear.png" width="170" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 16 </span><span class="caption-text">3D shear</span><a class="headerlink" href="#id31" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Shear in X:
+plane x = 0 (the YZ‑plane), slides points parallel to the X‑axis.</p>
+<p>The mathematical proof is given below.</p>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Shear_mapping">https://en.wikipedia.org/wiki/Shear_mapping</a></p>
+<p><strong>Reflection</strong></p>
+<p>Reflection is nothing but a mirror image of an object.</p>
+<p>Reflection across the XY-plane:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\text{Reflect}_{XY} =
+\begin{bmatrix}
+1 &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; 1 &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; -1 &amp; 0 \\
+0 &amp; 0 &amp; 0 &amp; 1
+\end{bmatrix}\end{split}\]</div>
+<p>Reflection across an arbitrary plane with unit normal <span class="math notranslate nohighlight">\(\mathbf{n}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[R = I - 2 \mathbf{n}\mathbf{n}^T\]</div>
+<p>The mathematical proof is given below.</p>
+<p><a class="reference external" href="https://www.geeksforgeeks.org/computer-graphics/computer-graphics-reflection-transformation-in-3d/">https://www.geeksforgeeks.org/computer-graphics/computer-graphics-reflection-transformation-in-3d/</a></p>
+<p>The following Quaternion Product (Hamilton product) is from the wiki
+<a class="footnote-reference brackets" href="#wiki-quaternion" id="id10" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a> since it is not covered in the book.</p>
+<div class="math notranslate nohighlight">
+\[\mathbf ij = -ji = k, jk = -kj = i, ki = -ik = j.\]</div>
+</section>
+<section id="cross-product">
+<span id="id11"></span><h2><a class="toc-backref" href="#id50" role="doc-backlink">Cross Product</a><a class="headerlink" href="#cross-product" title="Link to this heading">¶</a></h2>
+<p>Todo:</p>
+<ul class="simple">
+<li><p>Computing the direction of the line of intersection between two planes
+(via <span class="math notranslate nohighlight">\(n_1 \mathsf x n_2\)</span>)</p></li>
+</ul>
+<p>end-of-Todo</p>
+<p>Both triangles and quads are polygons. So, objects can be formed with
+polygons in both 2D and 3D. The transformation in 2D or 3D is well covered in
+almost every computer graphics book. This section introduces the most
+important concept and method for <strong>determining inner and outer planes</strong>. Then,
+a <strong>point or object can be checked for visibility</strong> during 2D or 3D rendering.</p>
+<p>Any <strong>area</strong> of a polygon can be calculated by dividing it into triangles or
+quads. The area of a triangle or quad can be calculated using the cross
+product in 3D.</p>
+<p>✅ The role of cross product:</p>
+<p>In 2D geometry mathematics, <span class="math notranslate nohighlight">\(v_0, v_1 and v_2\)</span> can form the area of a
+parallelogram as shown in <a class="reference internal" href="#rectangle-2d"><span class="std std-numref">Fig. 17</span></a>.
+The fourth vertex, <span class="math notranslate nohighlight">\(\mathbf{v}_3\)</span>, can then be determined to complete the
+parallelogram.</p>
+<figure class="align-default" id="id32">
+<span id="rectangle-2d"></span><a class="reference internal image-reference" href="_images/parallelogram-2d.png"><img alt="_images/parallelogram-2d.png" height="197" src="_images/parallelogram-2d.png" width="312" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 17 </span><span class="caption-text">The area determined by <span class="math notranslate nohighlight">\(v_0, v_1, v_2\)</span> in 2D</span><a class="headerlink" href="#id32" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The area of the parallelogram is given by:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\mathbf a = v_1-v_0, \mathbf b = v_2-v_0\\\Vert \mathbf a \mathsf x \mathbf b \Vert = \Vert a \Vert \Vert b \Vert |
+sin(\Theta) |\end{aligned}\end{align} \]</div>
+<p>The area of a parallelogram is same in both 2D and 3D.
+To extend the definition of the corss product to 3D, all we must additionally
+consider the orientation of the plane, since a plane has two possible faces.</p>
+<div class="math notranslate nohighlight">
+\[\mathbf a \mathsf x \mathbf b = \Vert a \Vert \Vert b \Vert sin(\Theta) n\]</div>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(n\)</span> is a unit vector perpendicular to the plane.
+<span class="math notranslate nohighlight">\(\Rightarrow\)</span> direction.</p></li>
+</ul>
+<p>As shown in <a class="reference internal" href="#parallelogram-3d-left"><span class="std std-numref">Fig. 18</span></a>, the plane determined by
+<span class="math notranslate nohighlight">\(v_0, v_1, v_2\)</span> with CCW ordering defines a unique orientation.</p>
+<p>The area of the parallelogram remains unchanged after rotation as shown in
+<a class="reference internal" href="#parallelogram-3d-right"><span class="std std-numref">Fig. 19</span></a>, which means the
+area and plane face determined by extending the definition of cross product from
+2D to 3D correctly.</p>
+<table class="docutils align-center">
+<colgroup>
+<col style="width: 50.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><figure class="align-default" id="id33">
+<span id="parallelogram-3d-left"></span><a class="reference internal image-reference" href="_images/parallelogram-3d.png"><img alt="_images/parallelogram-3d.png" height="244" src="_images/parallelogram-3d.png" width="329" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 18 </span><span class="caption-text">The area and plane face determined by <span class="math notranslate nohighlight">\(v_0, v_1, v_2\)</span> with CCW
+ordering before rotation <span class="math notranslate nohighlight">\(z\)</span> axis.</span><a class="headerlink" href="#id33" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</td>
+<td><figure class="align-default" id="id34">
+<span id="parallelogram-3d-right"></span><a class="reference internal image-reference" href="_images/parallelogram-3d-2.png"><img alt="_images/parallelogram-3d-2.png" height="244" src="_images/parallelogram-3d-2.png" width="358" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 19 </span><span class="caption-text">The area and plane face determined by <span class="math notranslate nohighlight">\(v_0, v_1, v_2\)</span> with CCW
+ordering after rotation <span class="math notranslate nohighlight">\(z\)</span> axis.</span><a class="headerlink" href="#id34" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</td>
+</tr>
+</tbody>
+</table>
+<p id="triangle-area">The area of the triangle is obtained by dividing the parallelogram by 2:</p>
+<div class="math notranslate nohighlight">
+\[\frac{1}{2} \Vert \mathbf a \mathsf x \mathbf b \Vert \quad \text{...
+(triangle area)}\]</div>
+<p>✅ Matrix Notation for Cross Product:</p>
+<p>The cross product in <strong>2D</strong> is defined by a formula and can be represented
+with matrix notation, as proven here
+<a class="footnote-reference brackets" href="#cross-product-2d-proof" id="id12" role="doc-noteref"><span class="fn-bracket">[</span>10<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#cross-product-2d-proof2" id="id13" role="doc-noteref"><span class="fn-bracket">[</span>11<span class="fn-bracket">]</span></a>.</p>
+<p>The cross product in <strong>2D</strong> is defined by a formula and can be represented
+with matrix notation, as proven here
+<a class="footnote-reference brackets" href="#cross-product-2d-proof" id="id14" role="doc-noteref"><span class="fn-bracket">[</span>10<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#cross-product-2d-proof2" id="id15" role="doc-noteref"><span class="fn-bracket">[</span>11<span class="fn-bracket">]</span></a>.</p>
+<div class="math notranslate nohighlight">
+\[\mathbf a \mathsf x \mathbf b = \Vert a \Vert \Vert b \Vert sin(\Theta)\]</div>
+<div class="math notranslate nohighlight">
+\[\begin{split}\mathbf a \mathsf x \mathbf b =
+\begin{vmatrix}
+\mathbf i &amp; \mathbf j&amp; \mathbf k\\
+a_1&amp; a_2&amp; 0\\
+b_1&amp; b_2&amp; 0
+\end{vmatrix} =
+\begin{bmatrix}
+a_1&amp; a_2 \\
+b_1&amp; b_2
+\end{bmatrix}\end{split}\]</div>
+<p>After the above matrix form is proven, the antisymmetry property
+may be demonstrated as follows:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}a \mathsf x b = \mathsf x&amp;
+\begin{bmatrix}
+a \\
+b
+\end{bmatrix} =
+\begin{bmatrix}
+a_1&amp; a_2 \\
+b_1&amp; b_2
+\end{bmatrix} =
+a_1b_2 - a_2b_1 =\end{split}\]</div>
+<div class="math notranslate nohighlight">
+\[\begin{split}-b_1a_2 - (-b_2a_1) =
+\begin{bmatrix}
+- b_1&amp; - b_2 \\
+a_1&amp; a_2
+\end{bmatrix} =
+\mathsf x&amp;
+\begin{bmatrix}
+-b \\
+a
+\end{bmatrix} =
+-b \mathsf x a\end{split}\]</div>
+<p>✅ Determine the area in a plane:</p>
+<p>As described earlier of in this section, three vertices form a parallelogram or
+triangle and the area in the plane can be determined since the angle between
+<span class="math notranslate nohighlight">\(v_1 - v_0\)</span> and <span class="math notranslate nohighlight">\(v_2 - v_1\)</span> satisfied <span class="math notranslate nohighlight">\(0 &lt; \Theta &lt; 180^\circ\)</span>
+under CCW orientation.
+In fact <strong>one single vector :math:`v_1 - v_0` is sufficient</strong> to determine the
+area.
+We describle this below.</p>
+<p>In 2D, any two points <span class="math notranslate nohighlight">\(\text{from } P_i \text{ to } P_{i+1}\)</span> can form a
+vector and determine the inner or outer side.</p>
+<p>For example, as shown in <a class="reference internal" href="#inward-edge-normals"><span class="std std-numref">Fig. 20</span></a>, <span class="math notranslate nohighlight">\(\Theta\)</span> is the
+angle from <span class="math notranslate nohighlight">\(P_iP_{i+1}\)</span> to <span class="math notranslate nohighlight">\(P_iP'_{i+1} = 180^\circ\)</span>.</p>
+<p>Using the right-hand rule and counter-clockwise order, any vector
+<span class="math notranslate nohighlight">\(P_iQ\)</span> between <span class="math notranslate nohighlight">\(P_iP_{i+1}\)</span> and <span class="math notranslate nohighlight">\(P_iP'_{i+1}\)</span>, with angle
+<span class="math notranslate nohighlight">\(\theta\)</span> such that <span class="math notranslate nohighlight">\(0^\circ &lt; \theta &lt; 180^\circ\)</span>, indicates the
+inward direction.</p>
+<figure class="align-center" id="id35">
+<span id="inward-edge-normals"></span><a class="reference internal image-reference" href="_images/inward-edge-normals.png"><img alt="_images/inward-edge-normals.png" height="265" src="_images/inward-edge-normals.png" width="676" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 20 </span><span class="caption-text">Inward edge normals</span><a class="headerlink" href="#id35" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id36">
+<span id="d-vector-inward"></span><a class="reference internal image-reference" href="_images/2d-vector-inward.png"><img alt="_images/2d-vector-inward.png" height="203" src="_images/2d-vector-inward.png" width="418" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 21 </span><span class="caption-text">Inward and outward in 2D for a vector.</span><a class="headerlink" href="#id36" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Based on this observation, the rule for inward and outward vectors is shown in
+<a class="reference internal" href="#inward-edge-normals"><span class="std std-numref">Fig. 20</span></a>. Facing the same direction as a specific vector,
+the left side is inward and the right side is outward, as shown in
+<a class="reference internal" href="#d-vector-inward"><span class="std std-numref">Fig. 21</span></a>.</p>
+<p>For each edge <span class="math notranslate nohighlight">\(P_i - P_{i+1}\)</span>, the inward edge normal is the vector
+<span class="math notranslate nohighlight">\(\mathsf{x} \; v_i\)</span>; the outward edge normal is
+<span class="math notranslate nohighlight">\(- \; \mathsf{x} \; v_i\)</span>, where <span class="math notranslate nohighlight">\(\mathsf{x} \; v_i\)</span> is the
+cross-product of <span class="math notranslate nohighlight">\(v_i\)</span>, as shown in <a class="reference internal" href="#inward-edge-normals"><span class="std std-numref">Fig. 20</span></a>.</p>
+<p>A polygon can be created from a set of vertices. Suppose
+<span class="math notranslate nohighlight">\((P_0, P_1, ..., P_n)\)</span> defines a polygon. The line segments
+<span class="math notranslate nohighlight">\(P_0P_1, P_1P_2\)</span>, etc., are the polygon’s edges. The vectors
+<span class="math notranslate nohighlight">\(v_0 = P_1 - P_0, v_1 = P_2 - P_1, ..., v_n = P_0 - P_n\)</span> represent those
+edges.</p>
+<p>Using counter-clockwise ordering, the left side is considered inward.
+Thus, the inward region of a polygon can be determined, as shown in
+<a class="reference internal" href="#convex-left"><span class="std std-numref">Fig. 22</span></a> and <a class="reference internal" href="#convex-middle"><span class="std std-numref">Fig. 23</span></a>.</p>
+<table class="docutils align-center">
+<colgroup>
+<col style="width: 33.0%" />
+<col style="width: 34.0%" />
+<col style="width: 33.0%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><figure class="align-default" id="id37">
+<span id="convex-left"></span><a class="reference internal image-reference" href="_images/triangle-ccw.png"><img alt="_images/triangle-ccw.png" height="347" src="_images/triangle-ccw.png" width="398" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 22 </span><span class="caption-text">Triangle with CCW</span><a class="headerlink" href="#id37" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</td>
+<td><figure class="align-default" id="id38">
+<span id="convex-middle"></span><a class="reference internal image-reference" href="_images/hexagon-ccw.png"><img alt="_images/hexagon-ccw.png" height="332" src="_images/hexagon-ccw.png" width="238" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 23 </span><span class="caption-text">Hexagon with CCW</span><a class="headerlink" href="#id38" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</td>
+<td><figure class="align-default" id="id39">
+<span id="convex-right"></span><a class="reference internal image-reference" href="_images/triangle-cw.png"><img alt="_images/triangle-cw.png" height="312" src="_images/triangle-cw.png" width="375" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 24 </span><span class="caption-text">Triangle with CW</span><a class="headerlink" href="#id39" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</td>
+</tr>
+</tbody>
+</table>
+<p>For a convex polygon with vertices listed in counter-clockwise order, the
+inward edge normals point toward the interior of the polygon, and the outward
+edge normals point toward the unbounded exterior. This matches our usual
+intuition.</p>
+<p>However, if the polygon vertices are listed in clockwise (CW) order, the interior
+and exterior definitions are reversed. <a class="reference internal" href="#convex-right"><span class="std std-numref">Fig. 24</span></a> shows an example
+where <span class="math notranslate nohighlight">\(P_0, P_1, P_2\)</span> are arranged in CW order.</p>
+<p>This cross product has an important property: going from <span class="math notranslate nohighlight">\(v\)</span> to
+<span class="math notranslate nohighlight">\(\times v\)</span> involves a 90° rotation in the same direction as the
+rotation from the positive x-axis to the positive y-axis.</p>
+<figure class="align-center" id="id40">
+<span id="in-polygon"></span><a class="reference internal image-reference" href="_images/polygon.png"><img alt="_images/polygon.png" height="160" src="_images/polygon.png" width="237" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 25 </span><span class="caption-text">Draw a polygon with vectices counter clockwise</span><a class="headerlink" href="#id40" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>As shown in <a class="reference internal" href="#in-polygon"><span class="std std-numref">Fig. 25</span></a>, when drawing a polygon with vectors (lines)
+in counter-clockwise order, the polygon will be formed, and the two sides of
+each vector (line) can be identified <a class="footnote-reference brackets" href="#cgpap" id="id16" role="doc-noteref"><span class="fn-bracket">[</span>12<span class="fn-bracket">]</span></a>.</p>
+<p>Furthermore, whether a point is inside or outside the polygon can be
+determined.</p>
+<p>One simple method to test whether a point lies inside or outside a simple
+polygon is to cast a ray from the point in any fixed direction and count how
+many times it intersects the edges of the polygon.</p>
+<p>If the point is outside the polygon, the ray will intersect its edges an even
+number of times. If the point is inside the polygon, it will intersect the
+edges an odd number of times <a class="footnote-reference brackets" href="#wiki-point-in-polygon" id="id17" role="doc-noteref"><span class="fn-bracket">[</span>13<span class="fn-bracket">]</span></a>.</p>
+<figure class="align-center" id="id41">
+<span id="d-cross-product"></span><a class="reference internal image-reference" href="_images/3d-cross-product.png"><img alt="_images/3d-cross-product.png" height="355" src="_images/3d-cross-product.png" width="230" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 26 </span><span class="caption-text">Cross product definition in 3D</span><a class="headerlink" href="#id41" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>In the same way, by following the counter-clockwise direction to create a
+2D polygon step by step, a 3D polygon can be constructed.</p>
+<p>As shown in <a class="reference internal" href="#d-cross-product"><span class="std std-numref">Fig. 26</span></a> from the wiki
+<a class="footnote-reference brackets" href="#cross-product-wiki" id="id18" role="doc-noteref"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></a>, the inward direction is determined by
+<span class="math notranslate nohighlight">\(a \times b &lt; 0\)</span>, and the outward direction is determined by
+<span class="math notranslate nohighlight">\(a \times b &gt; 0\)</span> in OpenGL.</p>
+<p>Replacing <span class="math notranslate nohighlight">\(a\)</span> and <span class="math notranslate nohighlight">\(b\)</span> with <span class="math notranslate nohighlight">\(x\)</span> and <span class="math notranslate nohighlight">\(y\)</span>, as shown in
+<a class="reference internal" href="#ogl-pointing-outwards"><span class="std std-numref">Fig. 27</span></a>, the positive Z-axis (<span class="math notranslate nohighlight">\(z+\)</span>) represents
+the outer surface, while the negative Z-axis (<span class="math notranslate nohighlight">\(z-\)</span>) represents the
+inner surface <a class="footnote-reference brackets" href="#ogl-point-outwards" id="id19" role="doc-noteref"><span class="fn-bracket">[</span>14<span class="fn-bracket">]</span></a>.</p>
+<figure class="align-center" id="id42">
+<span id="ogl-pointing-outwards"></span><a class="reference internal image-reference" href="_images/ogl-pointing-outwards.png"><img alt="_images/ogl-pointing-outwards.png" height="320" src="_images/ogl-pointing-outwards.png" width="685" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 27 </span><span class="caption-text">OpenGL pointing outwards, indicating the outer surface (z axis is +)</span><a class="headerlink" href="#id42" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id43">
+<span id="in-3d-polygon"></span><a class="reference internal image-reference" href="_images/3d-polygon.png"><img alt="_images/3d-polygon.png" height="243" src="_images/3d-polygon.png" width="285" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 28 </span><span class="caption-text">3D polygon with directions on each plane</span><a class="headerlink" href="#id43" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Reposition each triangle in front of camera and construct it using triangle
+with CCW ordering, as shown in <a class="reference internal" href="#convex-left"><span class="std std-numref">Fig. 22</span></a>.
+By building every triangle with CCW ordering, we can defined a consistent outer
+surface (front face).
+The <a class="reference internal" href="#in-3d-polygon"><span class="std std-numref">Fig. 28</span></a> shows an example of a 3D polygon created from 2D
+triangles. The direction of the plane (triangle) is given by the line
+perpendicular to the plane.</p>
+<p>Cast a ray from the 3D point along the X-axis and count how many intersections
+with the outer object occur. Depending on the number of intersections along
+each axis (even or odd), you can understan if <strong>the point (or the camara) is i
+nside or outside</strong> <a class="footnote-reference brackets" href="#point-in-3d-object" id="id20" role="doc-noteref"><span class="fn-bracket">[</span>15<span class="fn-bracket">]</span></a>.</p>
+<p>An odd number means inside, and an even number means outside. As shown in
+<a class="reference internal" href="#in-3d-object"><span class="std std-numref">Fig. 29</span></a>, points on the line passing through the object satisfy
+this rule.</p>
+<figure class="align-center" id="id44">
+<span id="in-3d-object"></span><a class="reference internal image-reference" href="_images/in-3d-object.png"><img alt="_images/in-3d-object.png" height="238" src="_images/in-3d-object.png" width="190" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 29 </span><span class="caption-text">Point is inside or outside of 3D object</span><a class="headerlink" href="#id44" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>✅ Summary:</p>
+<p>Based on these description of this section, this means:</p>
+<p>✔️  Each mesh (triangle or primitive) has a fixed “outer” and “inner” side,
+determined by CCW ordering in object space.</p>
+<p>✔️  By reading these CCW-ordered vertices sequentially, the shape and surface
+orientation of the 3D model can be constructed.</p>
+<p>✔️  There is no need to wait for the entire mesh to be received; once three
+CCW-ordered vertices are available, each triangle can be processed correctly
+as shown in <a class="reference internal" href="#construct-triangle"><span class="std std-numref">Fig. 30</span></a> from the camera position <span class="math notranslate nohighlight">\(p_0\)</span>.</p>
+<figure class="align-center" id="id45">
+<span id="construct-triangle"></span><a class="reference internal image-reference" href="_images/construct-triangle.png"><img alt="_images/construct-triangle.png" height="303" src="_images/construct-triangle.png" width="334" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 30 </span><span class="caption-text">A triangle can be constructed as soon as three vertices are received</span><a class="headerlink" href="#id45" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>✔️  When the camera moves to the <span class="math notranslate nohighlight">\(p_1\)</span> inside an object: CCW ↔ CW
+flips as shown in <a class="reference internal" href="#construct-triangle"><span class="std std-numref">Fig. 30</span></a>.</p>
+<p>✔️  As shown in <a class="reference internal" href="#triangle-area"><span class="std std-ref">Trangle Area Calculation</span></a> when
+<span class="math notranslate nohighlight">\(0 &lt; \Theta &lt; 180^\circ\)</span> under CCW orientation, the area of a triangle
+area is given by:</p>
+<div class="math notranslate nohighlight">
+\[\frac{1}{2} \mathbf \Vert (v_1-v_0) \mathsf x \mathbf (v_2-v_0) \Vert =
+\frac{1}{2} \Vert (v_1-v_0) \Vert \Vert (v_2-v_0) \Vert sin(\Theta)\]</div>
+<p>✔️  Though each triangle can be correctly identified and processed using its
+CCW ordering.
+As mentioned in <a class="reference internal" href="#trans-steps"><span class="std std-numref">Fig. 15</span></a> of section <a class="reference internal" href="#transformation"><span class="std std-ref">Transformation</span></a>,
+the Cooridinates Transform Pipeline maps geometry from Camera Space to
+Clipping Space (Clipping Volume).
+This tranformation significantly simplifies the calculation required
+for discarding and clipping triangles, as will be desribed in the next
+section <a class="reference internal" href="#projection"><span class="std std-ref">Projection</span></a>.</p>
+<p>How does OpenGL render (draw) the inner face of a triangle?</p>
+<p>OpenGL does NOT determine front/back in world space.</p>
+<p>When the camera moves to the inner space of a object:</p>
+<ul class="simple">
+<li><p>The projection changes</p></li>
+<li><p>The triangle’s screen‑space orientation changes</p></li>
+<li><p>CCW ↔ CW flips</p></li>
+<li><p>So the GPU flips front/back classification</p></li>
+</ul>
+<p class="rubric">OpenGL uses counter clockwise and pointing outwards as default</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// unit cube</span>
+<span class="c1">// A cube has 6 sides and each side has 4 vertices, therefore, the total number</span>
+<span class="c1">// of vertices is 24 (6 sides * 4 verts), and 72 floats in the vertex array</span>
+<span class="c1">// since each vertex has 3 components (x,y,z) (= 24 * 3)</span>
+<span class="c1">//    v6----- v5</span>
+<span class="c1">//   /|      /|</span>
+<span class="c1">//  v1------v0|</span>
+<span class="c1">//  | |     | |</span>
+<span class="c1">//  | v7----|-v4</span>
+<span class="c1">//  |/      |/</span>
+<span class="c1">//  v2------v3</span>
+
+<span class="c1">// vertex position array</span>
+<span class="n">GLfloat</span><span class="w"> </span><span class="n">vertices</span><span class="p">[]</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w">  </span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w">  </span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w">  </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="c1">// v0,v1,v2,v3 (front)</span>
+<span class="w">   </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w">   </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w">   </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w">  </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="c1">// v0,v3,v4,v5 (right)</span>
+<span class="w">   </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w">   </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w">  </span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="c1">// v0,v5,v6,v1 (top)</span>
+<span class="w">  </span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w">  </span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w">  </span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="c1">// v1,v6,v7,v2 (left)</span>
+<span class="w">  </span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w">   </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w">   </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="c1">// v7,v4,v3,v2 (bottom)</span>
+<span class="w">   </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w">  </span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w">  </span><span class="mf">-.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="p">,</span><span class="w">  </span><span class="mf">.5f</span><span class="p">,</span><span class="w"> </span><span class="mf">.5f</span><span class="p">,</span><span class="mf">-.5f</span><span class="w">  </span><span class="c1">// v4,v7,v6,v5 (back)</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>From the code above, we can see that OpenGL uses counter-clockwise <a class="footnote-reference brackets" href="#vbo2" id="id21" role="doc-noteref"><span class="fn-bracket">[</span>16<span class="fn-bracket">]</span></a> and
+pointing outwards as the default. However, OpenGL provides
+<code class="docutils literal notranslate"><span class="pre">glFrontFace(GL_CW)</span></code> for clockwise winding <a class="footnote-reference brackets" href="#ogl-frontface" id="id22" role="doc-noteref"><span class="fn-bracket">[</span>17<span class="fn-bracket">]</span></a>.</p>
+<p>For a group of objects, a scene graph provides better animation support and
+saves memory <a class="footnote-reference brackets" href="#scene-graph-wiki" id="id23" role="doc-noteref"><span class="fn-bracket">[</span>18<span class="fn-bracket">]</span></a>.</p>
+</section>
+<section id="dot-product">
+<span id="id24"></span><h2><a class="toc-backref" href="#id51" role="doc-backlink">Dot Product</a><a class="headerlink" href="#dot-product" title="Link to this heading">¶</a></h2>
+<p>Dot Product</p>
+<ul class="simple">
+<li><p>Ray–plane (line–plane) intersection</p></li>
+<li><p>Determining angles between vectors</p></li>
+<li><p>Lighting (Lambertian shading)</p></li>
+<li><p>Solving for a point on the intersection line of two planes
+(because plane equations use dot products)</p></li>
+</ul>
+<p>Described in wiki here:</p>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Dot_product">https://en.wikipedia.org/wiki/Dot_product</a></p>
+<p>✅ As described in the previous section <a class="reference internal" href="#cross-product"><span class="std std-ref">Cross Product</span></a>,
+the cross-product is:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\mathbf a = v_1-v_0, \mathbf b = v_2-v_0\\\mathbf a \mathsf x \mathbf b = \Vert a \Vert \Vert b \Vert sin(\Theta) n\end{aligned}\end{align} \]</div>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(n\)</span> is a unit vector perpendicular to the plane
+<span class="math notranslate nohighlight">\(\Rightarrow\)</span> direction.</p></li>
+</ul>
+<p>The dot product definition is:</p>
+<div class="math notranslate nohighlight">
+\[\mathbf a \mathsf \cdot \mathbf b = \Vert a \Vert \Vert b \Vert cos(\Theta)\]</div>
+<p>✅ Since <span class="math notranslate nohighlight">\(n\)</span> is the outward normal vector for a CCW-ordered triangle, we
+have:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\((\mathbf p - v_0) \mathsf \cdot \mathbf n &gt; 0 \Rightarrow \mathbf p\)</span>
+lies on the front (outer) side of the plane.</p></li>
+<li><p><span class="math notranslate nohighlight">\((\mathbf p - v_0) \mathsf \cdot \mathbf n = 0 \Rightarrow \mathbf p\)</span>
+lies on the plane.</p></li>
+<li><p><span class="math notranslate nohighlight">\((\mathbf p - v_0) \mathsf \cdot \mathbf n &lt; 0 \Rightarrow \mathbf p\)</span>
+lies on the back (inner) side of the plane.</p></li>
+</ul>
+<p>✅ A plane is represented by:</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{n} \cdot (\mathbf{x}_1 - \mathbf{x}_0) = 0\]</div>
+<p>where:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(n\)</span> is the plane’s normal vector</p></li>
+<li><p><span class="math notranslate nohighlight">\(x_0, x_1\)</span> are any points on the plane</p></li>
+</ul>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\mathbf{n} \cdot (\mathbf{x}_1 - \mathbf{x}_0) = 0\\\Rightarrow \mathbf{n} \cdot \mathbf{x}_1 - \mathbf{n} \cdot \mathbf{x}_0 = 0\\\Rightarrow \mathbf{n} \cdot \mathbf{x}_1 = \mathbf{n} \cdot \mathbf{x}_0\end{aligned}\end{align} \]</div>
+<p>Let’s define the scalar constant <span class="math notranslate nohighlight">\(d\)</span> by:</p>
+<div class="math notranslate nohighlight">
+\[d = -\,\mathbf{n} \cdot \mathbf{x}_0\]</div>
+<p>Thus, the set of all points <span class="math notranslate nohighlight">\(\mathbf{p}\)</span> satisfying</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{n} \cdot \mathbf{p} + d = 0\]</div>
+<p>✅ Ray–plane (line–plane) intersection</p>
+<p>For an edge between vertices <span class="math notranslate nohighlight">\(\mathbf{p}_0\)</span> and <span class="math notranslate nohighlight">\(\mathbf{p}_1\)</span>,
+parameterized as:</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{p}(t) = \mathbf{p}_0 + t(\mathbf{p}_1 - \mathbf{p}_0)\]</div>
+<p>the intersection with a clipping plane is found by solving:</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{n} \cdot \mathbf{p}(t) + d = 0\]</div>
+<p>This yields:</p>
+<div class="math notranslate nohighlight">
+\[t = \frac{- (\mathbf{n} \cdot \mathbf{p}_0 + d)}
+{\mathbf{n} \cdot (\mathbf{p}_1 - \mathbf{p}_0)}\]</div>
+</section>
+<section id="projection">
+<span id="id25"></span><h2><a class="toc-backref" href="#id52" role="doc-backlink">Projection</a><a class="headerlink" href="#projection" title="Link to this heading">¶</a></h2>
+<figure class="align-center" id="id46">
+<span id="viewfrustum"></span><a class="reference internal image-reference" href="_images/ViewFrustum.png"><img alt="_images/ViewFrustum.png" height="182" src="_images/ViewFrustum.png" width="223" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 31 </span><span class="caption-text">Clipping-Volume Cuboid</span><a class="headerlink" href="#id46" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Only objects within the cone between near and far planes are projected to 2D
+in perspective projection.</p>
+<p>Perspective and orthographic projections (used in CAD tools) from 3D to 2D
+can be represented by transformation matrices as described in wiki here
+<a class="footnote-reference brackets" href="#wiki-prospective-projection" id="id26" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a>.</p>
+<p>The “4.4  Projection Transform - Perspective Projection”  of on the
+website <a class="footnote-reference brackets" href="#cg-basictheory" id="id27" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a> provides conceptual coverage of projections.</p>
+<p><strong>Camera Space Setup</strong></p>
+<p>Assume a right-handed camera coordinate system as shown in <a class="reference internal" href="#viewfrustum"><span class="std std-numref">Fig. 31</span></a>:</p>
+<ul class="simple">
+<li><p>The camera is located at the origin.</p></li>
+<li><p>The camera looks down the negative <span class="math notranslate nohighlight">\(z\)</span> axis.</p></li>
+<li><p>The near plane is located at <span class="math notranslate nohighlight">\(z = -n\)</span>.</p></li>
+<li><p>The far plane is located at <span class="math notranslate nohighlight">\(z = -f\)</span>.</p></li>
+<li><p>The view frustum bounds on the near plane are:</p>
+<ul>
+<li><p>left: <span class="math notranslate nohighlight">\(l\)</span></p></li>
+<li><p>right: <span class="math notranslate nohighlight">\(r\)</span></p></li>
+<li><p>bottom: <span class="math notranslate nohighlight">\(b\)</span></p></li>
+<li><p>top: <span class="math notranslate nohighlight">\(t\)</span></p></li>
+</ul>
+</li>
+</ul>
+<p>A point in camera space is represented as:</p>
+<div class="math notranslate nohighlight">
+\[(x, y, z, 1), \quad z &lt; 0\]</div>
+<p>The position on the near plane is:</p>
+<div class="math notranslate nohighlight">
+\[(x_n, y_n, -n) \quad with \quad x_n = \frac{n}{-z}x, \quad \frac{n}{-z}y\]</div>
+<p>✅ Reason:</p>
+<p>As described in the previous section <a class="reference internal" href="#cross-product"><span class="std std-ref">Cross Product</span></a>,
+each mesh (triangle or primitive) has a fixed “outer” and “inner” side,
+determined by CCW ordering in object space.
+By reading these CCW-ordered vertices sequentially, the shape and surface
+orientation of the 3D model can be constructed, and hidden primitives
+can be clipped or discarded.</p>
+<p>However primitive clipping and discarding can be performed much
+more efficiently by mapping the view frustum to <strong>clip space</strong>, where the GPU
+can <strong>easily clip or discard primitives</strong>, as shown <a class="reference internal" href="#trans-steps-2"><span class="std std-numref">Fig. 32</span></a>
+from the earlier section <a class="reference internal" href="#transformation"><span class="std std-ref">Transformation</span></a> again for clarity.
+Performing clipping and discarding in <strong>world space</strong> would be significantly
+more <strong>difficult</strong>.</p>
+<figure class="align-center" id="id47">
+<span id="trans-steps-2"></span><a class="reference internal image-reference" href="_images/trans-steps.png"><img alt="_images/trans-steps.png" height="156" src="_images/trans-steps.png" width="877" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 32 </span><span class="caption-text">Cooridinates Transform Pipeline <a class="footnote-reference brackets" href="#cg-basictheory" id="id28" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id47" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>✅ Matrix <span class="math notranslate nohighlight">\(P_{\text{persp}}\)</span> converts 3D coordinates into clip space:</p>
+<p>Perspective projection <span class="math notranslate nohighlight">\(P_{\text{persp}}\)</span> (general form):
+Converts 3D → clip space with depth</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}P =
+\begin{bmatrix}
+\frac{2n}{r-l} &amp; 0 &amp; \frac{r+l}{r-l} &amp; 0 \\
+0 &amp; \frac{2n}{t-b} &amp; \frac{t+b}{t-b} &amp; 0 \\
+0 &amp; 0 &amp; -\frac{f+n}{f-n} &amp; -\frac{2fn}{f-n} \\
+0 &amp; 0 &amp; -1 &amp; 0
+\end{bmatrix}\end{split}\]</div>
+<p>by a homogeneous point</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\mathbf{p} =
+\begin{bmatrix} x \\ y \\ z \\ 1 \end{bmatrix}\end{split}\]</div>
+<p>Converting from camera space to cliping space produces a
+homogeneous coordinate of the form <span class="math notranslate nohighlight">\([x, y, z, w_c]\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}P \mathbf{p} =
+\begin{bmatrix}
+\frac{2n}{r-l} x + \frac{r+l}{r-l} z \\
+\frac{2n}{t-b} y + \frac{t+b}{t-b} z \\
+-\frac{f+n}{f-n} z - \frac{2fn}{f-n} \\
+-z
+\end{bmatrix}
+=
+\begin{bmatrix} x_c \\ y_c \\ z_c \\ w_c \end{bmatrix}\end{split}\]</div>
+<p>After transforming to <strong>ciip space</strong>, each vertex corrodinate is expressed in
+<strong>homogeneous</strong> form, and the <strong>view frustum boundaries are encoded in the
+coordinate values</strong>.
+A vertex lies inside the view frustum if the following conditions are satisfied:</p>
+<div class="math notranslate nohighlight">
+\[-w_c \le x_c \le w_c \
+-w_c \le y_c \le w_c \
+-w_c \le z_c \le w_c\]</div>
+<p>✅ Where does the matrix <span class="math notranslate nohighlight">\(P_{\text{persp}}\)</span> from:</p>
+<p>The perspective projection matrix <span class="math notranslate nohighlight">\(P_{\text{persp}}\)</span> is derived by
+choosing its coefficients such that, after perspective division, the
+frustum boundaries <span class="math notranslate nohighlight">\(l,r,b,t,n and f\)</span> are mapped to the <strong>canonical cube</strong>
+<span class="math notranslate nohighlight">\(\mathbf{[-1,1]^3}\)</span>.</p>
+<p>The mathematical proof is provided in <a class="reference internal" href="#math-proof-clip"><span class="std std-ref">Proof for
+Perspective Projection</span></a>.</p>
+<p>✅ Map points to NDC:</p>
+<p>After applying matrix <span class="math notranslate nohighlight">\(P_{\text{persp}}\)</span>, any vertex in view space is mapped
+to clip space:</p>
+<div class="math notranslate nohighlight">
+\[(x,y,z,1)
+\rightarrow
+(x_c, y_c, z_c, w_c)\]</div>
+<p>For the standard perspective matrix:</p>
+<div class="math notranslate nohighlight">
+\[w_c = -z\]</div>
+<p>The normalized device coordinates (NDC) are obtained by perspective division:</p>
+<div class="math notranslate nohighlight">
+\[x_{ndc} = \frac{x_c}{w_c},
+\quad
+y_{ndc} = \frac{y_c}{w_c},
+\quad
+z_{ndc} = \frac{z_c}{w_c}\]</div>
+<p>Substituting the matrix coefficients:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}w_c = -z\\x_{ndc} = \frac{x_c}{w_c} =
+   \frac{\frac{2n}{r-l} x + \frac{r+l}{r-l} z}{-z}
+   = \frac{2n}{r-l} \frac{x}{-z} + \frac{r+l}{r-l},\\\quad
+y_{ndc} = \frac{y_c}{w_c} =
+   \frac{\frac{2n}{t-b} y + \frac{t+b}{t-b} z}{-z}
+   = \frac{2n}{t-b} \frac{y}{-z} + \frac{t+b}{t-b},\\\quad
+z_{ndc} = \frac{z_c}{w_c} =
+   \frac{-\frac{f+n}{f-n} z - \frac{2fn}{f-n}}{-z}
+   = \frac{f+n}{f-n} + \frac{2fn}{(f-n) z}\end{aligned}\end{align} \]</div>
+<p>This matrix maps the view frustum in camera space to the normalized cube
+in NDC after homogeneous division.</p>
+<p>For all vertices that survived clipping, the resulting coordinates satisfy:</p>
+<div class="math notranslate nohighlight">
+\[-1 \le x_{ndc} \le 1 \
+-1 \le y_{ndc} \le 1 \
+-1 \le z_{ndc} \le 1\]</div>
+<p>Therefore, the visible region lies inside the <strong>canonical cube</strong>:</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{[-1,1]^3}\]</div>
+<p>✅ Comparsion for clipping and discarding in World Space and Clipping Space</p>
+<p>When a triangle intersects the view frustum, it must be clipped so that only the
+portion inside the frustum is rasterized. Although the clipping procedure is
+conceptually similar in world space and clip space, the mathematical complexity
+differs significantly. Clipping and discarding in clip space will saves <strong>85%</strong>
+in instructions.</p>
+<p><strong>1A. Discarding in world space</strong>:</p>
+<p>As described in the section <a class="reference internal" href="#dot-product"><span class="std std-ref">Dot Product</span></a>:</p>
+<p>The definition of Dot Product is:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\mathbf a = v_1-v_0, \mathbf b = v_2-v_0\\\mathbf a \mathsf \cdot \mathbf b = \Vert a \Vert \Vert b \Vert cos(\Theta)\end{aligned}\end{align} \]</div>
+<p>When <span class="math notranslate nohighlight">\((\mathbf p - v_0) \mathsf \cdot \mathbf n &lt; 0 \Rightarrow \mathbf p\)</span>
+lies on the back (inner) side of the plane.</p>
+<p>For the ray–plane (line–plane)
+intersection, the <span class="math notranslate nohighlight">\(d_i\)</span> can be obtained by choosing any point
+<span class="math notranslate nohighlight">\(\mathbf{p}_0\)</span> on the plane with normal vector <span class="math notranslate nohighlight">\(\mathbf{n}_i\)</span>.</p>
+<div class="math notranslate nohighlight">
+\[d_i = -\,\mathbf{n}_i \cdot \mathbf{p}_0\]</div>
+<p>In world (or view) space, the view frustum is bounded by six arbitrary planes,
+each defined by a normal vector <span class="math notranslate nohighlight">\(\mathbf{n}\)</span> and distance <span class="math notranslate nohighlight">\(d\)</span>.</p>
+<p>For each vertex <span class="math notranslate nohighlight">\(\mathbf{p}\)</span>, discarding requires testing against all
+planes:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}(\mathbf p - p_0) \mathsf \cdot \mathbf n_i &lt; 0\\\Rightarrow
+\mathbf{n}_i \cdot \mathbf{p} + d_i &lt; 0
+\quad \text{for any } i \in [1,6]\end{aligned}\end{align} \]</div>
+<p>Cost per vertex</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>6 dot products (each ≈ 3 multiplications + 2 additions)</p></li>
+<li><p>6 additions with plane constants</p></li>
+<li><p>6 comparisons</p></li>
+</ul>
+</div></blockquote>
+<p>Approximate arithmetic cost:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>18 multiplications</p></li>
+<li><p>18 additions</p></li>
+<li><p>6 comparisons</p></li>
+</ul>
+</div></blockquote>
+<p><strong>1B. Discarding in clip space</strong>:</p>
+<p>In clip space, vertices are represented in homogeneous coordinates
+<span class="math notranslate nohighlight">\((x_c, y_c, z_c, w_c)\)</span>.
+The view frustum becomes an axis-aligned volume defined by:</p>
+<div class="math notranslate nohighlight">
+\[-w_c \le x_c \le w_c \
+-w_c \le y_c \le w_c \
+-w_c \le z_c \le w_c\]</div>
+<p>Approximate arithmetic cost:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>6 comparisons</p></li>
+</ul>
+</div></blockquote>
+<p>Overall arithmetic instruction reduction <strong>85% ~ 95%</strong>.</p>
+<p><strong>2A. Clipping in World Space</strong>:</p>
+<p>Edge–plane intersection</p>
+<p>As described in the section <a class="reference internal" href="#dot-product"><span class="std std-ref">Dot Product</span></a>, the ray–plane (line–plane)
+intersection can be derived as follows:</p>
+<div class="math notranslate nohighlight">
+\[t = \frac{- (\mathbf{n} \cdot \mathbf{p}_0 + d)}
+{\mathbf{n} \cdot (\mathbf{p}_1 - \mathbf{p}_0)}\]</div>
+<p>Each frustum plane requires a separate equation and dot-product evaluation.</p>
+<p>Triangle reconstruction</p>
+<p>After computing all intersection points:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>New vertices are inserted along intersecting edges</p></li>
+<li><p>The original triangle is split into one or more triangles</p></li>
+<li><p>Perspective projection is applied afterward</p></li>
+</ul>
+</div></blockquote>
+<p>Care must be taken to preserve perspective correctness during interpolation.</p>
+<p><strong>2B. Clipping in Clip Space</strong>:</p>
+<p>Edge–plane intersection</p>
+<p>Edges are interpolated linearly in homogeneous space:</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{v}(t) = \mathbf{v}_0 + t(\mathbf{v}_1 - \mathbf{v}_0)\]</div>
+<p>Intersection with a clipping boundary is found by solving equations such as:</p>
+<div class="math notranslate nohighlight">
+\[x(t) = \pm w(t), \quad y(t) = \pm w(t), \quad z(t) = \pm w(t)\]</div>
+<p>Each case reduces to a single scalar equation for <span class="math notranslate nohighlight">\(t\)</span>.</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}x(t) = x_0 + t(x_1 - x_0) \
+w(t) = w_0 + t(w_1 - w_0)\\x(t) = w(t) \rightarrow\\x_0 + t(x_1 - x_0) = w_0 + t(w_1 - w_0)\\x_0 - w_0 = t \bigl[(w_1 - w_0) - (x_1 - x_0)\bigr]\\t = \frac{x_0 - w_0}{(x_0 - w_0) - (x_1 - w_1)}\end{aligned}\end{align} \]</div>
+<p>Compare <span class="math notranslate nohighlight">\(t = \frac{x_0 - w_0}{(x_0 - w_0) - (x_1 - w_1)}\)</span> and the
+equation from world space <span class="math notranslate nohighlight">\(t = \frac{- (\mathbf{n} \cdot \mathbf{p}_0
++ d)}{\mathbf{n} \cdot (\mathbf{p}_1 - \mathbf{p}_0)}\)</span>, it saves <strong>85%</strong> for
+reducing two dot operations and more opertions.</p>
+<p>Triangle reconstruction</p>
+<p>After clipping:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>New vertices remain in homogeneous coordinates</p></li>
+<li><p>Perspective division is deferred</p></li>
+<li><p>Linear interpolation remains perspective-correct</p></li>
+</ul>
+</div></blockquote>
+<p>The final step applies the perspective divide:</p>
+<div class="math notranslate nohighlight">
+\[(x_c, y_c, z_c, w_c) \rightarrow
+\left( \frac{x_c}{w_c}, \frac{y_c}{w_c}, \frac{z_c}{w_c} \right)\]</div>
+<p>4.3 Comparison and Practical Implications</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>World-space clipping and discarding uses general plane equations and
+complex geometry.</p></li>
+<li><p>Clip-space clipping and discarding uses axis-aligned bounds and simple
+interpolation.</p></li>
+<li><p>Perspective correctness is naturally preserved in clip space.</p></li>
+<li><p>GPU hardware can implement clip-space clipping and discarding efficiently.</p></li>
+</ul>
+</div></blockquote>
+<p>For these reasons, modern graphics pipelines perform triangle clipping and
+discarding in clip space, not in world space.</p>
+<p id="math-proof-clip">✅ Perspective Projection Matrix Derivation</p>
+<p>This section derives the perspective projection matrix by mapping a view
+frustum in camera space to Normalized Device Coordinates (NDC).</p>
+<p>A vertex is kept
+only if it satisfies the following inequalities:</p>
+<div class="math notranslate nohighlight">
+\[-w_c \le x_c \le w_c\]</div>
+<div class="math notranslate nohighlight">
+\[-w_c \le y_c \le w_c\]</div>
+<div class="math notranslate nohighlight">
+\[-w_c \le z_c \le w_c\]</div>
+<p>These inequalities define the <strong>view frustum in homogeneous coordinates</strong>.</p>
+<p>If a vertex violates any of these conditions, it lies outside the view
+frustum (left, right, top, bottom, near, or far plane) and is clipped or
+discarded.</p>
+<p>The goal is to map this frustum to Normalized Device Coordinates (NDC):</p>
+<div class="math notranslate nohighlight">
+\[x_{ndc}, y_{ndc}, z_{ndc} \in [-1, 1]\]</div>
+<p>★ <strong>Idea</strong>:</p>
+<p>The idea of deriving the perspective projection matrix
+<span class="math notranslate nohighlight">\(P_{\text{persp}}\)</span> is to choose its coefficients such that, after
+perspective division, the frustum boundaries are mapped to the canonical cube
+<span class="math notranslate nohighlight">\([-1,1]^3\)</span>.</p>
+<p>More explicitly, we impose the following constraints:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}x = l \rightarrow x_{ndc} = -1\\x = r \rightarrow x_{ndc} = 1\\y = b \rightarrow y_{ndc} = -1\\y = t \rightarrow y_{ndc} = 1\\z = -n \rightarrow z_{ndc} = -1\\z = -f \rightarrow z_{ndc} = 1\end{aligned}\end{align} \]</div>
+<p>These conditions determine the coefficients of the matrix.</p>
+<p><strong>Homogeneous Perspective Divide</strong></p>
+<p>After projection, homogeneous division is applied:</p>
+<div class="math notranslate nohighlight">
+\[x_{ndc} = \frac{x_c}{w_c}, \quad
+y_{ndc} = \frac{y_c}{w_c}, \quad
+z_{ndc} = \frac{z_c}{w_c}\]</div>
+<p>To achieve perspective foreshortening, the homogeneous coordinate must satisfy:</p>
+<div class="math notranslate nohighlight">
+\[w_c = -z\]</div>
+<p>This requirement determines the last row of the projection matrix.</p>
+<p><strong>X Coordinate Mapping</strong></p>
+<div class="math notranslate nohighlight">
+\[A_x = \frac{2}{r-l}, \quad
+B_x = -\frac{r+l}{r-l}\]</div>
+<p>Since the near plane is located at <span class="math notranslate nohighlight">\(z = -n\)</span>, by similar triangles, the
+projected x-coordinate on the near plane is:</p>
+<div class="math notranslate nohighlight">
+\[x_n = \frac{n}{-z} x\]</div>
+<p>The near-plane bounds map to NDC as follows:</p>
+<div class="math notranslate nohighlight">
+\[x = l \Rightarrow x_{ndc} = -1
+\qquad
+x = r \Rightarrow x_{ndc} = +1\]</div>
+<p>Assume a linear mapping:</p>
+<div class="math notranslate nohighlight">
+\[x_{ndc} = A_x x_n + B_x\]</div>
+<p>Applying the near constraints: substituting <span class="math notranslate nohighlight">\(x_n = l\ and\ x_{ndc} = -1\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[-1 = A_x l + B_x
+\qquad ...(1)\]</div>
+<p>Applying the far constraints: substituting <span class="math notranslate nohighlight">\(x_n = r\ and\ x_{ndc} = 1\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[1 = A_x r + B_x
+\qquad ...(2)\]</div>
+<p>Solving equations (1) and (2) to get <span class="math notranslate nohighlight">\(A_x\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[2 = A_x (r-l) \Rightarrow A_x = \frac{2}{r-l}
+\qquad ...(3)\]</div>
+<p>Substituting equation (3) to (2):</p>
+<div class="math notranslate nohighlight">
+\[1 = A_x r + B_x \Rightarrow 1 = \frac{2}{r-l}r + B_x
+\Rightarrow B_x = \frac{r-l-2r}{r-1} = -\frac{r+l}{r-l} \qquad ...(4)\]</div>
+<p>From (3) and (4):
+Solving for <span class="math notranslate nohighlight">\(A_x\)</span> and <span class="math notranslate nohighlight">\(B_x\)</span> yields:</p>
+<div class="math notranslate nohighlight">
+\[A_x = \frac{2}{r-l}, \quad
+B_x = -\frac{r+l}{r-l}\]</div>
+<p>Substituting <span class="math notranslate nohighlight">\(x_n\)</span> gives the resulting mapping is:</p>
+<div class="math notranslate nohighlight">
+\[x_{ndc}
+= \frac{2n}{r-l} \frac{x}{-z}
+  + \frac{r+l}{r-l}\]</div>
+<p><strong>Y Coordinate Mapping</strong>:</p>
+<p>Using the same derivation for the y-axis:</p>
+<div class="math notranslate nohighlight">
+\[y_n = \frac{n}{-z} y\]</div>
+<p>The resulting mapping is:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}A_y = \frac{2}{t-b}, \quad
+B_y = -\frac{t+b}{t-b}\\y_{ndc}
+= \frac{2n}{t-b} \frac{y}{-z}
+  + \frac{t+b}{t-b}\end{aligned}\end{align} \]</div>
+<p><strong>Z Coordinate Mapping</strong></p>
+<p>Depth is mapped linearly such that:</p>
+<div class="math notranslate nohighlight">
+\[z = -n \Rightarrow z_{ndc} = -1
+\qquad
+z = -f \Rightarrow z_{ndc} = +1\]</div>
+<p>Assume:</p>
+<div class="math notranslate nohighlight">
+\[z_c = A_z z + B_z\]</div>
+<p>Then:</p>
+<div class="math notranslate nohighlight">
+\[z_{ndc} = \frac{A_z z + B_z}{-z}\]</div>
+<p>Applying the near constraints: substituting <span class="math notranslate nohighlight">\(z = -n\ and\ z_{ndc} = -1\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[-1 = \frac{A_z(-n) + B_z}{-(-n)} \Rightarrow -n = {A_z(-n) + B_z}
+\qquad ...(1)\]</div>
+<p>Applying the far constraints: substituting <span class="math notranslate nohighlight">\(z = -f\ and\ z_{ndc} = 1\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[1 = \frac{A_z(-f) + B_z}{-(-f)} \Rightarrow  f = {A_z(-f) + B_z}
+\qquad ...(2)\]</div>
+<p>Solving equations (1) and (2) to get <span class="math notranslate nohighlight">\(A_z\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[-n-f = {A_z(-n+f)} \Rightarrow {A_z} = \frac{-n-f}{-n+f} = -\frac{f+n}{f-n}
+\qquad ...(3)\]</div>
+<p>Substituting equation (3) to (2):</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}f = {A_z(-f) + B_z} \Rightarrow f = {-\frac{f+n}{f-n}(-f) + B_z}\\\Rightarrow {B_z} = f+\frac{f+n}{f-n}(-f) = \frac{(f^2-fn)+(-f^2-fn)}{f-n} =
+-\frac{2fn}{f-n} \qquad ...(4)\end{aligned}\end{align} \]</div>
+<p>From (3) and (4):</p>
+<div class="math notranslate nohighlight">
+\[A_z = -\frac{f+n}{f-n}, \quad
+B_z = -\frac{2fn}{f-n}\]</div>
+<p><strong>Perspective Projection Matrix</strong></p>
+<p>Combining all components, the perspective projection matrix is:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}P =
+\begin{bmatrix}
+\frac{2n}{r-l} &amp; 0 &amp; \frac{r+l}{r-l} &amp; 0 \\
+0 &amp; \frac{2n}{t-b} &amp; \frac{t+b}{t-b} &amp; 0 \\
+0 &amp; 0 &amp; -\frac{f+n}{f-n} &amp; -\frac{2fn}{f-n} \\
+0 &amp; 0 &amp; -1 &amp; 0
+\end{bmatrix}\end{split}\]</div>
+<p>Reference:</p>
+<p>1. Every computer graphics book covers the topic of transformation of objects
+and
+their positions in space. Chapter 4 of the <em>Blue Book: OpenGL SuperBible, 7th
+Edition</em> provides a concise yet useful 40-page overview of transformation
+concepts and is good material for gaining a deeper understanding of transformations.
+description of transformation.</p>
+<ol class="arabic simple" start="2">
+<li><p>Chapter 7 of Red book covers the tranformations and projections.</p></li>
+<li><p><a class="reference external" href="https://en.wikipedia.org/wiki/3D_projection">https://en.wikipedia.org/wiki/3D_projection</a></p></li>
+</ol>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="additive-colors-wiki" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/RGB_color_model">https://en.wikipedia.org/wiki/RGB_color_model</a></p>
+</aside>
+<aside class="footnote brackets" id="additive-colors-ytube" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://www.youtube.com/watch?v=kEnz_3miiAc">https://www.youtube.com/watch?v=kEnz_3miiAc</a></p>
+</aside>
+<aside class="footnote brackets" id="additive-colors-shade" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">3</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://www.tiktok.com/&#64;tonesterpaints/video/7059565281227853102">https://www.tiktok.com/&#64;tonesterpaints/video/7059565281227853102</a></p>
+</aside>
+<aside class="footnote brackets" id="cg-basictheory" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id5">1</a>,<a role="doc-backlink" href="#id6">2</a>,<a role="doc-backlink" href="#id8">3</a>,<a role="doc-backlink" href="#id27">4</a>,<a role="doc-backlink" href="#id28">5</a>)</span>
+<p><a class="reference external" href="https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_BasicsTheory.html">https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_BasicsTheory.html</a></p>
+</aside>
+<aside class="footnote brackets" id="wiki-transformation" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id7">5</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Transformation_matrix">https://en.wikipedia.org/wiki/Transformation_matrix</a></p>
+</aside>
+<aside class="footnote brackets" id="wiki-rotation" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id9">6</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Rotation_matrix">https://en.wikipedia.org/wiki/Rotation_matrix</a></p>
+</aside>
+<aside class="footnote brackets" id="wiki-quaternion" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id10">7</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Quaternion">https://en.wikipedia.org/wiki/Quaternion</a></p>
+</aside>
+<aside class="footnote brackets" id="wiki-prospective-projection" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id26">8</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/3D_projection">https://en.wikipedia.org/wiki/3D_projection</a></p>
+</aside>
+<aside class="footnote brackets" id="cross-product-wiki" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id18">9</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Cross_product">https://en.wikipedia.org/wiki/Cross_product</a></p>
+</aside>
+<aside class="footnote brackets" id="cross-product-2d-proof" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>10<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id12">1</a>,<a role="doc-backlink" href="#id14">2</a>)</span>
+<p><a class="reference external" href="https://www.xarg.org/book/linear-algebra/2d-perp-product/">https://www.xarg.org/book/linear-algebra/2d-perp-product/</a></p>
+</aside>
+<aside class="footnote brackets" id="cross-product-2d-proof2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>11<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id13">1</a>,<a role="doc-backlink" href="#id15">2</a>)</span>
+<p><a class="reference external" href="https://www.nagwa.com/en/explainers/175169159270/">https://www.nagwa.com/en/explainers/175169159270/</a></p>
+</aside>
+<aside class="footnote brackets" id="cgpap" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id16">12</a><span class="fn-bracket">]</span></span>
+<p>Figure 7.19 of Book: Computer graphics principles and practice 3rd edition</p>
+</aside>
+<aside class="footnote brackets" id="wiki-point-in-polygon" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id17">13</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Point_in_polygon">https://en.wikipedia.org/wiki/Point_in_polygon</a></p>
+</aside>
+<aside class="footnote brackets" id="ogl-point-outwards" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id19">14</a><span class="fn-bracket">]</span></span>
+<p>Normals are used to differentiate the front- and back-face, and for other processing such as lighting. Right-hand rule (or counter-clockwise) is used in OpenGL. The normal is pointing outwards, indicating the outer surface (or front-face). <a class="reference external" href="https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_BasicsTheory.html">https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_BasicsTheory.html</a></p>
+</aside>
+<aside class="footnote brackets" id="point-in-3d-object" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id20">15</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://stackoverflow.com/questions/63557043/how-to-determine-whether-a-point-is-inside-or-outside-a-3d-model-computationally">https://stackoverflow.com/questions/63557043/how-to-determine-whether-a-point-is-inside-or-outside-a-3d-model-computationally</a></p>
+</aside>
+<aside class="footnote brackets" id="vbo2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id21">16</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="http://www.songho.ca/opengl/gl_vbo.html">http://www.songho.ca/opengl/gl_vbo.html</a></p>
+</aside>
+<aside class="footnote brackets" id="ogl-frontface" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id22">17</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://registry.khronos.org/OpenGL-Refpages/gl4/html/glFrontFace.xhtml">https://registry.khronos.org/OpenGL-Refpages/gl4/html/glFrontFace.xhtml</a></p>
+</aside>
+<aside class="footnote brackets" id="scene-graph-wiki" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id23">18</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Scene_graph">https://en.wikipedia.org/wiki/Scene_graph</a></p>
+</aside>
+</aside>
+</section>
+</section>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="Bottom">
+      
+        <p>
+        «&#160;&#160;<a href="hw-sw-stack.html">Graphics HW and SW Stack</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="opengl.html">OpenGL</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2026, Chen Chung-Shu.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    </div>
+  </body>
+</html>

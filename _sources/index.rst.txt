@@ -10,7 +10,9 @@ Table of Contents
    :maxdepth: 1
 
    about
-   graphics
+   3d-model
+   hw-sw-stack
+   geo-math
    opengl
    hw
    sw

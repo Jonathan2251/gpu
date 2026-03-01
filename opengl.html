@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/haiku.css?v=fce32b03" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
-    <script src="_static/documentation_options.js?v=2709fde1"></script>
+    <script src="_static/documentation_options.js?v=10f1778b"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
@@ -17,7 +17,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="GPU Architecture" href="hw.html" />
-    <link rel="prev" title="Graphics Structure and Principle" href="graphics.html" /> 
+    <link rel="prev" title="Basic geometry in computer graphics" href="geo-math.html" /> 
   </head><body>
       <div class="header" role="banner"><h1 class="heading"><a href="index.html">
           <span>The Concept of GPU Compiler</span></a></h1>
@@ -26,7 +26,7 @@
       <div class="topnav" role="navigation" aria-label="Top">
       
         <p>
-        «&#160;&#160;<a href="graphics.html">Graphics Structure and Principle</a>
+        «&#160;&#160;<a href="geo-math.html">Basic geometry in computer graphics</a>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;
@@ -347,14 +347,14 @@ computer <a class="footnote-reference brackets" href="#drendering-wiki" id="id14
 <p>Based on the previous section of 3D modeling, the 3D modeling tool will
 generate a 3D vertex model and OpenGL code. Then, programmers may manually
 modify the OpenGL code and add or update shaders.</p>
-<p>In section <a class="reference internal" href="graphics.html#sw-stack"><span class="std std-ref">SW Stack and Data Flow</span></a>, we mentioned the GPU will generate the rendering
+<p>In section <a class="reference internal" href="hw-sw-stack.html#sw-stack"><span class="std std-ref">SW Stack and Data Flow</span></a>, we mentioned the GPU will generate the rendering
 image for each frame according the 3D Inforamtion and Uniform Updates sent from
 CPU, and write each of the final frame of data in the form of color pixels to
-framebuffer (video memory) as <a class="reference internal" href="graphics.html#in-out-rendering"><span class="std std-numref">Fig. 10</span></a>.</p>
+framebuffer (video memory) as <a class="reference internal" href="hw-sw-stack.html#in-out-rendering"><span class="std std-numref">Fig. 10</span></a>.</p>
 <section id="animation-parameters">
 <span id="id15"></span><h3><a class="toc-backref" href="#id91" role="doc-backlink">Animation Parameters</a><a class="headerlink" href="#animation-parameters" title="Link to this heading">¶</a></h3>
 <p>✅ CPU only updates small animation parameters named <strong>Uniform Updates</strong> as
-appeared in <a class="reference internal" href="graphics.html#graphic-sw-stack-2"><span class="std std-numref">Fig. 9</span></a>; GPU computes the heavy per‑vertex work.</p>
+appeared in <a class="reference internal" href="hw-sw-stack.html#graphic-sw-stack-2"><span class="std std-numref">Fig. 9</span></a>; GPU computes the heavy per‑vertex work.</p>
 <p>The 3D animation will
 trigger the 3D rendering process for each 2D image drawing accoriding the
 <strong>Uniform Updates</strong>.</p>
@@ -443,8 +443,8 @@ small CPU‑updated data that the GPU reads during shading.</p>
 <li><p>A fragment can be treated as a pixel in 3D spaces, which is aligned with the
 pixel grid, with attributes such as position, color, normal and texture.</p></li>
 </ul>
-<p>From the previous <a class="reference internal" href="graphics.html#graphic-sw-stack-2"><span class="std std-numref">Fig. 9</span></a> and <a class="reference internal" href="graphics.html#in-out-rendering"><span class="std std-numref">Fig. 10</span></a>
-in section <a class="reference internal" href="graphics.html#sw-stack"><span class="std std-ref">SW Stack and Data Flow</span></a>, we introduce the 3D anmiation data are classified
+<p>From the previous <a class="reference internal" href="hw-sw-stack.html#graphic-sw-stack-2"><span class="std std-numref">Fig. 9</span></a> and <a class="reference internal" href="hw-sw-stack.html#in-out-rendering"><span class="std std-numref">Fig. 10</span></a>
+in section <a class="reference internal" href="hw-sw-stack.html#sw-stack"><span class="std std-ref">SW Stack and Data Flow</span></a>, we introduce the 3D anmiation data are classified
 as follows:</p>
 <ul class="simple">
 <li><p><strong>Vertex Data = 3D model information</strong> (the mesh (geometry), such as VBO/VAO)</p></li>
@@ -550,7 +550,7 @@ data.</p></li>
 <li><p>Rasterizer: <strong>Primitives → Fragment</strong>.</p></li>
 <li><p>Fragment Shader: <strong>Fragment → Colored Fragment</strong>.</p></li>
 </ul>
-<p>As illustred in <a class="reference internal" href="graphics.html#cross-product"><span class="std std-ref">Cross Product</span></a> section,</p>
+<p>As illustred in <a class="reference internal" href="geo-math.html#cross-product"><span class="std std-ref">Cross Product</span></a> section,</p>
 <p>✔️  Each mesh (triangle or primitive) has a fixed “outer” and “inner” side,
 determined by CCW ordering in object space.</p>
 <p>✔️  By reading these CCW-ordered vertices sequentially, the shape and surface
@@ -2138,7 +2138,7 @@ overhead compared to the traditional vertex-processing pipeline.</p>
 </section>
 <section id="animation-example">
 <span id="animation-ex"></span><h3><a class="toc-backref" href="#id98" role="doc-backlink">Animation Example</a><a class="headerlink" href="#animation-example" title="Link to this heading">¶</a></h3>
-<p>The skinning formula is described in <a class="reference internal" href="graphics.html#sw-stack"><span class="std std-ref">SW Stack and Data Flow</span></a> section as follows:</p>
+<p>The skinning formula is described in <a class="reference internal" href="hw-sw-stack.html#sw-stack"><span class="std std-ref">SW Stack and Data Flow</span></a> section as follows:</p>
 <div class="math notranslate nohighlight">
 \[finalPosition =
 \sum_{i=0}^{N-1}
@@ -2382,10 +2382,10 @@ animation tools—such as Maya, Blender, and others—can utilize these APIs to 
 ensuring that rendering is optimized for the underlying hardware.</p>
 <section id="background">
 <h3><a class="toc-backref" href="#id100" role="doc-backlink">Background</a><a class="headerlink" href="#background" title="Link to this heading">¶</a></h3>
-<p>In the previous section <a class="reference internal" href="graphics.html#sw-stack"><span class="std std-ref">SW Stack and Data Flow</span></a> described <strong>how each frame is
+<p>In the previous section <a class="reference internal" href="hw-sw-stack.html#sw-stack"><span class="std std-ref">SW Stack and Data Flow</span></a> described <strong>how each frame is
 generated</strong> to display the <strong>movement animation or skinning effects</strong> using the
 small animation parameters stored in 3D model and sent from CPU.</p>
-<p>Based on description of section <a class="reference internal" href="graphics.html#sw-stack"><span class="std std-ref">SW Stack and Data Flow</span></a>, we know the animation can
+<p>Based on description of section <a class="reference internal" href="hw-sw-stack.html#sw-stack"><span class="std std-ref">SW Stack and Data Flow</span></a>, we know the animation can
 be implemented using <strong>fixed‑function skinning</strong>.
 The following are the animation examples for <strong>shader-less era</strong>.</p>
 <p>✔ Some consoles and mobile GPUs did have fixed‑function skinning.</p>
@@ -2409,7 +2409,7 @@ No shaders existed yet.</p>
 <li><p>per‑vertex weighted blending</p></li>
 </ul>
 <p>Again, no shaders — but hardware skinning existed.</p>
-<p>The previous <a class="reference internal" href="graphics.html#role-shaders"><span class="std std-ref">section Role and Purpose of Shaders</span></a> also
+<p>The previous <a class="reference internal" href="hw-sw-stack.html#role-shaders"><span class="std std-ref">section Role and Purpose of Shaders</span></a> also
 explained different visual effects can be achieved by <strong>switching shaders</strong> to
 shapplying different materials across frames.</p>
 <p>❌ However <strong>the fixed‑function pipeline (OpenGL 1.x / early 2.x without
@@ -3463,7 +3463,7 @@ building a CPU compiler is not necessarily less than that of a GPU compiler.)</p
       <div class="bottomnav" role="navigation" aria-label="Bottom">
       
         <p>
-        «&#160;&#160;<a href="graphics.html">Graphics Structure and Principle</a>
+        «&#160;&#160;<a href="geo-math.html">Basic geometry in computer graphics</a>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;

@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>3D Modeling &#8212; The Concept of GPU Compiler</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/haiku.css?v=fce32b03" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+    <script src="_static/documentation_options.js?v=10f1778b"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Graphics HW and SW Stack" href="hw-sw-stack.html" />
+    <link rel="prev" title="About" href="about.html" /> 
+  </head><body>
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>The Concept of GPU Compiler</span></a></h1>
+        <h2 class="heading"><span>3D Modeling</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="Top">
+      
+        <p>
+        «&#160;&#160;<a href="about.html">About</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="hw-sw-stack.html">Graphics HW and SW Stack</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <section id="d-modeling">
+<span id="d-model"></span><h1>3D Modeling<a class="headerlink" href="#d-modeling" title="Link to this heading">¶</a></h1>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#animation" id="id21">Animation</a></p></li>
+<li><p><a class="reference internal" href="#node-editor-shaders-generator" id="id22">Node-Editor (shaders generator)</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id9" id="id23">Node-Editor</a></p></li>
+<li><p><a class="reference internal" href="#code-generation-from-node-editor" id="id24">Code Generation from Node-Editor</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#d-modeling-tools" id="id25">3D Modeling Tools</a></p></li>
+</ul>
+</nav>
+<p id="three-d-model">By creating 3D models with triangles or quads on a surface, the model is formed
+using a polygon mesh <a class="footnote-reference brackets" href="#polygon" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>. This mesh consists of all the vertices shown in
+the first image as <a class="reference internal" href="#modeling1"><span class="std std-numref">Fig. 1</span></a>.</p>
+<figure class="align-center" id="id15">
+<span id="modeling1"></span><a class="reference internal image-reference" href="_images/modeling1.png"><img alt="_images/modeling1.png" height="394" src="_images/modeling1.png" width="688" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 1 </span><span class="caption-text">Creating 3D model and texturing</span><a class="headerlink" href="#id15" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>After applying smooth shading <a class="footnote-reference brackets" href="#polygon" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>, the vertices and edge lines are
+covered with color (or the edges are visually removed — <strong>edges never actually
+have black outlines</strong>). As a result, the model appears much smoother
+<a class="footnote-reference brackets" href="#shading" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</p>
+<p>Furthermore, after texturing (texture mapping), the model looks even more
+realistic <a class="footnote-reference brackets" href="#texturemapping" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>.</p>
+<section id="animation">
+<span id="id5"></span><h2><a class="toc-backref" href="#id21" role="doc-backlink">Animation</a><a class="headerlink" href="#animation" title="Link to this heading">¶</a></h2>
+<p>★ Animation Layers: High → Low</p>
+<p>This breakdown organizes animation systems from the <strong>highest gameplay
+logic</strong> down to the <strong>lowest GPU skinning</strong>, and clearly marks which
+parts are controlled by the <strong>user</strong> and which parts are handled by the
+<strong>3D engine</strong>.</p>
+<ol class="arabic simple">
+<li><p>Gameplay Animation Logic (High Level): set by user (game developer)</p></li>
+</ol>
+<p>See video here <a class="footnote-reference brackets" href="#animation-state-video" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>.</p>
+<p><strong>Examples</strong></p>
+<ul class="simple">
+<li><p>Play “walk” when speed &gt; 0.1</p></li>
+<li><p>Trigger “jump” on button press</p></li>
+<li><p>Switch to “attack” when enemy detected</p></li>
+<li><p>Blend run when velocity increases</p></li>
+</ul>
+<p><strong>Where it lives</strong></p>
+<p>Live in <strong>gameplay scripts</strong> (C#, Blueprints, GDScript, Python)</p>
+<ul class="simple">
+<li><p>Unity: C# scripts</p></li>
+<li><p>Unreal: Blueprints or C++</p></li>
+<li><p>Godot: GDScript</p></li>
+<li><p>ThinMatrix: Java (no scripting layer)</p></li>
+</ul>
+<p>This layer decides <em>when</em> animations should play.</p>
+<ol class="arabic simple" start="2">
+<li><p>Animation State Machine / Animation Graph: set by user (game developer)</p></li>
+</ol>
+<p><strong>Examples</strong></p>
+<ul class="simple">
+<li><p>Idle → Walk → Run transitions</p></li>
+<li><p>Blend trees</p></li>
+<li><p>Animation layers (upper body, lower body)</p></li>
+<li><p>Animation parameters (speed, grounded, direction)</p></li>
+</ul>
+<p><strong>Where it lives</strong></p>
+<ul class="simple">
+<li><p>Unity: Animator Controller</p></li>
+<li><p>Unreal: Animation Blueprint</p></li>
+<li><p>Godot: AnimationTree</p></li>
+<li><p>ThinMatrix: <em>Does not have this layer</em></p></li>
+</ul>
+<p>This layer controls <em>which</em> animation clip is active and how transitions
+occur.</p>
+<ol class="arabic simple" start="3">
+<li><p>Animation Clip Playback Layer: user chooses</p></li>
+</ol>
+<p>An <strong>animation clip</strong> is <strong>a sequence of keyframes</strong> over a period of time that
+represents a <strong>motion or action</strong>.</p>
+<p><strong>Examples</strong></p>
+<ul class="simple">
+<li><p>Play animation clip</p></li>
+<li><p>Loop animation</p></li>
+<li><p>Set animation speed</p></li>
+<li><p>Crossfade between clips</p></li>
+<li><p>Blend two clips together</p></li>
+</ul>
+<p><strong>Who sets it?</strong>
+User chooses which clip to play.</p>
+<p><strong>Who implements it?</strong>
+Engine handles blending, timing, and playback.</p>
+<p><strong>Where it lives</strong></p>
+<ul class="simple">
+<li><p>Unity: Mecanim runtime</p></li>
+<li><p>Unreal: AnimInstance</p></li>
+<li><p>Godot: AnimationPlayer</p></li>
+<li><p>ThinMatrix: Java engine code (Animator.java)</p></li>
+</ul>
+<p>This layer executes the user’s choices.</p>
+<ol class="arabic simple" start="4">
+<li><p>Skeleton Animation System (Low Level): 3D engine implements it</p></li>
+</ol>
+<p><strong>Examples</strong></p>
+<ul class="simple">
+<li><p>Bone hierarchy</p></li>
+<li><p>Keyframe interpolation</p></li>
+<li><p>Joint transforms</p></li>
+<li><p>Matrix palette generation</p></li>
+<li><p>Pose calculation</p></li>
+</ul>
+<p><strong>Who sets it?</strong>
+Engine</p>
+<p><strong>Who uses it?</strong>
+User indirectly, by playing animations.</p>
+<p><strong>Where it lives</strong></p>
+<ul class="simple">
+<li><p>Unity: C++ engine core</p></li>
+<li><p>Unreal: C++ engine core</p></li>
+<li><p>Godot: C++ engine core</p></li>
+<li><p>ThinMatrix: Java engine code (he writes this manually)</p></li>
+</ul>
+<p>This layer performs the mathematical work of animation.</p>
+<ol class="arabic simple" start="5">
+<li><p>GPU Skinning (Lowest Level): 3D engine implements it</p></li>
+</ol>
+<p><strong>Examples</strong></p>
+<ul class="simple">
+<li><p>Vertex shader skinning</p></li>
+<li><p>Applying bone matrices</p></li>
+<li><p>Weighted vertex deformation</p></li>
+<li><p>Sending matrices to GPU</p></li>
+</ul>
+<p><strong>Who sets it?</strong>
+Engine</p>
+<p><strong>Who uses it?</strong>
+User never touches this layer directly (except in custom engines).</p>
+<p><strong>Where it lives</strong></p>
+<ul class="simple">
+<li><p>Unity: C++ + HLSL</p></li>
+<li><p>Unreal: C++ + HLSL</p></li>
+<li><p>Godot: C++ + GLSL</p></li>
+<li><p>ThinMatrix: GLSL shader he writes manually</p></li>
+</ul>
+<p>This is the final stage where the GPU deforms the mesh.</p>
+<p>Full Hierarchy (Summary)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>HIGH LEVEL (User)
+──────────────────────────────────────────────
+1. Gameplay Animation Logic
+2. Animation State Machine / Animation Graph
+3. Animation Clip Playback
+
+LOW LEVEL (Engine)
+──────────────────────────────────────────────
+4. Skeleton Animation System
+5. GPU Skinning
+</pre></div>
+</div>
+<p>Developers only write the highest‑level animation logic and designed
+transitions &amp; blends as shown in <a class="reference internal" href="#animation-levels"><span class="std std-numref">Fig. 2</span></a>.
+The engine automatically handles all lower‑level animation work.
+Like the video <a class="footnote-reference brackets" href="#animation-state-video" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>, Jason’s tutorials operate only in
+Level 1 and Level 2:</p>
+<p>✔ Level 1 — Scripts</p>
+<p>He writes code like:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">animator</span><span class="p">.</span><span class="n">SetFloat</span><span class="p">(</span><span class="s">&quot;Speed&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">speed</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>✔ Level 2 — State Machine</p>
+<p>He configures transitions and parameters.</p>
+<figure class="align-default" id="id16">
+<span id="animation-levels"></span><div class="graphviz"><img src="_images/graphviz-a225b560ceff9938339eb3adeb9d630c05991999.png" alt="digraph AnimationLayers {
+    rankdir=TB;
+    node [shape=box, style=rounded, fontsize=12];
+
+    High1 [label=&quot;1. Gameplay Animation Logic\n(User scripts / gameplay code)&quot;];
+    High2 [label=&quot;2. Animation State Machine / Animation Graph\n(User-designed transitions &amp; blends)&quot;];
+    Mid  [label=&quot;3. Animation Clip Playback\n(Engine-controlled timing &amp; blending)&quot;];
+    Low1 [label=&quot;4. Skeleton Animation System\n(Bone transforms, keyframe interpolation)&quot;];
+    Low2 [label=&quot;5. GPU Skinning\n(Vertex shader applies bone matrices)&quot;];
+
+    High1 -&gt; High2 [label=&quot;animation intent\n(e.g., walk, run, jump)&quot;];
+    High2 -&gt; Mid   [label=&quot;selected clip + blend parameters&quot;];
+    Mid   -&gt; Low1  [label=&quot;sampled pose\n(bone transforms per frame)&quot;];
+    Low1  -&gt; Low2  [label=&quot;matrix palette\n(bone matrices sent to GPU)&quot;];
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 2 </span><span class="caption-text">Animation levels</span><a class="headerlink" href="#id16" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>ThinMatrix’s engine collapses the top three layers into Java because it
+has <strong>no scripting layer</strong> and <strong>no animation graph</strong>, so the user must
+modify the engine code directly.</p>
+<p>According to the video on ThinMatrix’s skeleton animation <a class="footnote-reference brackets" href="#animation1" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a>,
+he is sampling the animation clip at different times.
+The animation clip already contains: keyframes, bone transforms, timestamps,
+interpolation curves.
+All of this comes from Blender’s exported .dae file.
+Joints are positioned at different poses at specific times (keyframes), as
+illustrated in <a class="reference internal" href="#animationfigure"><span class="std std-numref">Fig. 3</span></a>.</p>
+<figure class="align-center" id="id17">
+<span id="animationfigure"></span><a class="reference internal image-reference" href="_images/animation.png"><img alt="_images/animation.png" height="497" src="_images/animation.png" width="962" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 3 </span><span class="caption-text">Get time points at keyframes</span><a class="headerlink" href="#id17" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Although most of 3D game engines are written C++, <strong>ThinMatrix’s engine</strong> is
+100% Java.
+In this series of videos, you will see that he writes new Java engine modules,
+edits existing engine code, loads animation data from Blender, interpolates
+keyframes, updates bone matrices and sends them to the GPU.
+Because ThinMatrix’s engine is <strong>tiny and educational</strong> for engine programmer or
+game developer, does not provide Scripting Layer (such as C#, Python, GDScript,
+Blueprints) most commercial 3D engines.
+Instead, he modifies ThinMatrix’s Java engine directly, which differs from most
+other 3D engines operate.</p>
+<p><strong>Animation flow</strong></p>
+<p>Every modern 3D animation tool comes with its own <strong>built‑in render engine</strong>,
+and often more than one. In 3D game design, <strong>game engines (Unity, Unreal,
+Godot) use real‑time engines</strong> for real-time animation.</p>
+<p><strong>Pipeline: Blender → Engine → OpenGL</strong></p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>+------------------+
+|     Blender      |
+|  (Modeling Tool) |
++------------------+
+          |
+          |  Exports assets:
+          |  - Meshes (.obj, .fbx, .gltf)
+          |  - Armatures / bones
+          |  - Animations (keyframes)
+          |  - Textures (PNG, EXR, TGA)
+          v
++---------------------------+
+|       Game Engine         |
+| (Unity, Unreal, Godot,    |
+|  LWJGL, JOGL, Custom)     |
++---------------------------+
+          |
+          |  Engine loads assets:
+          |  - Parses mesh data
+          |  - Loads skeletons
+          |  - Loads animation curves
+          |  - Loads materials/shaders
+          |
+          |  Engine code you write:
+          |  - Java (JOGL/LWJGL)
+          |  - C++ (custom engine)
+          |  - C# (Unity)
+          |  - GDScript/C++ (Godot)
+          |
+          |  Engine compiles shaders:
+          |  - GLSL (OpenGL)
+          |  - HLSL (DirectX)
+          |  - SPIR-V (Vulkan)
+          v
++---------------------------+
+|         Renderer          |
+|    (OpenGL / Vulkan /     |
+|     DirectX / Metal)      |
++---------------------------+
+          |
+          |  GPU receives:
+          |  - Vertex buffers
+          |  - Index buffers
+          |  - Textures
+          |  - Uniforms (matrices, bones)
+          |  - Compiled shaders
+          v
++---------------------------+
+|            GPU            |
+| (Vertex Shader → Raster → |
+|  Fragment Shader → Frame) |
++---------------------------+
+          |
+          v
++---------------------------+
+|        Final Image        |
+|     (On your screen)      |
++---------------------------+
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<dl class="simple">
+<dt>3D modeling tools do store animation and movement data</dt><dd><p>— but they do NOT store any rendering or API‑specific code.</p>
+</dd>
+<dt>Game engines do store animation data</dt><dd><p>— but programmers still write the logic that plays, blends,
+and controls those animations.</p>
+</dd>
+</dl>
+</div>
+<p id="movement"><strong>Animation Data vs. Movement Speed in Games</strong></p>
+<p>List the animation types in a table for inclusion in this book.</p>
+<table class="docutils align-default" id="id18">
+<caption><span class="caption-number">Table 1 </span><span class="caption-text">Animation Types</span><a class="headerlink" href="#id18" title="Link to this table">¶</a></caption>
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 25.0%" />
+<col style="width: 35.0%" />
+<col style="width: 20.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p><strong>Animation Type</strong></p></th>
+<th class="head"><p>What Moves</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>GPU Requirement</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Transform Animation</strong></p></td>
+<td><p>Object transform</p></td>
+<td><p>The entire mesh moves as a rigid body using
+position, rotation, and scale. No vertex-level
+deformation occurs.</p></td>
+<td><p>Optional (fixed-function or shaders)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Skinning</strong></p></td>
+<td><p>Vertex positions</p></td>
+<td><p>Vertices are blended by bone matrices to deform
+the mesh (arms bending, legs walking). Requires
+per-vertex matrix blending.</p></td>
+<td><p>Requires shaders</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Morph Target Animation</strong></p></td>
+<td><p>Vertex positions</p></td>
+<td><p>Vertices blend between multiple stored shapes
+(facial expressions, muscle bulges). Uses morph
+weights to interpolate.</p></td>
+<td><p>Requires shaders</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Procedural Deformation</strong></p></td>
+<td><p>Vertex positions</p></td>
+<td><p>Vertices are modified by mathematical functions
+(wind, waves, noise, squash-and-stretch). Driven
+by time or simulation parameters.</p></td>
+<td><p>Requires shaders</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example: Walking Animation: Skinning + Transform Animation</strong></p>
+<p>When a character walks in a game, the animation is produced by two
+different systems working together:</p>
+<ol class="arabic simple">
+<li><p><strong>Skinning (Bone Animation)</strong>
+Skinning is responsible for deforming the mesh. It drives the motion
+of limbs such as legs, arms, spine, and feet. Without skinning, the
+character would move as a rigid statue with no bending or articulation.</p></li>
+<li><p><strong>Transform Animation (Rigid-Body Movement)</strong>
+Transform animation moves the entire character through the world.
+This includes translation, rotation, and root motion. Without transform
+animation, the character would walk in place without actually moving
+forward.</p>
+<ul class="simple">
+<li><p>Root bone: the bone that represents the entire object’s transform —
+the top‑most parent of the hierarchy. An example of person:</p></li>
+</ul>
+</li>
+</ol>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Root
+ └─ Pelvis
+     ├─ Spine
+     │   ├─ Chest
+     │   │   ├─ Neck
+     │   │   │   └─ Head
+     │   │   └─ Shoulders
+     │   │       ├─ Arm_L
+     │   │       └─ Arm_R
+     ├─ Leg_L
+     └─ Leg_R
+</pre></div>
+</div>
+<p>Both systems are required to create a complete walking animation:</p>
+<ul class="simple">
+<li><p><strong>Skinning</strong> provides the internal limb motion.</p></li>
+<li><p><strong>Transform animation</strong> provides the external world-space movement.</p></li>
+</ul>
+<p>Together, they produce the final effect of a character walking naturally
+through the environment.</p>
+<p>The following explains what animation data 3D modeling tools store, what
+game engines store, and what programmers must implement manually. It also
+clarifies the relationship between animation curves, movement speed, and
+gameplay logic.</p>
+<ol class="arabic simple">
+<li><p>What 3D Modeling Tools Actually Store</p></li>
+</ol>
+<p>3D modeling and animation tools such as Blender, Maya, and 3ds Max store
+<strong>animation data</strong>, not gameplay logic.</p>
+<p>They <strong>do store</strong>:</p>
+<ul class="simple">
+<li><p>Keyframes (frame 0, frame 10, frame 24, etc.)</p></li>
+<li><p>Bone transforms at each keyframe</p></li>
+<li><p>Interpolation curves (Bezier, linear, quaternion)</p></li>
+<li><p>Animation duration (e.g., 1.2 seconds)</p></li>
+<li><p>Frame rate (e.g., 24 fps)</p></li>
+<li><p>Skeleton hierarchy</p></li>
+<li><p>Skin weights (vertex-to-bone influences)</p></li>
+<li><p>Optional root bone motion (displacement over time)</p></li>
+</ul>
+<p>Modeling tools produce <strong>data</strong>, not rendering code and not gameplay rules in
+OpenGL/DirectX code.</p>
+<p>Example:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Bone &quot;Arm&quot; rotation at frame 0 = (0°, 0°, 0°)
+Bone &quot;Arm&quot; rotation at frame 10 = (45°, 0°, 0°)
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>What Game Engines Actually Store</p></li>
+</ol>
+<p>The <strong>engine’s built‑in C++ renderer handles all OpenGL/Vulkan/Metal calls
+automatically</strong>.
+Game engines such as Unity, Unreal Engine, Godot, or custom engines store
+and manage animation data, but still do not define gameplay movement speed.</p>
+<p>They <strong>do store</strong>:</p>
+<ul class="simple">
+<li><p>Animation clips</p></li>
+<li><p>State machines (Idle → Walk → Run)</p></li>
+<li><p>Blend trees</p></li>
+<li><p>Transition rules</p></li>
+<li><p>Animation events</p></li>
+<li><p>Curves for rotation, scaling, and root motion</p></li>
+</ul>
+<p>Again: data, not OpenGL/DirectX code.</p>
+<p>Example:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>If speed &lt; 0.1 → Idle
+If speed &gt; 0.1 → Walk
+If speed &gt; 4.0 → Run
+</pre></div>
+</div>
+<p>This is engine logic, not GPU code.</p>
+<p>Game engines interpret animation data but rely on programmer logic to
+control how characters move in the world.</p>
+<ol class="arabic simple" start="3">
+<li><p>What Programmers Must Implement</p></li>
+</ol>
+<p>Programmers write the <strong>logic</strong> that uses animation data to move objects.</p>
+<p>Examples:</p>
+<p>In Unity (C#)</p>
+<div class="highlight-csharp notranslate"><div class="highlight"><pre><span></span><span class="n">animator</span><span class="p">.</span><span class="n">SetFloat</span><span class="p">(</span><span class="s">&quot;speed&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">playerVelocity</span><span class="p">);</span>
+<span class="p">...</span>
+<span class="kt">float</span><span class="w"> </span><span class="n">speed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">3.5f</span><span class="p">;</span>
+<span class="n">transform</span><span class="p">.</span><span class="n">position</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">direction</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">speed</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Time</span><span class="p">.</span><span class="n">deltaTime</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>In a custom engine (C++/OpenGL)</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">shader</span><span class="p">.</span><span class="n">setMatrix</span><span class="p">(</span><span class="s">&quot;boneMatrices[0]&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">boneMatrix</span><span class="p">);</span>
+<span class="p">...</span>
+<span class="kt">float</span><span class="w"> </span><span class="n">velocity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">3.5f</span><span class="p">;</span>
+<span class="n">position</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">velocity</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">deltaTime</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>In JOGL/LWJGL (Java)</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">glUniformMatrix4fv</span><span class="p">(</span><span class="n">boneLocation</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="n">boneMatrixBuffer</span><span class="p">);</span>
+<span class="p">...</span>
+<span class="kt">float</span><span class="w"> </span><span class="n">velocity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">3.5f</span><span class="p">;</span>
+<span class="n">position</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">velocity</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">deltaTime</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Programmers write:</p>
+<p>Programmers implement:</p>
+<ul class="simple">
+<li><p>Movement speed</p>
+<ul>
+<li><p>E.g. <strong>Set the value for speed or velocity as the code above.</strong></p></li>
+</ul>
+</li>
+<li><p>Acceleration and deceleration</p></li>
+<li><p>Physics integration</p></li>
+<li><p>AI movement</p></li>
+<li><p>Player input</p></li>
+<li><p>Animation blending logic</p></li>
+<li><p>Uploading bone matrices to the GPU</p></li>
+<li><p>GLSL shader code for skinning</p></li>
+</ul>
+<p>Animation data is <em>used</em> by code, not replaced by it.</p>
+<ol class="arabic simple" start="4">
+<li><p>Root Motion vs. Movement Speed</p></li>
+</ol>
+<p>Some animations include <strong>root motion</strong>, where the root bone moves forward
+during a walk cycle. Modeling tools export this as bone displacement over
+time, but they still do <strong>not</strong> define speed.</p>
+<p>Example:</p>
+<p>If the root bone moves 1 meter in 0.5 seconds, the engine can compute:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">speed</span> <span class="o">=</span> <span class="mi">1</span><span class="n">m</span> <span class="o">/</span> <span class="mf">0.5</span><span class="n">s</span> <span class="o">=</span> <span class="mi">2</span> <span class="n">m</span><span class="o">/</span><span class="n">s</span>
+</pre></div>
+</div>
+<p>However:</p>
+<ul class="simple">
+<li><p>Blender does not store “2 m/s”</p></li>
+<li><p>The engine derives speed from displacement</p></li>
+<li><p>Programmers decide whether to use root motion or in-place animation</p></li>
+</ul>
+<ol class="arabic simple" start="5">
+<li><p>Summary Table</p></li>
+</ol>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Concept</p></th>
+<th class="head"><p>Stored in Blender?</p></th>
+<th class="head"><p>Stored in Engine?</p></th>
+<th class="head"><p>Controlled by Programmer?</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Keyframes</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Bone transforms</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-even"><td><p>Animation length</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Movement speed</p></td>
+<td><p>No</p></td>
+<td><p>Yes (derived)</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-even"><td><p>Physics movement</p></td>
+<td><p>No</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-odd"><td><p>AI movement</p></td>
+<td><p>No</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+</tr>
+</tbody>
+</table>
+<ol class="arabic simple" start="6">
+<li><p>Final Clarification</p></li>
+</ol>
+<ul class="simple">
+<li><p><strong>3D modeling tools store animation timing, not gameplay speed.</strong></p></li>
+<li><p><strong>Game engines store animation clips, not movement speed.</strong></p></li>
+<li><p><strong>Programmers control movement speed, physics, and gameplay behavior.</strong></p></li>
+<li><p><strong>No tool generates JOGL/OpenGL/Vulkan/DirectX code.</strong></p></li>
+<li><p><strong>All rendering API calls are written by engine developers or by you in a
+custom engine.</strong></p></li>
+</ul>
+<p><strong>Example for accelerating playing</strong></p>
+<p>Animation Speed vs Engine Rendering (5× Speed)</p>
+<p>The following table shows how animation playback, movement speed, and GPU
+rendering interact when the gameplay speed is multiplied by five. The
+animation remains 24 fps internally, but its playback time advances five
+times faster. The GPU continues to render at 60 fps and samples the
+animation at the current time.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Property</p></th>
+<th class="head"><p>Original Value</p></th>
+<th class="head"><p>After 5× Speed</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Animation FPS (baked)</p></td>
+<td><p>24 fps</p></td>
+<td><p>24 fps (unchanged)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Animation Playback Speed</p></td>
+<td><p>1×</p></td>
+<td><p>5×</p></td>
+</tr>
+<tr class="row-even"><td><p>Steps per Second</p></td>
+<td><p>6 steps/sec</p></td>
+<td><p>30 steps/sec</p></td>
+</tr>
+<tr class="row-odd"><td><p>Movement Speed</p></td>
+<td><p>6 m/sec</p></td>
+<td><p>30 m/sec</p></td>
+</tr>
+<tr class="row-even"><td><p>GPU Rendering FPS</p></td>
+<td><p>60 fps</p></td>
+<td><p>60 fps</p></td>
+</tr>
+<tr class="row-odd"><td><p>Engine Playing Frames
+(What GPU Displays)</p></td>
+<td><p>Samples animation
+at 60 fps</p></td>
+<td><p>Samples animation at
+60 fps (skips/interpolates
+intermediate animation
+frames)</p></td>
+</tr>
+</tbody>
+</table>
+<p>Summary:</p>
+<ul class="simple">
+<li><p>The animation does <strong>not</strong> become 120 fps; it is simply played 5× faster.</p></li>
+<li><p>The runner appears to take <strong>30 steps per second</strong> and move <strong>30 meters per
+second</strong>.</p></li>
+<li><p>The GPU still renders <strong>60 frames per second</strong>.</p></li>
+<li><p>The engine <strong>samples</strong> the animation at each rendered frame, so it
+effectively displays every fifth animation sample, using interpolation
+for smoothness. For this case, it may display <strong>1 out of 2 animation frames</strong>
+from 3D modeling.</p></li>
+</ul>
+</section>
+<section id="node-editor-shaders-generator">
+<span id="node-editor"></span><h2><a class="toc-backref" href="#id22" role="doc-backlink">Node-Editor (shaders generator)</a><a class="headerlink" href="#node-editor-shaders-generator" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>3D animation tools (Blender, Maya, Houdini) use render engines and node
+editors for materials, lighting, and effects.</p></li>
+<li><p>Game engines (Unity, Unreal, Godot) use real‑time engines and node editors
+for shaders, VFX, and sometimes logic.</p></li>
+</ul>
+<p>A node editor defines the <strong>entire material</strong> that is applied to the
+surface of a 3D object. The shader generated from the node graph runs on
+<strong>every pixel</strong> (fragment) of the object’s surface. In this sense, the
+node editor controls the <strong>whole surface</strong>, not only a specific region.</p>
+<p>However, the node graph can include <strong>masks</strong>, <strong>textures</strong>, <strong>vertex
+colors</strong>, or <strong>procedural patterns</strong> that allow the artist to specify
+which <em>parts</em> of the surface receive a particular effect. These masks do
+not limit the shader to only part of the surface; instead, they instruct
+the shader how to behave differently across different regions.</p>
+<section id="id9">
+<h3><a class="toc-backref" href="#id23" role="doc-backlink">Node-Editor</a><a class="headerlink" href="#id9" title="Link to this heading">¶</a></h3>
+<p><strong>Example</strong></p>
+<p>Let’s say you want:</p>
+<ul class="simple">
+<li><p>rust only on the edges</p></li>
+<li><p>metal everywhere else</p></li>
+</ul>
+<p>In the node editor:</p>
+<ol class="arabic simple">
+<li><p>Load a rust texture</p></li>
+<li><p>Load a metal texture</p></li>
+<li><p>Use a mask (curvature or hand-painted)</p></li>
+<li><p>Mix them using a Mix node</p></li>
+</ol>
+<p>The shader still runs on the whole surface, but the mask tells it:</p>
+<ul class="simple">
+<li><p>“Use rust here”</p></li>
+<li><p>“Use metal here”</p></li>
+</ul>
+<p>In summary:</p>
+<ul class="simple">
+<li><p>The node editor defines the <strong>full material</strong> for the <strong>entire
+surface</strong>.</p></li>
+<li><p>Artists can use masks or textures to <strong>target specific areas</strong> within
+that surface.</p></li>
+<li><p>The shader still executes globally, but its <strong>output varies</strong> based on
+the mask inputs.</p></li>
+</ul>
+<p>Thus, a node editor controls the whole surface, while masks determine how
+different parts of that surface are shaded.</p>
+<p>For 3D video game engines,
+the only case where mask data is inside the model file is vertex colors.
+Everything else lives in textures or material/shader assets.</p>
+<p><strong>Procedural Rust on Edges Using Shader Nodes</strong></p>
+<p>To demonstrate how to create a <strong>rust-on-edges</strong> material using Blender’s shader
+node editor as shown in <a class="reference internal" href="#node-editor-ex1"><span class="std std-numref">Fig. 4</span></a>.
+The goal is to reproduce the effect commonly used on metal containers: clean
+metal on flat surfaces and rust accumulation along exposed edges.</p>
+<figure class="align-center" id="id19">
+<span id="node-editor-ex1"></span><a class="reference internal image-reference" href="_images/node-editor-ex1.png"><img alt="Full-width image" height="440" src="_images/node-editor-ex1.png" width="782" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 4 </span><span class="caption-text">An example to Rust on Edges Using Shader Nodes <a class="footnote-reference brackets" href="#node-editor-web1" id="id10" role="doc-noteref"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id19" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The technique relies on three core ideas:</p>
+<ol class="arabic simple">
+<li><p>Detecting edges using the <em>Bevel</em> or <em>Pointiness</em> attribute.</p></li>
+<li><p>Creating a mask that isolates only the worn edges.</p></li>
+<li><p>Blending a rust material with a metal material using that mask.</p></li>
+</ol>
+<p>This workflow is fully procedural and does not require painting or
+external textures.</p>
+<p>Procedural Edge Wear Node Graph (ASCII Diagram) to create
+<a class="reference internal" href="#node-editor-ex1"><span class="std std-numref">Fig. 4</span></a> in video <a class="footnote-reference brackets" href="#node-editor-web1" id="id11" role="doc-noteref"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></a> includes
+1. edge detection, 2. mask breakup, 3. material creation, and 4. final blending
+as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+================================================================+
+|                    1.  EDGE DETECTION BLOCK                    |
+|                     (Generating an Edge-Wear Mask)             |
++================================================================+
+
+   Geometry Node
+        |
+        |----&gt; Pointiness (Cycles only)
+        |
+   Bevel Node (Eevee/Cycles)
+        Radius = 0.01–0.03
+        |
+        v
+   ColorRamp (Sharpen edge highlight)
+        |
+        v
+   Edge Mask (base convex-edge detection)
+
+
++================================================================+
+|              2. MASK BREAKUP / RANDOMIZATION BLOCK             |
+|               (Refining the Mask With Noise Textures)          |
++================================================================+
+
+   Noise Texture (Scale 5–15)
+        |
+        v
+   ColorRamp (optional shaping)
+        |
+        v
+   Multiply Node  &lt;---------------- Edge Mask
+        |
+        v
+   ColorRamp (final threshold control)
+        |
+        v
+   Final Edge Wear Mask
+
+material creation
++================================================================+
+|                      3. MATERIAL BLOCK                         |
+|                       (Base Material Structure)                |
++================================================================+
+
+   METAL MATERIAL:
+        Principled BSDF
+        Metallic = 1.0
+        Roughness = 0.2–0.4
+
+   RUST MATERIAL:
+        Principled BSDF
+        Base Color = orange/brown
+        Roughness = 0.7–1.0
+        Optional Noise → color variation
+        Optional Bump → rust height
+
+
++================================================================+
+|                      4. BLENDING BLOCK                         |
+|                       (Blending Metal and Rust Materials)      |
++================================================================+
+
+   Metal BSDF ----------------------+
+                                    |
+                                    v
+                               Mix Shader ----&gt; Material Output
+                                    ^
+                                    |
+   Rust BSDF -----------------------+
+                                    |
+                                    |
+                         Final Edge Wear Mask (Fac)
+</pre></div>
+</div>
+</section>
+<section id="code-generation-from-node-editor">
+<h3><a class="toc-backref" href="#id24" role="doc-backlink">Code Generation from Node-Editor</a><a class="headerlink" href="#code-generation-from-node-editor" title="Link to this heading">¶</a></h3>
+<p>Node-based shader editors are visual tools used in modern game engines
+and DCC (Digital Content Creation) software. They allow users to build
+shaders by connecting nodes instead of writing GLSL, HLSL, or Metal code
+manually. These editors <strong>do generate shader code automatically</strong>.</p>
+<ol class="arabic simple">
+<li><p>Node-Based Editors Do Generate Shader Code</p></li>
+</ol>
+<p>Node-based shader editors such as:</p>
+<ul class="simple">
+<li><p>Unity Shader Graph</p></li>
+<li><p>Unreal Engine Material Editor</p></li>
+<li><p>Godot Visual Shader Editor</p></li>
+<li><p>Blender Shader Nodes (for Eevee/Cycles)</p></li>
+</ul>
+<p>all <strong>compile the visual node graph into real shader code</strong>.</p>
+<p>Depending on the engine, the generated code may be:</p>
+<ul class="simple">
+<li><p>GLSL (OpenGL / Vulkan)</p></li>
+<li><p>HLSL (DirectX)</p></li>
+<li><p>MSL (Metal)</p></li>
+<li><p>SPIR-V (Vulkan intermediate format)</p></li>
+</ul>
+<p>The generated code is usually not shown to the user, but it is compiled
+and sent to the GPU at runtime.</p>
+<ol class="arabic simple" start="2">
+<li><p>How Users Generate Shader Code with Nodes</p></li>
+</ol>
+<p>The workflow for generating shader code through a node editor typically
+looks like this:</p>
+<ol class="arabic simple">
+<li><p>The user opens the shader editor.</p></li>
+<li><p>The user creates nodes representing:</p>
+<ul class="simple">
+<li><p>math operations (add, multiply, dot product)</p></li>
+<li><p>texture sampling</p>
+<ul>
+<li><p>Determine FS.</p></li>
+</ul>
+</li>
+<li><p>lighting functions</p></li>
+<li><p>color adjustments</p></li>
+<li><p>UV transformations</p></li>
+</ul>
+</li>
+<li><p>The user connects nodes visually to define the shader logic.</p>
+<ul class="simple">
+<li><p>Defines surface color,lighting, and texture sampling → <strong>determine FS</strong>.</p></li>
+<li><p>For simple deformations (waves, wind, dissolve) → <strong>determine the VS</strong>.</p></li>
+<li><p>Generate both <strong>TCS and TES</strong> code for <strong>displacement and subdivision
+control</strong>.</p></li>
+<li><p><strong>GS</strong> code is typically <strong>written manually</strong> by  graphics programmers
+since <strong>primitives culling and clipping</strong> are not related with model
+resolution and texture materials.</p></li>
+</ul>
+</li>
+<li><p>The engine converts the node graph into an internal shader
+representation.</p></li>
+<li><p>The engine compiles this representation into platform-specific shader
+code (GLSL, HLSL, MSL, or SPIR-V).</p></li>
+<li><p>The compiled shader is sent to the GPU and used for rendering.</p></li>
+</ol>
+<p>The user never writes the shader code directly; the editor generates it
+automatically.</p>
+<ol class="arabic simple" start="3">
+<li><p>Who Is the “User” of Node-Based Editors?</p></li>
+</ol>
+<p>The typical users of node-based shader editors are:</p>
+<dl class="simple">
+<dt><strong>Graphics Designers / Technical Artists</strong></dt><dd><ul class="simple">
+<li><p>Primary users.</p></li>
+<li><p>They create visual effects, materials, and surface shaders.</p></li>
+<li><p>They usually do not write GLSL or HLSL manually.</p></li>
+<li><p>Node editors allow them to work visually without programming.</p></li>
+</ul>
+</dd>
+<dt><strong>Software Programmers / Graphics Programmers</strong></dt><dd><ul class="simple">
+<li><p>Secondary users.</p></li>
+<li><p>They may create custom nodes or extend the shader system.</p></li>
+<li><p>They write low-level shader code when needed.</p></li>
+<li><p>They integrate the generated shaders into the rendering pipeline.</p></li>
+</ul>
+</dd>
+</dl>
+<p>In most workflows:</p>
+<ul class="simple">
+<li><p><strong>Graphics designers</strong> build the shader visually.</p></li>
+<li><p><strong>The engine</strong> generates the shader code.</p></li>
+<li><p><strong>Programmers</strong> handle advanced logic, optimization, or custom nodes.</p></li>
+</ul>
+<ol class="arabic simple" start="4">
+<li><p>Summary</p></li>
+</ol>
+<ul class="simple">
+<li><p>Node-based shader editors <strong>do generate shader code</strong> automatically.</p></li>
+<li><p>Users generate shaders by connecting visual nodes rather than writing
+GLSL/HLSL manually.</p></li>
+<li><p>The primary “user” is the <strong>graphics designer or technical artist</strong>.</p></li>
+<li><p>Programmers support the system by writing custom nodes or low-level
+shaders when needed.</p></li>
+</ul>
+<p>The shaders introduction is illustrated in the next section <a class="reference internal" href="opengl.html#opengl"><span class="std std-ref">OpenGL</span></a>.</p>
+</section>
+</section>
+<section id="d-modeling-tools">
+<h2><a class="toc-backref" href="#id25" role="doc-backlink">3D Modeling Tools</a><a class="headerlink" href="#d-modeling-tools" title="Link to this heading">¶</a></h2>
+<p>Every CAD software manufacturer, such as AutoDesk and Blender, has their own
+proprietary format. To solve interoperability problems, neutral or open source
+formats were created as intermediate formats to convert between proprietary
+formats.</p>
+<p>Naturally, these neutral formats have become very popular. Two famous examples
+are STL (with a <cite>.STL</cite> extension) and COLLADA (with a <cite>.DAE</cite> extension). Below
+is a list showing 3D file formats along with their types.</p>
+<table class="docutils align-default" id="id20">
+<caption><span class="caption-number">Table 2 </span><span class="caption-text">3D file formats <a class="footnote-reference brackets" href="#dfmt" id="id12" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id20" title="Link to this table">¶</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>3D file format</p></th>
+<th class="head"><p>Type</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>STL</p></td>
+<td><p>Neutral</p></td>
+</tr>
+<tr class="row-odd"><td><p>OBJ</p></td>
+<td><p>ASCII variant is neutral, binary variant is proprietary</p></td>
+</tr>
+<tr class="row-even"><td><p>FBX</p></td>
+<td><p>Proprietary</p></td>
+</tr>
+<tr class="row-odd"><td><p>COLLADA</p></td>
+<td><p>Neutral</p></td>
+</tr>
+<tr class="row-even"><td><p>3DS</p></td>
+<td><p>Proprietary</p></td>
+</tr>
+<tr class="row-odd"><td><p>IGES</p></td>
+<td><p>Neutral</p></td>
+</tr>
+<tr class="row-even"><td><p>STEP</p></td>
+<td><p>Neutral</p></td>
+</tr>
+<tr class="row-odd"><td><p>VRML/X3D</p></td>
+<td><p>Neutral</p></td>
+</tr>
+</tbody>
+</table>
+<p>The four key features a 3D file can store include the model’s geometry, the
+model’s surface texture, scene details, and animation of the model <a class="footnote-reference brackets" href="#dfmt" id="id13" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a>.</p>
+<p>Specifically, they can store details about four key features of a 3D model,
+though it’s worth bearing in mind that you may not always take advantage of
+all four features in all projects, and not all file formats support all four
+features!</p>
+<p>3D printer applications do not to support animation. CAD and CAM such as
+designing airplane does not need feature of scene details.</p>
+<p>DAE (Collada) appeared in the video animation above.
+Collada files  belong to a neutral format used heavily in the video game and
+film industries. It’s managed by the non-profit technology consortium, the
+Khronos Group.</p>
+<p>The file extension for the Collada format is .dae.
+The Collada format stores data using the XML mark-up language.</p>
+<p>The original intention behind the Collada format was to become a standard among
+3D file formats. Indeed, in 2013, it was adopted by ISO as a publicly available
+specification, ISO/PAS 17506. As a result, many 3D modeling programs support
+the Collada format.</p>
+<p>That said, the consensus is that the Collada format hasn’t kept up with the
+times. It was once used heavily as an interchange format for Autodesk Max/Maya
+in film production, but the industry has now shifted more towards OBJ, FBX,
+and Alembic <a class="footnote-reference brackets" href="#dfmt" id="id14" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a>.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://registry.khronos.org/OpenGL-Refpages/">https://registry.khronos.org/OpenGL-Refpages/</a></p></li>
+<li><p><a class="reference external" href="https://www.mesa3d.org">https://www.mesa3d.org</a></p></li>
+<li><p><a class="reference external" href="https://www.opengl.org/sdk/">https://www.opengl.org/sdk/</a>, <a class="reference external" href="https://www.opengl.org/sdk/libs/">https://www.opengl.org/sdk/libs/</a></p></li>
+</ul>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="polygon" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id2">2</a>)</span>
+<p><a class="reference external" href="https://www.quora.com/Which-one-is-better-for-3D-modeling-Quads-or-Tris">https://www.quora.com/Which-one-is-better-for-3D-modeling-Quads-or-Tris</a></p>
+</aside>
+<aside class="footnote brackets" id="shading" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">2</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Shading">https://en.wikipedia.org/wiki/Shading</a></p>
+</aside>
+<aside class="footnote brackets" id="texturemapping" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">3</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Texture_mapping">https://en.wikipedia.org/wiki/Texture_mapping</a></p>
+</aside>
+<aside class="footnote brackets" id="animation-state-video" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id6">1</a>,<a role="doc-backlink" href="#id7">2</a>)</span>
+<p><a class="reference external" href="https://www.youtube.com/watch?v=7QIcd6_TTys">https://www.youtube.com/watch?v=7QIcd6_TTys</a></p>
+</aside>
+<aside class="footnote brackets" id="animation1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id8">5</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://www.youtube.com/watch?v=f3Cr8Yx3GGA">https://www.youtube.com/watch?v=f3Cr8Yx3GGA</a></p>
+</aside>
+<aside class="footnote brackets" id="node-editor-web1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id10">1</a>,<a role="doc-backlink" href="#id11">2</a>)</span>
+<p><a class="reference external" href="https://odysee.com/&#64;jsabbott:d/how-to-make-procedural-edge-wear-in:2">https://odysee.com/&#64;jsabbott:d/how-to-make-procedural-edge-wear-in:2</a></p>
+</aside>
+<aside class="footnote brackets" id="dfmt" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id12">1</a>,<a role="doc-backlink" href="#id13">2</a>,<a role="doc-backlink" href="#id14">3</a>)</span>
+<p><a class="reference external" href="https://all3dp.com/3d-file-format-3d-files-3d-printer-3d-cad-vrml-stl-obj/">https://all3dp.com/3d-file-format-3d-files-3d-printer-3d-cad-vrml-stl-obj/</a></p>
+</aside>
+</aside>
+</section>
+</section>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="Bottom">
+      
+        <p>
+        «&#160;&#160;<a href="about.html">About</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="hw-sw-stack.html">Graphics HW and SW Stack</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2026, Chen Chung-Shu.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    </div>
+  </body>
+</html>

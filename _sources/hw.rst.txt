@@ -21,10 +21,10 @@ GPU Hardware Units
 A GPU (graphics processing unit) is built as a massively generic parallel 
 processor of SIMD/SIMT architecture with several specialized processing units 
 inside shown as :numref:`gpu_block_diagram_2` from the 
-:ref:`section Graphics HW and SW Stack <ghast>`.
+:ref:`section Graphics HW and SW Stack <hw-sw-stack>`.
 
 .. _gpu_block_diagram_2: 
-.. figure:: ../Fig/graphics/gpu-block-diagram.png
+.. figure:: ../Fig/hw-sw-stack/gpu-block-diagram.png
   :align: center
   :scale: 50 %
 

@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Graphics HW and SW Stack &#8212; The Concept of GPU Compiler</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/haiku.css?v=fce32b03" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+    <script src="_static/documentation_options.js?v=10f1778b"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Basic geometry in computer graphics" href="geo-math.html" />
+    <link rel="prev" title="3D Modeling" href="3d-model.html" /> 
+  </head><body>
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>The Concept of GPU Compiler</span></a></h1>
+        <h2 class="heading"><span>Graphics HW and SW Stack</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="Top">
+      
+        <p>
+        «&#160;&#160;<a href="3d-model.html">3D Modeling</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="geo-math.html">Basic geometry in computer graphics</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <section id="graphics-hw-and-sw-stack">
+<span id="hw-sw-stack"></span><h1>Graphics HW and SW Stack<a class="headerlink" href="#graphics-hw-and-sw-stack" title="Link to this heading">¶</a></h1>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#hw-block-diagram" id="id21">HW Block Diagram</a></p></li>
+<li><p><a class="reference internal" href="#sw-stack-and-data-flow" id="id22">SW Stack and Data Flow</a></p></li>
+<li><p><a class="reference internal" href="#pixels-displaying" id="id23">Pixels Displaying</a></p></li>
+<li><p><a class="reference internal" href="#the-role-and-purpose-of-shaders" id="id24">The Role and Purpose of Shaders</a></p></li>
+</ul>
+</nav>
+<p>This section provides a more detailed illustration of animation accross the
+software and hardware stacks on both CPU and GPU, and explains how data flows
+between the CPU, the GPU, and each layer of the software stack.</p>
+<p>In the previous section <a class="reference internal" href="3d-model.html#three-d-model"><span class="std std-ref">section 3D Modeling</span></a>, described
+what information 3D models store and how this information is used to perform
+animation.</p>
+<p>In the incoming section <a class="reference internal" href="#sw-stack"><span class="std std-ref">SW Stack and Data Flow</span></a> will describe <strong>how each frame is
+generated</strong> to display the <strong>movement animation or skinning effects</strong> using the
+small animation parameters stored in 3D model and sent from CPU.</p>
+<p>The the incoming section <a class="reference internal" href="#role-shaders"><span class="std std-ref">Role and Purpose of Shaders</span></a> will
+explain different visual effects can be achieved by <strong>switching shaders</strong> to
+shapplying different materials across frames.</p>
+<p>Reference:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://en.wikipedia.org/wiki/Free_and_open-source_graphics_device_driver">https://en.wikipedia.org/wiki/Free_and_open-source_graphics_device_driver</a></p></li>
+</ul>
+<section id="hw-block-diagram">
+<h2><a class="toc-backref" href="#id21" role="doc-backlink">HW Block Diagram</a><a class="headerlink" href="#hw-block-diagram" title="Link to this heading">¶</a></h2>
+<p>The block diagram of the Graphic Processing Unit (GPU) is shown in
+<a class="reference internal" href="#gpu-block-diagram"><span class="std std-numref">Fig. 5</span></a>.</p>
+<figure class="align-center" id="id12">
+<span id="gpu-block-diagram"></span><a class="reference internal image-reference" href="_images/gpu-block-diagram.png"><img alt="_images/gpu-block-diagram.png" height="376" src="_images/gpu-block-diagram.png" width="400" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 5 </span><span class="caption-text">Components of a GPU: GPU has accelerated video decoding and encoding
+<a class="footnote-reference brackets" href="#wiki-gpu" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id12" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The roles of the CPU and GPU in graphic animation are illustrated in
+<a class="reference internal" href="#graphic-cpu-gpu"><span class="std std-numref">Fig. 6</span></a>.</p>
+<figure class="align-center" id="id13">
+<span id="graphic-cpu-gpu"></span><a class="reference internal image-reference" href="_images/graphic-cpu-gpu.png"><img alt="_images/graphic-cpu-gpu.png" height="407" src="_images/graphic-cpu-gpu.png" width="711" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 6 </span><span class="caption-text">OpenGL and Vulkan are both rendering APIs. In both cases, the GPU executes
+shaders, while the CPU executes everything else <a class="footnote-reference brackets" href="#ogl-cpu-gpu" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id13" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<ul class="simple">
+<li><p>GPU can’t directly read user input from, say, keyboard, mouse, gamepad, or
+play audio, or load files from a hard drive, or anything like that. In this
+situation, cannot let GPU handle the animation work <a class="footnote-reference brackets" href="#cpu-gpu-role" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>.</p></li>
+<li><p>A graphics driver consists of an implementation of the OpenGL state machine
+and a compilation stack to compile the shaders into the GPU’s machine language.
+This compilation, as well as pretty much anything else, is executed on the CPU,
+then the compiled shaders are sent to the GPU and are executed by it.
+(SDL = Simple DirectMedia Layer) <a class="footnote-reference brackets" href="#mesawiki" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>.</p></li>
+</ul>
+<figure class="align-center" id="id14">
+<span id="graphic-gpu-csf"></span><a class="reference internal image-reference" href="_images/graphic-gpu-csf.png"><img alt="_images/graphic-gpu-csf.png" height="610" src="_images/graphic-gpu-csf.png" width="643" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 7 </span><span class="caption-text">MCU and specific HW circuits to speedup the processing of CSF
+(Command Stream Fronted) <a class="footnote-reference brackets" href="#csf" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id14" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The GPU driver write command and data from CPU to GPU’s system memory through
+PCIe. These commands are called Command Stream Fronted (CSF) in the memory of
+GPU. A chipset of GPU includes tens of SIMD processors (cores). In order to
+speedup the GPU driver’s processing, the CSF is designed to a simpler form.
+As result, GPU chipset include MCU (Micro Chip Unit) and specfic HW to transfer
+the CSF into individual data structure for each SIMD processor to execute as
+<a class="reference internal" href="#graphic-gpu-csf"><span class="std std-numref">Fig. 7</span></a>. The firmware version of MCU is updated by MCU itself
+usually.</p>
+</section>
+<section id="sw-stack-and-data-flow">
+<span id="sw-stack"></span><h2><a class="toc-backref" href="#id22" role="doc-backlink">SW Stack and Data Flow</a><a class="headerlink" href="#sw-stack-and-data-flow" title="Link to this heading">¶</a></h2>
+<p>The driver runs on the CPU side as shown in <a class="reference internal" href="#graphic-sw-stack"><span class="std std-numref">Fig. 8</span></a>.
+The OpenGL API eventually calls the driver’s functions, and the driver
+executes these functions by issuing commands to the GPU hardware and/or
+sending data to the GPU.</p>
+<p>Even so, the GPU’s rendering work, which uses data such as 3D vertices and
+colors sent from the CPU and stored in GPU or shared memory, consumes
+more computing power than the CPU.</p>
+<figure class="align-default" id="id15">
+<span id="graphic-sw-stack"></span><div class="graphviz"><img src="_images/graphviz-b6dd6ba2fc8a36ab296e2134b61d3186be2f4273.png" alt="digraph G {
+  rankdir=LR;
+  
+  compound=true;
+  node [shape=record];
+  subgraph cluster_cpu {
+    label = &quot;CPU (Client)&quot;;
+    CPU_SW [label=&quot; 3D Model | Game Engine | { OpenGL API | Shaders \n (buitin-functions)} | &lt;f1&gt; Driver&quot;];
+  }
+  subgraph cluster_gpu {
+    label = &quot;GPU HW (Server)&quot;;
+    subgraph cluster_gpu_sw {
+      label = &quot;3D Rendering pipeline \ndescribed in the later section&quot;;
+      ModelData        [label=&quot;3D Model Information\n(VAO, VBO, textures,\nindex buffers, materials)&quot;];
+    }
+  }
+  CPU_SW:f1 -&gt; ModelData [label=&quot;1. Creating Mesh:\nVAO, texture, ..., from 3D model, \n shader-exectuable-code.&quot;];
+    
+//  label = &quot;Graphic SW Stack&quot;;
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 8 </span><span class="caption-text">Graphic SW Stack and data flow in initializing graphic model</span><a class="headerlink" href="#id15" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>✅  As section <a class="reference internal" href="3d-model.html#animation"><span class="std std-ref">Animation</span></a> and <a class="reference internal" href="#graphic-sw-stack"><span class="std std-numref">Fig. 8</span></a>.
+The <strong>game engine’s built‑in C++ renderer handles all OpenGL/Vulkan/Metal
+calls automatically</strong>.
+Users set the value for speed, velocity, …, etc, customize the animation
+logic.</p>
+<p>After the user creates a skeleton and textures
+for each model and sets keyframe times using a 3D modeling tool, users can
+write <strong>gameplay scripts</strong> (<strong>Java code</strong>, C#, Blueprints, GDScript, Python,
+etc.) to tell the engine to play animations <a class="footnote-reference brackets" href="#joglwiki" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></a>.</p>
+<p>As section <a class="reference internal" href="3d-model.html#node-editor"><span class="std std-ref">Node-Editor (shaders generator)</span></a>, the skin materials created by Graphics Designers
+/ Technical Artists and secondly created by Software Programmers / Graphics
+Programmers using the tool Node-Editor (shaders generator).
+As result, shaders generated from tool Node-Editor (shaders generator).</p>
+<p>Shaders may call built-in functions written in Compute Shaders, SPIR-V, or
+LLVM-IR. LLVM <cite>libclc</cite> is a project for OpenCL built-in functions, which can
+also be used in OpenGL <a class="footnote-reference brackets" href="#libclc" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a>. Like CPU built-ins, new GPU ISAs or
+architectures must implement their own built-ins or port them from open source
+projects like <cite>libclc</cite>.</p>
+<p>The 3D model on the CPU performs these animations in movement and others by
+computing each frame from the stored keyframes, as illustrated in animation
+section <a class="reference internal" href="3d-model.html#animation"><span class="std std-ref">Animation</span></a>.</p>
+<figure class="align-default" id="id16">
+<span id="graphic-sw-stack-2"></span><div class="graphviz"><img src="_images/graphviz-f2e2504388613c7d30714a3ce016f85f01c6e9c2.png" alt="digraph G {
+  rankdir=LR;
+  
+  compound=true;
+  node [shape=record];
+  subgraph cluster_cpu {
+    label = &quot;CPU (Client)&quot;;
+    CPU_SW [label=&quot; 3D Model | Game Engine | { OpenGL API | Shaders \n (buitin-functions)} | &lt;f1&gt; Driver&quot;];
+  }
+  subgraph cluster_gpu {
+    label = &quot;GPU HW (Server)&quot;;
+    subgraph cluster_gpu_sw {
+      label = &quot;3D Rendering pipeline \ndescribed in the later section&quot;;
+      ModelData        [label=&quot;3D Model Information\n(VAO, VBO, textures,\nindex buffers, materials)&quot;];
+      UniformUpdates   [label=&quot;Uniform Updates\n(bone matrices, morph weights,\nmaterial params, time, etc.\nsee Note below)&quot;, style=filled, fillcolor=lightgreen, color=&quot;black&quot;];
+    }
+  }
+  CPU_SW:f1 -&gt; UniformUpdates [label=&quot;2. Animation: \nDraw command and Uniform Updates\nfor each frame rendering&quot;];
+    
+//  label = &quot;Graphic SW Stack&quot;;
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 9 </span><span class="caption-text">Graphic SW Stack and data flow in rendering</span><a class="headerlink" href="#id16" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The per-frame data is not the full set of vertices, but rather a small set of
+animation parameters named <strong>Uniform Updates</strong> as appeared in
+<a class="reference internal" href="#graphic-sw-stack-2"><span class="std std-numref">Fig. 9</span></a>, which are described later.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Bone matrices</strong> determine the positions of triangles within a 3D model
+during animation.
+This bone transformation data is much <strong>smaller</strong> than the complete mesh of
+the 3D model.
+We will provide an example and explain this in more detail in the
+<a class="reference internal" href="opengl.html#animation-ex"><span class="std std-ref">Animation Example</span></a> section.
+Because this transformation data is small and constant across all shader
+pipeline stages, it is stored in the GPU’s global memory and can be cached in
+the <strong>uniform/constant cache</strong> for performance, as illustrated in
+<a class="reference internal" href="hw.html#mem-hierarchy"><span class="std std-numref">Fig. 64</span></a> of <a class="reference internal" href="hw.html#sec-mem-hierarchy"><span class="std std-ref">Processor Units and Memory Hierarchy in NVIDIA GPU 15</span></a> section.</p>
+</div>
+<p>The CPU updates only these small animation parameters and issues draw command to
+the GPU server side.</p>
+<figure class="align-default" id="id17">
+<span id="in-out-rendering"></span><div class="graphviz"><img src="_images/graphviz-37a321bdcd28451be5fec25bf6793c04f4e507b1.png" alt="digraph GPU_Pipeline {
+    rankdir=LR;
+    node [shape=box, style=rounded, fontsize=12];
+
+    UniformUpdates   [label=&quot;Uniform Updates\n(bone matrices, morph weights,\nmaterial params, time, etc.)&quot;];
+    ModelData        [label=&quot;3D Model Information\n(VAO, VBO, textures,\nindex buffers, materials)&quot;];
+    GPURendering     [label=&quot;GPU Rendering\n(vertex shader, fragment shader,\nskinning, morphing, rasterization)&quot;];
+    Framebuffer      [label=&quot;Framebuffer\n(Video Memory Output)&quot;];
+
+    UniformUpdates -&gt; GPURendering;
+    ModelData      -&gt; GPURendering;
+    GPURendering   -&gt; Framebuffer [label=&quot;Rendered Image&quot;];
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 10 </span><span class="caption-text">The input and output for GPU rendering</span><a class="headerlink" href="#id17" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Next, the 3D Rendering-pipeline is illustrated in <a class="reference internal" href="#in-out-rendering"><span class="std std-numref">Fig. 10</span></a>.</p>
+<p>The shape of object data are stored in the form of VAOs (Vertex Array Objects) in
+OpenGL. This will be explained in a later <a class="reference internal" href="opengl.html#opengl"><span class="std std-ref">section OpenGL</span></a>.
+Additionally, OpenGL provides VBOs (Vertex Buffer Objects), which allow
+vertex array data to be stored in high-performance graphics memory on the
+server side GPU and enable efficient data transfer <a class="footnote-reference brackets" href="#vbo" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#classorvbo" id="id9" role="doc-noteref"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></a>.</p>
+<p>After GPU receives the <strong>Uniform Updates</strong> from CPU, it performs the
+computationally intensive per‑vertex work within the rendering pipeline to
+generate the <strong>final pixel values</strong> for <strong>each frame</strong> displayed on screen.
+These final pixel values are collectively referred to the
+<strong>Rendered Image</strong>.</p>
+<p>✅  “<strong>Rendered Image</strong>” = the final per‑frame output written into the
+framebuffer.
+The <strong>Uniform Updates</strong> will be described in detail later.</p>
+<p>✅ CPU only updates small animation parameters named <strong>Uniform Updates</strong> as
+appeared in <a class="reference internal" href="#graphic-sw-stack-2"><span class="std std-numref">Fig. 9</span></a>; GPU computes the heavy per‑vertex work.</p>
+<p>As mentioned in the previous section on <a class="reference internal" href="3d-model.html#movement"><span class="std std-ref">animation movement</span></a>,
+3D modeling tools store Keyframes, bone transforms at each keyframe and related
+data, and perform animation based on this information.</p>
+<p>The CPU updates only the <strong>bone</strong> transformation data …, rather than updating
+the entire vertex or mesh data for each animation frame.
+These updates are very small—on the order of kilobytes rather than megabytes.
+For each rendered frame, the CPU sends these small updates to the GPU, and the
+<strong>GPU takes over the animation work from the CPU</strong>.
+This type of movement animation is called <strong>skinning</strong>, and is illustrated as
+follows:</p>
+<p><strong>Skinning</strong></p>
+<p>Skinning is a vertex deformation technique used to animate a mesh by attaching
+its vertices to a hierarchical skeleton (bones). Each vertex stores one or more
+bone indices and corresponding weights that describe how strongly each bone
+influences that vertex.</p>
+<p>During animation, the application updates the bone transformation matrices.
+The vertex shader then computes the final vertex position by blending the
+transformed positions according to the stored weights. This allows the mesh to
+bend, twist, and deform smoothly as the skeleton moves.</p>
+<p>Skinning does not create new geometry or smooth the surface topology. It only
+transforms the existing vertices of the mesh. Examples include bending an arm,
+flapping a wing, or deforming a flexible tube as its bones rotate.</p>
+<p>CPU only update high‑level animation state, such as:</p>
+<ul class="simple">
+<li><p>Current animation time</p></li>
+<li><p><strong>Bone matrices (small)</strong></p></li>
+<li><p><strong>Morph weights</strong></p></li>
+<li><p>Material parameters</p></li>
+<li><p>Particle emitter settings</p></li>
+<li><p>Global uniforms (camera, lights, etc.)</p></li>
+</ul>
+<p>These are tiny updates — kilobytes, not megabytes.</p>
+<div class="math notranslate nohighlight">
+\[finalPosition =
+\sum_{i=0}^{N-1}
+\mathbf{weight}_i \left( \mathbf{boneMatrix}_i \cdot originalPosition \right)\]</div>
+<p>In practice (real engines): the weights are normalized so the sum = 1.0
+<span class="math notranslate nohighlight">\(\Rightarrow \sum_{i=0}^{N-1}\mathbf{weight}_i = 1.0\)</span></p>
+<p>Example: Bending an Arm</p>
+<p>Imagine a character’s arm mesh.
+Each vertex in the elbow area has weights like:</p>
+<ul class="simple">
+<li><p>70% influenced by upper‑arm bone</p></li>
+<li><p>30% influenced by lower‑arm bone</p></li>
+</ul>
+<p>When the elbow bends:</p>
+<ul class="simple">
+<li><p>Upper‑arm bone rotates</p></li>
+<li><p>Lower‑arm bone rotates</p></li>
+<li><p>GPU blends the influence</p></li>
+<li><p>The elbow area deforms smoothly</p></li>
+</ul>
+<p>This is skinning.</p>
+<p>✅  After the GPU animation, the color pixels are write to framebuffer
+(video memory). The display device (monitor, LCD, OLED, etc.) fetches these
+pixels and displays them on the screen. The interface between framebuffer and
+display device is explained in the next section <a class="reference internal" href="#display"><span class="std std-ref">Pixels Displaying</span></a>.</p>
+</section>
+<section id="pixels-displaying">
+<span id="display"></span><h2><a class="toc-backref" href="#id23" role="doc-backlink">Pixels Displaying</a><a class="headerlink" href="#pixels-displaying" title="Link to this heading">¶</a></h2>
+<p>The interface between frame buffer and displaying device is shown as
+<a class="reference internal" href="#pc-lcd"><span class="std std-numref">Fig. 11</span></a>.</p>
+<figure class="align-center" id="id18">
+<span id="pc-lcd"></span><a class="reference internal image-reference" href="_images/pc-lcd.png"><img alt="_images/pc-lcd.png" height="512" src="_images/pc-lcd.png" width="768" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 11 </span><span class="caption-text">PC with Frame Buffer to LCD Display</span><a class="headerlink" href="#id18" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>GPU and screen (monitor, LCD, OLED, etc.) use <strong>VSync, NVIDIA G-SYNC or AMD
+FreeSync</strong> to prevent <strong>screen tearing</strong>, as described below:</p>
+<figure class="align-center" id="id19">
+<span id="db-vsync"></span><a class="reference internal image-reference" href="_images/db-vsync.png"><img alt="_images/db-vsync.png" height="324" src="_images/db-vsync.png" width="348" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 12 </span><span class="caption-text">VSync</span><a class="headerlink" href="#id19" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p class="rubric">VSync</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>No tearing occurs when the GPU and display operate at the same refresh rate,
+since the GPU refreshes faster than the display as shown below.
+
+              A    B
+
+GPU      | ----| ----|
+
+Display  |-----|-----|
+
+            B      A
+
+Tearing occurs when the GPU has exact refresh cycles but VSync takes
+one more cycle than the display as shown below.
+
+              A
+
+GPU      | -----|
+
+Display  |-----|-----|
+
+            B      A
+
+To avoid tearing, the GPU runs at half the refresh rate of the display,
+as shown below.
+
+              A          B
+
+GPU      | -----|    | -----|
+
+Display  |-----|-----|-----|-----|
+
+            B      B    A     A
+</pre></div>
+</div>
+<ul>
+<li><p>Double Buffering</p>
+<p>While the display is reading from the frame buffer to display the current
+frame, we might be updating its contents for the next frame (not necessarily
+in raster-scan manner). This would result in the so-called tearing, in which
+the screen shows parts of the old frame and parts of the new frame.
+This could be resolved by using so-called double buffering. Instead of using
+a single frame buffer, modern GPU uses two of them: a front buffer and a back
+buffer. The display reads from the front buffer, while we can write the next
+frame to the back buffer. When we finish, we signal to GPU to swap the front
+and back buffer (known as buffer swap or page flip).</p>
+</li>
+<li><p>VSync</p>
+<p>Double buffering alone does not solve the entire problem, as the buffer swap
+might occur at an inappropriate time, for example, while the display is in
+the middle of displaying the old frame. This is resolved via the so-called
+vertical synchronization (or VSync) at the end of the raster-scan.
+When we signal to the GPU to do a buffer swap, the GPU will wait till the next
+VSync to perform the actual swap, after the entire current frame is displayed.</p>
+<p>As above text digram.
+The most important point is: When the VSync buffer-swap is enabled, you cannot
+refresh the display faster than the refresh rate of the display!!!
+If GPU is capable of producing higher frame rates than the display’s
+refresh rate, then GPU can use fast rate without tearing.
+If GPU has same or less frame rates then display’s and you application
+refreshes at a fixed rate, the resultant refresh rate is
+likely to be an integral factor of the display’s refresh rate, i.e., 1/2, 1/3,
+1/4, etc. Otherwise it will cause tearing <a class="footnote-reference brackets" href="#cg-basictheory" id="id10" role="doc-noteref"><span class="fn-bracket">[</span>10<span class="fn-bracket">]</span></a>.</p>
+</li>
+<li><p>NVIDIA G-SYNC and AMD FreeSync</p>
+<p>If your monitor and graphics card both in your customer computer support
+NVIDIA G-SYNC, you’re in luck. With this technology, a special chip in the
+display communicates with the graphics card. This lets the monitor vary the
+refresh rate to match the frame rate of the NVIDIA GTX graphics card, up to
+the maximum refresh rate of the display. This means that the frames are
+displayed as soon as they are rendered by the GPU, eliminating screen tearing
+and reducing stutter for when the frame rate is both higher and lower than
+the refresh rate of the display. This makes it perfect for situations where
+the frame rate varies, which happens a lot when gaming.
+Today, you can even find G-SYNC technology in gaming laptops!</p>
+<p>AMD has a similar solution called FreeSync. However, this doesn’t require a
+proprietary chip in the monitor.
+In FreeSync, the AMD Radeon driver, and the display firmware handle the
+communication.
+Generally, FreeSync monitors are less expensive than their G-SYNC counterparts,
+but gamers generally prefer G-SYNC over FreeSync as the latter may cause
+ghosting, where old images leave behind artifacts <a class="footnote-reference brackets" href="#g-sync" id="id11" role="doc-noteref"><span class="fn-bracket">[</span>11<span class="fn-bracket">]</span></a>.</p>
+</li>
+</ul>
+</section>
+<section id="the-role-and-purpose-of-shaders">
+<span id="role-shaders"></span><h2><a class="toc-backref" href="#id24" role="doc-backlink">The Role and Purpose of Shaders</a><a class="headerlink" href="#the-role-and-purpose-of-shaders" title="Link to this heading">¶</a></h2>
+<p>The flow for 3D/2D graphic processing is shown in <a class="reference internal" href="#opengl-flow"><span class="std std-numref">Fig. 13</span></a>.</p>
+<figure class="align-default" id="id20">
+<span id="opengl-flow"></span><div class="graphviz"><img src="_images/graphviz-cbf072161c9690c7ffe5ebb3818fbce8375eb85c.png" alt="digraph G {
+  rankdir=LR;
+
+  compound=true;
+  node [shape=record];
+  subgraph cluster_3d {
+    label = &quot;3D/2D modeling software&quot;;
+    subgraph cluster_code {
+      label = &quot;3D/2D's code: engine, shader, ...&quot;;
+      Api [label=&quot;&lt;a&gt; OpenGL API | &lt;s&gt; Shaders (3D animation's shaders \n or programmer writing shaders&quot;];
+    }
+  }
+  subgraph cluster_driver {
+    label = &quot;Driver&quot;
+    Compiler [label=&quot;On-line Compiler&quot;];
+    Obj [label=&quot;obj&quot;];
+    Linker [label=&quot;On-line binding (Linker)&quot;];
+    Exe [label=&quot;exe&quot;];
+  }
+  Api:a -&gt; Obj [lhead =&quot;cluster_driver&quot;];
+  Api:s -&gt; Compiler;
+  Compiler -&gt; Obj -&gt; Linker -&gt; Exe;
+  Exe -&gt; GPU;
+  Exe -&gt; CPU [ltail =&quot;cluster_driver&quot;]; 
+
+//  label = &quot;OpenGL Flow&quot;;
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 13 </span><span class="caption-text">OpenGL Flow</span><a class="headerlink" href="#id20" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The compiled shaders are sent to the GPU when you call glLinkProgram().
+That is the moment the driver uploads the compiled shader binaries into
+GPU‑executable form.</p>
+<p>The glLinkProgram() is called when you finish preparing a shader program —
+<strong>not when creating a mesh, and not when issuing a draw command</strong>.</p>
+<p>When a game actually call <cite>glLinkProgram()</cite> to re-link the shader, the shader
+need to be compiled and load to GPU.</p>
+<p>Usually it is happend in game startup, level load, or creating a new shader
+variant (e.g., enabling shadows, fog, skinning).</p>
+<p>Games switch shaders constantly — sometimes hundreds of times per frame —
+but they do not re‑link them.</p>
+<p>When playing a video game, different materials, effects and rendering passes
+will applying to difference shaders.</p>
+<p>Examples of switching shaders:</p>
+<ul class="simple">
+<li><p>When the player enters a snowy biome, ice meshes use the ice shader.</p></li>
+<li><p>The axe blade uses a metal PBR shader.
+Sparks fly when the axe blade hits stone it switch to particle shader.</p></li>
+</ul>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="wiki-gpu" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Graphics_processing_unit">https://en.wikipedia.org/wiki/Graphics_processing_unit</a></p>
+</aside>
+<aside class="footnote brackets" id="ogl-cpu-gpu" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Vulkan">https://en.wikipedia.org/wiki/Vulkan</a></p>
+</aside>
+<aside class="footnote brackets" id="cpu-gpu-role" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">3</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://stackoverflow.com/questions/47426655/cpu-and-gpu-in-3d-game-whos-doing-what">https://stackoverflow.com/questions/47426655/cpu-and-gpu-in-3d-game-whos-doing-what</a></p>
+</aside>
+<aside class="footnote brackets" id="mesawiki" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">4</a><span class="fn-bracket">]</span></span>
+<p>&lt;<a class="reference external" href="https://en.wikipedia.org/wiki/Mesa_(computer_graphics)">https://en.wikipedia.org/wiki/Mesa_(computer_graphics)</a>&gt;</p>
+</aside>
+<aside class="footnote brackets" id="csf" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">5</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://developer.arm.com/documentation/102813/0107/GPU-activity">https://developer.arm.com/documentation/102813/0107/GPU-activity</a></p>
+</aside>
+<aside class="footnote brackets" id="joglwiki" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">6</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Java_OpenGL">https://en.wikipedia.org/wiki/Java_OpenGL</a></p>
+</aside>
+<aside class="footnote brackets" id="libclc" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id7">7</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://libclc.llvm.org">https://libclc.llvm.org</a></p>
+</aside>
+<aside class="footnote brackets" id="vbo" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id8">8</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="http://www.songho.ca/opengl/gl_vbo.html">http://www.songho.ca/opengl/gl_vbo.html</a></p>
+</aside>
+<aside class="footnote brackets" id="classorvbo" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id9">9</a><span class="fn-bracket">]</span></span>
+<p>If your models will be rigid, meaning you will not change each vertex individually, and you will render many frames with the same model, you will achieve the best performance not by storing the models in your class, but in vertex buffer objects (VBOs) <a class="reference external" href="https://gamedev.stackexchange.com/questions/19560/what-is-the-best-way-to-store-meshes-or-3d-models-in-a-class">https://gamedev.stackexchange.com/questions/19560/what-is-the-best-way-to-store-meshes-or-3d-models-in-a-class</a></p>
+</aside>
+<aside class="footnote brackets" id="cg-basictheory" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id10">10</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_BasicsTheory.html">https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_BasicsTheory.html</a></p>
+</aside>
+<aside class="footnote brackets" id="g-sync" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id11">11</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://www.avadirect.com/blog/frame-rate-fps-vs-hz-refresh-rate/">https://www.avadirect.com/blog/frame-rate-fps-vs-hz-refresh-rate/</a></p>
+</aside>
+</aside>
+</section>
+</section>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="Bottom">
+      
+        <p>
+        «&#160;&#160;<a href="3d-model.html">3D Modeling</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="geo-math.html">Basic geometry in computer graphics</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2026, Chen Chung-Shu.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    </div>
+  </body>
+</html>
