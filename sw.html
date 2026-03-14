@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/haiku.css?v=fce32b03" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
-    <script src="_static/documentation_options.js?v=10f1778b"></script>
+    <script src="_static/documentation_options.js?v=b489f392"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="author" title="About these documents" href="about.html" />
@@ -41,33 +41,34 @@
 <h1>Software Structure<a class="headerlink" href="#software-structure" title="Link to this heading">¶</a></h1>
 <nav class="contents local" id="contents">
 <ul class="simple">
-<li><p><a class="reference internal" href="#general-purpose-gpu" id="id57">General purpose GPU</a></p>
+<li><p><a class="reference internal" href="#vector-processor" id="id59">Vector Processor</a></p></li>
+<li><p><a class="reference internal" href="#general-purpose-gpu" id="id60">General purpose GPU</a></p>
 <ul>
-<li><p><a class="reference internal" href="#mapping-data-in-gpu" id="id58">Mapping data in GPU</a></p></li>
-<li><p><a class="reference internal" href="#work-between-cpu-and-gpu-in-cuda" id="id59">Work between CPU and GPU in Cuda</a></p></li>
+<li><p><a class="reference internal" href="#mapping-data-in-gpu" id="id61">Mapping data in GPU</a></p></li>
+<li><p><a class="reference internal" href="#work-between-cpu-and-gpu-in-cuda" id="id62">Work between CPU and GPU in Cuda</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#opencl-vulkan-and-spir-v" id="id60">OpenCL, Vulkan and Spir-v</a></p>
+<li><p><a class="reference internal" href="#opencl-vulkan-and-spir-v" id="id63">OpenCL, Vulkan and Spir-v</a></p>
 <ul>
-<li><p><a class="reference internal" href="#summary" id="id61">Summary</a></p></li>
+<li><p><a class="reference internal" href="#summary" id="id64">Summary</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#unified-ir-conversion-flows" id="id62">Unified IR Conversion Flows</a></p>
+<li><p><a class="reference internal" href="#unified-ir-conversion-flows" id="id65">Unified IR Conversion Flows</a></p>
 <ul>
-<li><p><a class="reference internal" href="#graphics-compilation-flow-microsoft-directx-opengl" id="id63">Graphics Compilation Flow (Microsoft DirectX &amp; OpenGL)</a></p></li>
-<li><p><a class="reference internal" href="#ml-and-gpu-compilation" id="id64">ML and GPU Compilation</a></p>
+<li><p><a class="reference internal" href="#graphics-compilation-flow-microsoft-directx-opengl" id="id66">Graphics Compilation Flow (Microsoft DirectX &amp; OpenGL)</a></p></li>
+<li><p><a class="reference internal" href="#ml-and-gpu-compilation" id="id67">ML and GPU Compilation</a></p>
 <ul>
-<li><p><a class="reference internal" href="#nvidia-ir-conversion-flow" id="id65">NVIDIA IR Conversion Flow</a></p></li>
-<li><p><a class="reference internal" href="#amd-ir-conversion-flow" id="id66">AMD IR Conversion Flow</a></p></li>
-<li><p><a class="reference internal" href="#arm-ir-conversion-flow" id="id67">ARM IR Conversion Flow</a></p></li>
-<li><p><a class="reference internal" href="#imagination-technologies-ir-conversion-flow" id="id68">Imagination Technologies IR Conversion Flow</a></p></li>
-<li><p><a class="reference internal" href="#comparison-summary" id="id69">Comparison Summary</a></p></li>
-<li><p><a class="reference internal" href="#references" id="id70">References</a></p></li>
+<li><p><a class="reference internal" href="#nvidia-ir-conversion-flow" id="id68">NVIDIA IR Conversion Flow</a></p></li>
+<li><p><a class="reference internal" href="#amd-ir-conversion-flow" id="id69">AMD IR Conversion Flow</a></p></li>
+<li><p><a class="reference internal" href="#arm-ir-conversion-flow" id="id70">ARM IR Conversion Flow</a></p></li>
+<li><p><a class="reference internal" href="#imagination-technologies-ir-conversion-flow" id="id71">Imagination Technologies IR Conversion Flow</a></p></li>
+<li><p><a class="reference internal" href="#comparison-summary" id="id72">Comparison Summary</a></p></li>
+<li><p><a class="reference internal" href="#references" id="id73">References</a></p></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#accelerate-ml-dl-on-opencl-sycl" id="id71">Accelerate ML/DL on OpenCL/SYCL</a></p></li>
+<li><p><a class="reference internal" href="#accelerate-ml-dl-on-opencl-sycl" id="id74">Accelerate ML/DL on OpenCL/SYCL</a></p></li>
 </ul>
 </nav>
 <p>As the previous section illustrated, GPU is a SIMT (SIMD) for data parallel
@@ -75,26 +76,78 @@ application.
 This section introduces the GPU evolved from Graphics GPU to the General
 purpose GPU (GPGPU) and the software architecture of GPUs and explores AI
 software frameworks designed for GPUs, NPUs, and CPUs.</p>
+<section id="vector-processor">
+<h2><a class="toc-backref" href="#id59" role="doc-backlink">Vector Processor</a><a class="headerlink" href="#vector-processor" title="Link to this heading">¶</a></h2>
+<p>As described in the Computer Architecture: A Quantitative Approach book, the
+vector processor VMIPS introduces the <strong>Vector Length Register (VLR) and Vector
+Mask (VM)</strong> to support SIMD execution.
+<strong>The Vector Mask functions similarly to conditional instructions in CPUs</strong>.
+In vector processors, VM acts as a form of conditional execution mechanism.</p>
+<p>✅ Vector-Length Registers: Handling Loops Not Equal to 64</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="n">n</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">=</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<span class="w">  </span><span class="n">Y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Y</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</pre></div>
+</div>
+<p>As above code, the value of n is not known at compile time.</p>
+<p>Solution:</p>
+<p>Compiler converts loop into multiple iterations of loops, where each iteration
+processes up to the maximum vector length
+maximum vector length (MVL) as shown as below.
+For VMIPS, the MVL is 64.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">low</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="n">VL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">MVL</span><span class="p">);</span><span class="w"> </span><span class="cm">/*find odd-size piece using modulo op % */</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="o">/</span><span class="n">MVL</span><span class="p">);</span><span class="w"> </span><span class="n">j</span><span class="o">=</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/*outer loop*/</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">low</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">low</span><span class="o">+</span><span class="n">VL</span><span class="p">);</span><span class="w"> </span><span class="n">i</span><span class="o">=</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="cm">/*runs for length VL*/</span>
+<span class="w">    </span><span class="n">Y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="p">;</span><span class="w"> </span><span class="cm">/*main operation*/</span>
+<span class="w">  </span><span class="n">low</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">low</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">VL</span><span class="p">;</span><span class="w"> </span><span class="cm">/*start of next vector*/</span>
+<span class="w">  </span><span class="n">VL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MVL</span><span class="p">;</span><span class="w"> </span><span class="cm">/*reset the length to maximum vector length*/</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The inner loop of the preceding code is vectorizable with length VL, which is
+equal to either (n % MVL) or MVL. The VLR register must be set twice in the
+code, once at each place where the variable VL in the code is assigned.</p>
+<p>✅ Vector Mask Registers: Handling IF Statements in Vector Loops</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>for (i = 0; i &lt; 64; i=i+1)
+  if (X[i] != 0)
+    X[i] = X[i] – Y[i];
+</pre></div>
+</div>
+<p>For the VMIPS vector processor, the above code can be implemented using the
+Vector Length Register (VLR) as shown below.</p>
+<p class="rubric">Assembly code of Vector Processor (from page 276 of Quantitative)</p>
+<div class="highlight-asm notranslate"><div class="highlight"><pre><span></span><span class="nf">LV</span><span class="w"> </span><span class="no">V1</span><span class="p">,</span><span class="no">Rx</span><span class="w">         </span><span class="c1">;load vector X into V1</span>
+<span class="nf">LV</span><span class="w"> </span><span class="no">V2</span><span class="p">,</span><span class="no">Ry</span><span class="w">         </span><span class="c1">;load vector Y</span>
+<span class="nf">L.D</span><span class="w"> </span><span class="no">F0</span><span class="p">,</span><span class="mi">#0</span><span class="w">        </span><span class="c1">;load FP zero into F0</span>
+<span class="nf">SNEVS.D</span><span class="w"> </span><span class="no">V1</span><span class="p">,</span><span class="no">F0</span><span class="w">    </span><span class="c1">;sets VM(i) to 1 if V1(i)!=F0</span>
+<span class="nf">SUBVV.D</span><span class="w"> </span><span class="no">V1</span><span class="p">,</span><span class="no">V1</span><span class="p">,</span><span class="no">V2</span><span class="w"> </span><span class="c1">;subtract under vector mask</span>
+<span class="nf">SV</span><span class="w"> </span><span class="no">V1</span><span class="p">,</span><span class="no">Rx</span><span class="w">         </span><span class="c1">;store the result in X</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Code reference here <a class="footnote-reference brackets" href="#vmr" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>.</p></li>
+</ul>
+</section>
 <section id="general-purpose-gpu">
-<h2><a class="toc-backref" href="#id57" role="doc-backlink">General purpose GPU</a><a class="headerlink" href="#general-purpose-gpu" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id60" role="doc-backlink">General purpose GPU</a><a class="headerlink" href="#general-purpose-gpu" title="Link to this heading">¶</a></h2>
 <p>Since GLSL shaders provide a general way for writing C code in them, if applying
 a software frame work instead of OpenGL API, then the system can run some data
 parallel computation on GPU for speeding up and even get CPU and GPU executing
 simultaneously. Furthmore, any language that allows the code running on the CPU to poll
-a GPU shader for return values, can create a GPGPU framework <a class="footnote-reference brackets" href="#gpgpuwiki" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
+a GPU shader for return values, can create a GPGPU framework <a class="footnote-reference brackets" href="#gpgpuwiki" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
 <section id="mapping-data-in-gpu">
-<span id="id2"></span><h3><a class="toc-backref" href="#id58" role="doc-backlink">Mapping data in GPU</a><a class="headerlink" href="#mapping-data-in-gpu" title="Link to this heading">¶</a></h3>
+<span id="id3"></span><h3><a class="toc-backref" href="#id61" role="doc-backlink">Mapping data in GPU</a><a class="headerlink" href="#mapping-data-in-gpu" title="Link to this heading">¶</a></h3>
 <p>As described in the previous section on GPUs, the subset of the array
-calculation <cite>y[] = a * x[] + y[]</cite> is shown as follows:</p>
+calculation <cite>y[] = a * x[] + y[]</cite>.</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>// Invoke DAXPY with 256 threads per Thread Block
 __host__
 int nblocks = (n+255) / 256;
-daxpy&lt;&lt;&lt;nblocks, 256&gt;&gt;&gt;(n, 2.0, x, y);
+daxpy&lt;&lt;&lt;nblocks, 256&gt;&gt;&gt;(2.0, x, y);
 // DAXPY in CUDA
 __device__
-void daxpy(int n, double a, double *x, double *y) {
+void daxpy(double a, double *x, double *y) {
   int i = blockIdx.x*blockDim.x + threadIdx.x;
-  if (i &lt; n) y[i] = a*x[i] + y[i];
+  a*x[i] + y[i];
 }
 </pre></div>
 </div>
@@ -107,13 +160,11 @@ void daxpy(int n, double a, double *x, double *y) {
 </li>
 </ul>
 <p class="rubric">Assembly code of PTX (from page 300 of Quantitative book)</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>// code to set VLR, Vector Length Register, to (n % 256)
-//   ...
-//
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>// The following sequence of PTX instructions is for one iteration of the
+// DAXPY loop above.
 shl.u32 R8, blockIdx, 9       ; Thread Block ID * Block size (512)
 add.u32 R8, R8, threadIdx     ; R8 = i = my CUDA Thread ID
 shl.u32 R8, R8, 3             ; byte offset
-setp.neq.s32 P1, RD8, RD3     ; RD3 = n, P1 is predicate register 1
 ld.global.f64 RD0, [X+R8]     ; RD0 = X[i]
 ld.global.f64 RD2, [Y+R8]     ; RD2 = Y[i]
 mul.f64 RD0, RD0, RD4         ; Product in RD0 = RD0 * RD4 (scalar a)
@@ -121,10 +172,8 @@ add.f64 RD0, RD0, RD2         ; SuminRD0 = RD0 + RD2 (Y[i])
 st.global.f64 [Y+R8], RD0     ; Y[i] = sum (X[i]*a + Y[i])
 </pre></div>
 </div>
-<ul class="simple">
-<li><p>Need to set VLR if PTX has this instruction. Otherwise, set lane-mask in
-the similar way of the code below.</p></li>
-</ul>
+<p>✅ Conditional Branching in GPUs <a class="footnote-reference brackets" href="#quantitative-cb" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>:</p>
+<p class="rubric">Assembly code of PTX (from refering page 302 of Quantitative book)</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>__device__
 void lane-mask-ex( double *X, double *Y, double *Z) {
   if (X[i] != 0)
@@ -133,17 +182,20 @@ void lane-mask-ex( double *X, double *Y, double *Z) {
 }
 </pre></div>
 </div>
-<p class="rubric">Assembly code of Vector Processor</p>
-<div class="highlight-asm notranslate"><div class="highlight"><pre><span></span><span class="nf">LV</span><span class="w"> </span><span class="no">V1</span><span class="p">,</span><span class="no">Rx</span><span class="w">         </span><span class="c1">;load vector X into V1</span>
-<span class="nf">LV</span><span class="w"> </span><span class="no">V2</span><span class="p">,</span><span class="no">Ry</span><span class="w">         </span><span class="c1">;load vector Y</span>
-<span class="nf">L.D</span><span class="w"> </span><span class="no">F0</span><span class="p">,</span><span class="mi">#0</span><span class="w">        </span><span class="c1">;load FP zero into F0</span>
-<span class="nf">SNEVS.D</span><span class="w"> </span><span class="no">V1</span><span class="p">,</span><span class="no">F0</span><span class="w">    </span><span class="c1">;sets VM(i) to 1 if V1(i)!=F0</span>
-<span class="nf">SUBVV.D</span><span class="w"> </span><span class="no">V1</span><span class="p">,</span><span class="no">V1</span><span class="p">,</span><span class="no">V2</span><span class="w"> </span><span class="c1">;subtract under vector mask</span>
-<span class="nf">SV</span><span class="w"> </span><span class="no">V1</span><span class="p">,</span><span class="no">Rx</span><span class="w">         </span><span class="c1">;store the result in X</span>
+<ul class="simple">
+<li><p>Code from here <a class="footnote-reference brackets" href="#quantitative-gpu-asm-daxpy" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a>.</p></li>
+</ul>
+<p>The following two instructions illustrate <strong>conditional (predicated)
+instruction execution on GPUs</strong>.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>predicate = cond       // predicate is the mask register
+@predicate instruction
 </pre></div>
 </div>
-<p class="rubric">Assembly code of PTX (modified code from refering page 208 - 302 of
-Quantitative book)</p>
+<p>This IF statement could compile to the following PTX instructions (assuming
+that R8 already has the scaled thread ID), with *Push, *Comp, *Pop indicating the
+branch synchronization markers inserted by the PTX assembler that push the old
+mask, complement the current mask, and pop to restore the old mask:</p>
+<p class="rubric">Assembly code of PTX (from refering page 302 of Quantitative book)</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ld.global.f64 RD0, [X+R9]     ; RD0 = X[i]
 setp.neq.s32 P1, RD0, #0      ; P1 is predicate register 1
 @!P1, bra ELSE1, *Push        ; Push old mask, set new mask bits
@@ -158,14 +210,82 @@ ENDIF1:
 ret, *Pop                     ; pop to restore old mask
 </pre></div>
 </div>
+<p>The PTX:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>setp.neq.s32 P1, RD0, #0
+</pre></div>
+</div>
+<p>On actual NVIDIA hardware (SASS), the instruction typically becomes:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ISETP.NE.AND P1, PT, R0, RZ, PT ; PT is always-true predicate
+</pre></div>
+</div>
+<p>This instruction compares the 32-bit signed integer value in register
+<code class="docutils literal notranslate"><span class="pre">RD0</span></code> with the constant <code class="docutils literal notranslate"><span class="pre">0</span></code>. The result of the comparison is written
+to the predicate register <code class="docutils literal notranslate"><span class="pre">P1</span></code>.</p>
+<p>Semantics:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">P1</span> <span class="o">=</span> <span class="p">(</span><span class="n">RD0</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Each thread (lane) in the warp evaluates this comparison independently.</p>
+<p>Example (8-thread warp):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RD0</span> <span class="n">values</span><span class="p">:</span>  <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="n">P1</span> <span class="n">result</span><span class="p">:</span>   <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>This instruction <strong>does not modify the active thread mask</strong>. It only
+produces a predicate value that will be used by later predicated
+instructions or branches.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>@!P1 bra ELSE1, *Push
+</pre></div>
+</div>
+<p>This is a predicated branch instruction.</p>
+<p>The prefix <code class="docutils literal notranslate"><span class="pre">&#64;!P1</span></code> means the instruction executes only for threads where
+the predicate <code class="docutils literal notranslate"><span class="pre">P1</span></code> is false.</p>
+<p>Semantics:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>if (!P1)
+    branch to ELSE1
+</pre></div>
+</div>
+<p>If all threads agree on the predicate value, the warp simply branches or
+falls through. However, if some threads have <code class="docutils literal notranslate"><span class="pre">P1</span> <span class="pre">=</span> <span class="pre">1</span></code> and others have
+<code class="docutils literal notranslate"><span class="pre">P1</span> <span class="pre">=</span> <span class="pre">0</span></code>, <strong>control flow divergence occurs</strong>.</p>
+<p>Mask Stack Operation</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">*Push</span></code> modifier indicates that the hardware must update the SIMT
+control-flow stack.</p>
+<p>When divergence occurs:</p>
+<ol class="arabic simple">
+<li><p>The current active mask is pushed onto the stack.</p></li>
+<li><p>The warp execution mask is split into two masks:</p>
 <ul class="simple">
-<li><p>For Lane Mask, refer to <a class="footnote-reference brackets" href="#vmr" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#quantitative-gpu-asm-daxpy" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mask_then</span></code>  = active_mask &amp;  P1</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mask_else</span></code>  = active_mask &amp; !P1</p></li>
 </ul>
+</li>
+<li><p>Execution proceeds with one mask while the other path is saved for
+later execution.</p></li>
+</ol>
+<p>Conceptual behavior:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>push(active_mask)
+
+mask_then = active_mask &amp;  P1
+mask_else = active_mask &amp; !P1
+
+execute THEN block using mask_then
+later execute ELSE block using mask_else
+</pre></div>
+</div>
+<ol class="arabic simple" start="4">
+<li><p>Threads in the THEN mask execute the fall-through path, while threads
+in the ELSE mask branch to <code class="docutils literal notranslate"><span class="pre">ELSE1</span></code>.</p></li>
+</ol>
+<p>5. Keep in mind, however, that the only choice for a SIMD Lane in a clock cycle
+is to perform the operation specified in the PTX instruction or be idle;
+two SIMD Lanes cannot simultaneously execute different instructions
+<a class="footnote-reference brackets" href="#quantitative-cb" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>.</p>
 <p>The following table explains how the elements of <cite>saxpy()</cite> are mapped to the
 Lanes of a SIMD Thread (Warp), which belongs to a Thread Block (Core) within
 a Grid.</p>
-<table class="docutils align-default" id="id39">
-<caption><span class="caption-number">Table 13 </span><span class="caption-text">Mapping saxpy code to <a class="reference internal" href="hw.html#grid"><span class="std std-numref">Fig. 68</span></a>.</span><a class="headerlink" href="#id39" title="Link to this table">¶</a></caption>
+<table class="docutils align-default" id="id41">
+<caption><span class="caption-number">Table 13 </span><span class="caption-text">Mapping saxpy code to <a class="reference internal" href="hw.html#grid"><span class="std std-numref">Fig. 68</span></a>.</span><a class="headerlink" href="#id41" title="Link to this table">¶</a></caption>
 <colgroup>
 <col style="width: 10.0%" />
 <col style="width: 21.2%" />
@@ -202,8 +322,8 @@ Chime is 2 clock cycles.</p></li>
 of GPU as the following table. <cite>x[0..31]</cite> map to 32 Cuda Threads; <strong>two Cuda
 Threads map to one SIMD Lane</strong> as <a class="reference internal" href="hw.html#warp-sched-pipeline"><span class="std std-numref">Fig. 67</span></a>..</p></li>
 </ul>
-<table class="docutils align-default" id="id40">
-<caption><span class="caption-number">Table 14 </span><span class="caption-text">Map <cite>&lt;Core, Warp&gt;</cite> to saxpy</span><a class="headerlink" href="#id40" title="Link to this table">¶</a></caption>
+<table class="docutils align-default" id="id42">
+<caption><span class="caption-number">Table 14 </span><span class="caption-text">Map <cite>&lt;Core, Warp&gt;</cite> to saxpy</span><a class="headerlink" href="#id42" title="Link to this table">¶</a></caption>
 <thead>
 <tr class="row-odd"><th class="head"><ul class="simple">
 <li></li>
@@ -248,11 +368,11 @@ use tile-based grouping to cluster similar colors together.</p></li>
 </ul>
 </section>
 <section id="work-between-cpu-and-gpu-in-cuda">
-<h3><a class="toc-backref" href="#id59" role="doc-backlink">Work between CPU and GPU in Cuda</a><a class="headerlink" href="#work-between-cpu-and-gpu-in-cuda" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id62" role="doc-backlink">Work between CPU and GPU in Cuda</a><a class="headerlink" href="#work-between-cpu-and-gpu-in-cuda" title="Link to this heading">¶</a></h3>
 <p>The previous <cite>daxpy()</cite> GPU code did not include the host (CPU) side code that
 triggers the GPU function.</p>
 <p>The following example shows the host (CPU) side of a CUDA program that calls
-<cite>saxpy</cite> on the GPU <a class="footnote-reference brackets" href="#cudaex" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>:</p>
+<cite>saxpy</cite> on the GPU <a class="footnote-reference brackets" href="#cudaex" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
 
 <span class="n">__global__</span>
@@ -296,25 +416,25 @@ matrix operation loop for <cite>y[] = a * x[] + y[];</cite> using a single Grid 
 <p>DMA <cite>memcpy</cite> maps the data in CPU memory to each L1 cache of a core on GPU
 memory.</p>
 <p>Many GPUs support scatter and gather operations to access DRAM efficiently
-for stream processing tasks <a class="footnote-reference brackets" href="#quantitative-gpu-sparse-matrix" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#gpgpuwiki" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>
-<a class="footnote-reference brackets" href="#shadingl1" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></a>.</p>
+for stream processing tasks <a class="footnote-reference brackets" href="#quantitative-gpu-sparse-matrix" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#gpgpuwiki" id="id9" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>
+<a class="footnote-reference brackets" href="#shadingl1" id="id10" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a>.</p>
 <p>When the GPU function is dense computation in array such as MPEG4 encoder or
-deep learning for tuning weights, it may get much speed up <a class="footnote-reference brackets" href="#mpeg4speedup" id="id9" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a>.
+deep learning for tuning weights, it may get much speed up <a class="footnote-reference brackets" href="#mpeg4speedup" id="id11" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a>.
 However when GPU function is matrix addition and CPU will idle for waiting
 GPU’s result. It may slow down than doing matrix addition by CPU only.
 Arithmetic intensity is defined as the number of operations performed per word of
 memory transferred. It is important for GPGPU applications to have high arithmetic
 intensity else the memory access latency will limit computational speedup
-<a class="footnote-reference brackets" href="#gpgpuwiki" id="id10" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
-<p>Wiki here <a class="footnote-reference brackets" href="#gpuspeedup" id="id11" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a> includes GPU-accelerated applications for speedup
+<a class="footnote-reference brackets" href="#gpgpuwiki" id="id12" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
+<p>Wiki here <a class="footnote-reference brackets" href="#gpuspeedup" id="id13" role="doc-noteref"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></a> includes GPU-accelerated applications for speedup
 as follows:</p>
 <p>General Purpose Computing on GPU, has found its way into fields as diverse as
 machine learning, oil exploration, scientific image processing, linear algebra,
 statistics, 3D reconstruction and even stock options pricing determination.
 In addition, section “GPU accelerated video decoding and encoding” for video
-compressing <a class="footnote-reference brackets" href="#gpuspeedup" id="id12" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a> gives the more applications for GPU acceleration.</p>
-<table class="docutils align-default" id="id41">
-<caption><span class="caption-number">Table 15 </span><span class="caption-text">The differences for speedup in architecture of CPU and GPU</span><a class="headerlink" href="#id41" title="Link to this table">¶</a></caption>
+compressing <a class="footnote-reference brackets" href="#gpuspeedup" id="id14" role="doc-noteref"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></a> gives the more applications for GPU acceleration.</p>
+<table class="docutils align-default" id="id43">
+<caption><span class="caption-number">Table 15 </span><span class="caption-text">The differences for speedup in architecture of CPU and GPU</span><a class="headerlink" href="#id43" title="Link to this table">¶</a></caption>
 <thead>
 <tr class="row-odd"><th class="head"><p>Item</p></th>
 <th class="head"><p>CPU</p></th>
@@ -376,8 +496,8 @@ deeper cache hierarchies.</p>
 </section>
 </section>
 <section id="opencl-vulkan-and-spir-v">
-<h2><a class="toc-backref" href="#id60" role="doc-backlink">OpenCL, Vulkan and Spir-v</a><a class="headerlink" href="#opencl-vulkan-and-spir-v" title="Link to this heading">¶</a></h2>
-<figure class="align-default" id="id42">
+<h2><a class="toc-backref" href="#id63" role="doc-backlink">OpenCL, Vulkan and Spir-v</a><a class="headerlink" href="#opencl-vulkan-and-spir-v" title="Link to this heading">¶</a></h2>
+<figure class="align-default" id="id44">
 <span id="spirv"></span><div class="graphviz"><img src="_images/graphviz-c42a5ed7790b6d5dae30ec52a8187bba16ef990f.png" alt="digraph G {
   rankdir=LR;
 
@@ -386,11 +506,11 @@ deeper cache hierarchies.</p>
   SW_LAYER [label=&quot;{ GLSL | OpenCL } | SPIR-V | GPU machine code&quot;];
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 86 </span><span class="caption-text">OpenCL and GLSL(OpenGL)</span><a class="headerlink" href="#id42" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 86 </span><span class="caption-text">OpenCL and GLSL(OpenGL)</span><a class="headerlink" href="#id44" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
-<table class="docutils align-default" id="id43">
-<caption><span class="caption-number">Table 16 </span><span class="caption-text">OpenCL and OpenGL SW system</span><a class="headerlink" href="#id43" title="Link to this table">¶</a></caption>
+<table class="docutils align-default" id="id45">
+<caption><span class="caption-number">Table 16 </span><span class="caption-text">OpenCL and OpenGL SW system</span><a class="headerlink" href="#id45" title="Link to this table">¶</a></caption>
 <thead>
 <tr class="row-odd"><th class="head"><p>Name of SW</p></th>
 <th class="head"><p>GPU language</p></th>
@@ -412,11 +532,11 @@ deeper cache hierarchies.</p>
 </tr>
 </tbody>
 </table>
-<figure class="align-center" id="id44">
+<figure class="align-center" id="id46">
 <span id="opencl-to-spirv"></span><a class="reference internal image-reference" href="_images/opencl-to-spirv-offine-compilation.png"><img alt="_images/opencl-to-spirv-offine-compilation.png" height="284" src="_images/opencl-to-spirv-offine-compilation.png" width="714" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 87 </span><span class="caption-text">Offline Compilation of OpenCL Kernels into SPIR-V Using Open Source Tooling <a class="footnote-reference brackets" href="#id37" id="id13" role="doc-noteref"><span class="fn-bracket">[</span>10<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id44" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 87 </span><span class="caption-text">Offline Compilation of OpenCL Kernels into SPIR-V Using Open Source Tooling <a class="footnote-reference brackets" href="#id39" id="id15" role="doc-noteref"><span class="fn-bracket">[</span>11<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id46" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <ul class="simple">
@@ -424,7 +544,7 @@ deeper cache hierarchies.</p>
 “SPIR-V LLVM Translator” translate llvm to spirv for runtime+driver.</p></li>
 <li><p>clspv: Compile OpenCL to spirv directly.</p></li>
 </ul>
-<figure class="align-default" id="id45">
+<figure class="align-default" id="id47">
 <span id="gpu-compiler-toolchain"></span><div class="graphviz"><img src="_images/graphviz-99121eaae6a2eb9d1b723e16bb6a49af2b8965c5.png" alt="digraph ShaderToLLVMIR {
     rankdir=LR;
     node [shape=record, style=filled, color=black];
@@ -456,7 +576,7 @@ deeper cache hierarchies.</p>
     OpenCL_C -&gt; CL_SPIRV -&gt; SPIRV -&gt;  SPIRV_LLVM -&gt; LLVM_IR -&gt; LLVMCompiler -&gt; GPU_ISA;
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 88 </span><span class="caption-text">GPU Compiler Components and Flow</span><a class="headerlink" href="#id45" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 88 </span><span class="caption-text">GPU Compiler Components and Flow</span><a class="headerlink" href="#id47" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>The flow and relationships among GLSL, OpenCL, SPIR-V (Vulkan/OpenCL), LLVM IR,
@@ -470,7 +590,7 @@ The driver can invoke either the GLSL or OpenCL compiler based on metadata
 fields in the SPIR-V, as illustrated in <a class="reference internal" href="#spirv-deploy"><span class="std std-numref">Fig. 89</span></a> and the
 following figures, which describe offline compilation from GLSL/OpenCL to
 SPIR-V and online execution using the generated SPIR-V files.</p>
-<figure class="align-default" id="id46">
+<figure class="align-default" id="id48">
 <span id="spirv-deploy"></span><div class="graphviz"><img src="_images/graphviz-5e30390ffbe8fd980ce6af8d87379682f0acd8e5.png" alt="digraph SPIRV_Deployment {
     rankdir=LR;
     node [shape=box, style=filled, fillcolor=lightgray, fontname=&quot;Helvetica&quot;];
@@ -506,14 +626,14 @@ SPIR-V and online execution using the generated SPIR-V files.</p>
     edge [fontname=&quot;Helvetica&quot;];
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 89 </span><span class="caption-text">Compiling and Deploying GPU Code from GLSL, Vulkan, and OpenCL</span><a class="headerlink" href="#id46" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 89 </span><span class="caption-text">Compiling and Deploying GPU Code from GLSL, Vulkan, and OpenCL</span><a class="headerlink" href="#id48" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>Based on the flows above, the public standards OpenGL and OpenCL provide
 tools for transferring these data format, as illustrated in
 <a class="reference internal" href="#glsl-spirv"><span class="std std-numref">Fig. 90</span></a>.
 The corresponding LLVM IR and SPIR-V formats are listed below.</p>
-<figure class="align-default" id="id47">
+<figure class="align-default" id="id49">
 <span id="glsl-spirv"></span><div class="graphviz"><img src="_images/graphviz-02980713d6332c30de8d5bd43cf8f5344f5198e8.png" alt="digraph G {
   rankdir=LR;
 
@@ -539,7 +659,7 @@ The corresponding LLVM IR and SPIR-V formats are listed below.</p>
   llvm -&gt; llvm_spirv -&gt; spirv;
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 90 </span><span class="caption-text">Convertion between GLSL, OpenCL C, SPIRV-V and LLVM-IR</span><a class="headerlink" href="#id47" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 90 </span><span class="caption-text">Convertion between GLSL, OpenCL C, SPIRV-V and LLVM-IR</span><a class="headerlink" href="#id49" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p class="rubric">References/add-matrix.ll</p>
@@ -734,7 +854,7 @@ OpEntryPoint Kernel %foo &quot;foo&quot;
 </li>
 </ul>
 <section id="summary">
-<h3><a class="toc-backref" href="#id61" role="doc-backlink">Summary</a><a class="headerlink" href="#summary" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id64" role="doc-backlink">Summary</a><a class="headerlink" href="#summary" title="Link to this heading">¶</a></h3>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Feature</p></th>
@@ -766,7 +886,7 @@ OpEntryPoint Kernel %foo &quot;foo&quot;
 <p>OpenCL include GPU and other accelerate device/processor.
 OpenCL is C language on Device and C++ on Host based on OpenCL runtime.
 Compute shader is GLSL shader language run on OpenGL graphic enviroment and
-integrate and access data of OpenGL API easily <a class="footnote-reference brackets" href="#diff-compute-shader-opencl" id="id14" role="doc-noteref"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></a>.</p>
+integrate and access data of OpenGL API easily <a class="footnote-reference brackets" href="#diff-compute-shader-opencl" id="id16" role="doc-noteref"><span class="fn-bracket">[</span>10<span class="fn-bracket">]</span></a>.</p>
 </li>
 </ul>
 </li>
@@ -779,36 +899,36 @@ integrate and access data of OpenGL API easily <a class="footnote-reference brac
 </ul>
 <p>Though OpenGL api existed in higher level with many advantages from sections
 above, sometimes it cannot compete in efficience with direct3D providing
-lower levels api for operating memory by user program <a class="footnote-reference brackets" href="#vulkanapiwiki" id="id15" role="doc-noteref"><span class="fn-bracket">[</span>12<span class="fn-bracket">]</span></a>.
+lower levels api for operating memory by user program <a class="footnote-reference brackets" href="#vulkanapiwiki" id="id17" role="doc-noteref"><span class="fn-bracket">[</span>13<span class="fn-bracket">]</span></a>.
 Vulkan api is lower level’s C/C++ api to fill the gap allowing user program to
 do these things in OpenGL to compete against Microsoft direct3D.
-Here is an example <a class="footnote-reference brackets" href="#vulkanex" id="id16" role="doc-noteref"><span class="fn-bracket">[</span>13<span class="fn-bracket">]</span></a>. Meanwhile glsl is C-like language. The vulkan
-infrastructure provides tool, glslangValidator <a class="footnote-reference brackets" href="#spirvtoolchain" id="id17" role="doc-noteref"><span class="fn-bracket">[</span>14<span class="fn-bracket">]</span></a>, to compile
+Here is an example <a class="footnote-reference brackets" href="#vulkanex" id="id18" role="doc-noteref"><span class="fn-bracket">[</span>14<span class="fn-bracket">]</span></a>. Meanwhile glsl is C-like language. The vulkan
+infrastructure provides tool, glslangValidator <a class="footnote-reference brackets" href="#spirvtoolchain" id="id19" role="doc-noteref"><span class="fn-bracket">[</span>15<span class="fn-bracket">]</span></a>, to compile
 glsl into an Intermediate Representation
 Form (IR) called spir-v off-line.
 As a result, it saves part of compilation time from glsl to gpu instructions
 on-line
-since spir-v is an IR of level closing to llvm IR <a class="footnote-reference brackets" href="#spirvwiki" id="id18" role="doc-noteref"><span class="fn-bracket">[</span>15<span class="fn-bracket">]</span></a>.
+since spir-v is an IR of level closing to llvm IR <a class="footnote-reference brackets" href="#spirvwiki" id="id20" role="doc-noteref"><span class="fn-bracket">[</span>16<span class="fn-bracket">]</span></a>.
 In addition, vulkan api reduces gpu drivers efforts in optimization and code
-generation <a class="footnote-reference brackets" href="#vulkanapiwiki" id="id19" role="doc-noteref"><span class="fn-bracket">[</span>12<span class="fn-bracket">]</span></a>. These standards provide user programmer option to
+generation <a class="footnote-reference brackets" href="#vulkanapiwiki" id="id21" role="doc-noteref"><span class="fn-bracket">[</span>13<span class="fn-bracket">]</span></a>. These standards provide user programmer option to
 using vulkan/spir-v instead of OpenGL/glsl, and allow them pre-compiling glsl
 into spir-v off-line to saving part of on-line compilation time.</p>
 <p>With vulkan and spir-v standard, the gpu can be used in OpenCL for Parallel
-Programming of Heterogeneous Systems <a class="footnote-reference brackets" href="#opencl" id="id20" role="doc-noteref"><span class="fn-bracket">[</span>16<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#computekernelwiki" id="id21" role="doc-noteref"><span class="fn-bracket">[</span>17<span class="fn-bracket">]</span></a>.
+Programming of Heterogeneous Systems <a class="footnote-reference brackets" href="#opencl" id="id22" role="doc-noteref"><span class="fn-bracket">[</span>17<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#computekernelwiki" id="id23" role="doc-noteref"><span class="fn-bracket">[</span>18<span class="fn-bracket">]</span></a>.
 Similar with Cuda, a OpenCL example for fast Fourier transform (FFT) is here
-<a class="footnote-reference brackets" href="#openclexfft" id="id22" role="doc-noteref"><span class="fn-bracket">[</span>18<span class="fn-bracket">]</span></a>.
+<a class="footnote-reference brackets" href="#openclexfft" id="id24" role="doc-noteref"><span class="fn-bracket">[</span>19<span class="fn-bracket">]</span></a>.
 Once OpenCL grows into a popular standard when more computer languages or
 framework supporting OpenCL language, GPU will take more jobs from CPU
-<a class="footnote-reference brackets" href="#opencl-wiki-supported-lang" id="id23" role="doc-noteref"><span class="fn-bracket">[</span>19<span class="fn-bracket">]</span></a>.</p>
+<a class="footnote-reference brackets" href="#opencl-wiki-supported-lang" id="id25" role="doc-noteref"><span class="fn-bracket">[</span>20<span class="fn-bracket">]</span></a>.</p>
 <p>Most GPUs have 16 or 32 Lanes in a SIMD processor (Warp), vulkan provides
 Subgroup operations to data parallel programming on Lanes of SIMD processor
-<a class="footnote-reference brackets" href="#vulkan-subgroup" id="id24" role="doc-noteref"><span class="fn-bracket">[</span>20<span class="fn-bracket">]</span></a>.</p>
+<a class="footnote-reference brackets" href="#vulkan-subgroup" id="id26" role="doc-noteref"><span class="fn-bracket">[</span>21<span class="fn-bracket">]</span></a>.</p>
 <p>Subgroup operations provide a fast way for moving data between Lanes intra Warp.
-Assuming each Warp has eight Lanes.
+Assuming each Warp has four Lanes.
 The following table lists result of reduce, inclusive and exclusive operations.</p>
-<table class="docutils align-default" id="id48">
+<table class="docutils align-default" id="id50">
 <caption><span class="caption-number">Table 17 </span><span class="caption-text">Lists each Lane’s value after <strong>Reduce</strong>, <strong>Inclusive</strong> and
-<strong>Exclusive</strong> operations repectively</span><a class="headerlink" href="#id48" title="Link to this table">¶</a></caption>
+<strong>Exclusive</strong> operations repectively</span><a class="headerlink" href="#id50" title="Link to this table">¶</a></caption>
 <thead>
 <tr class="row-odd"><th class="head"><p>Lane</p></th>
 <th class="head"><p>0</p></th>
@@ -877,19 +997,19 @@ sync for the Lanes in the same Warp.</p></li>
 </ul>
 <p>In order to let Lanes in the same SIMD processor work efficently, data unifomity
 analysis will provide many optimization opporturnities in register allocation,
-transformation and code generation <a class="footnote-reference brackets" href="#llvm-uniformity" id="id25" role="doc-noteref"><span class="fn-bracket">[</span>21<span class="fn-bracket">]</span></a>.</p>
+transformation and code generation <a class="footnote-reference brackets" href="#llvm-uniformity" id="id27" role="doc-noteref"><span class="fn-bracket">[</span>22<span class="fn-bracket">]</span></a>.</p>
 <p>LLVM IR expansion from CPU to GPU is becoming increasingly influential.
 In fact, LLVM IR has been expanding steadily from version 3.1 until now,
 as I have observed.</p>
 </section>
 </section>
 <section id="unified-ir-conversion-flows">
-<h2><a class="toc-backref" href="#id62" role="doc-backlink">Unified IR Conversion Flows</a><a class="headerlink" href="#unified-ir-conversion-flows" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id65" role="doc-backlink">Unified IR Conversion Flows</a><a class="headerlink" href="#unified-ir-conversion-flows" title="Link to this heading">¶</a></h2>
 <p>This section outlines the intermediate representation (IR) flows for graphics
 (Microsoft DirectX, OpenGL) and OpenCL compilation across major GPU vendors:
 NVIDIA, AMD, ARM, Imagination Technologies, and Apple.</p>
 <section id="graphics-compilation-flow-microsoft-directx-opengl">
-<h3><a class="toc-backref" href="#id63" role="doc-backlink">Graphics Compilation Flow (Microsoft DirectX &amp; OpenGL)</a><a class="headerlink" href="#graphics-compilation-flow-microsoft-directx-opengl" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id66" role="doc-backlink">Graphics Compilation Flow (Microsoft DirectX &amp; OpenGL)</a><a class="headerlink" href="#graphics-compilation-flow-microsoft-directx-opengl" title="Link to this heading">¶</a></h3>
 <p>Graphics shaders are compiled from high-level languages (HLSL, GLSL) into
 vendor-specific GPU binaries via intermediate representations like DXIL and
 SPIR-V.</p>
@@ -905,7 +1025,7 @@ or role within the structure.</p>
 <ul class="simple">
 <li><p><strong>Vendor Driver will call Vendor Compiler</strong> for on-line compilation.</p></li>
 </ul>
-<figure class="align-default" id="id49">
+<figure class="align-default" id="id51">
 <span id="ogl-ocl-flow"></span><div class="graphviz"><img src="_images/graphviz-239718c68c5ac9e9ad10711d65ad2f74e9cc33c8.png" alt="digraph OpenCL_OpenGL_Compilation {
     rankdir=LR;
     node [shape=box];
@@ -956,7 +1076,7 @@ or role within the structure.</p>
     LLVM_IR -&gt; &quot;Metal IR&quot; -&gt; &quot;Apple Driver&quot; -&gt; &quot;Apple GPU ISA&quot;;
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 91 </span><span class="caption-text">Graphics and OpenCL Compiler IR Conversion Flow</span><a class="headerlink" href="#id49" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 91 </span><span class="caption-text">Graphics and OpenCL Compiler IR Conversion Flow</span><a class="headerlink" href="#id51" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <ul class="simple">
@@ -966,8 +1086,8 @@ versions used SPIR.
 SPIR-V has now largely replaced SPIR as the standard intermediate
 representation.</p></li>
 </ul>
-<table class="docutils align-default" id="id50">
-<caption><span class="caption-number">Table 18 </span><span class="caption-text">Comparison of PTX, GCN IR, Burst IR, and Metal IR</span><a class="headerlink" href="#id50" title="Link to this table">¶</a></caption>
+<table class="docutils align-default" id="id52">
+<caption><span class="caption-number">Table 18 </span><span class="caption-text">Comparison of PTX, GCN IR, Burst IR, and Metal IR</span><a class="headerlink" href="#id52" title="Link to this table">¶</a></caption>
 <colgroup>
 <col style="width: 20.0%" />
 <col style="width: 40.0%" />
@@ -1007,8 +1127,9 @@ physical register model</strong></p></td>
 </tr>
 </tbody>
 </table>
-<dl class="simple">
-<dt>✅ NVIDIA, AMD, ARM and Imagination all have exposed LLVM IR and convert SPIR-V IR to LLVM IR.</dt><dd><ul class="simple">
+<p>✅ NVIDIA, AMD, ARM and Imagination all have exposed LLVM IR and convert SPIR-V IR to LLVM IR.</p>
+<blockquote>
+<div><ul class="simple">
 <li><p>SPIR:</p>
 <ul>
 <li><p>For OpenCL development, the IR started from SPIR (LLVM-based IR).</p></li>
@@ -1027,8 +1148,7 @@ brittle across.</p></li>
 </ul>
 </li>
 </ul>
-</dd>
-</dl>
+</div></blockquote>
 <p>⚠️  Apple</p>
 <ul class="simple">
 <li><p>Uses LLVM IR Partially. Apple supports SPIR-V in Metal and OpenCL, but
@@ -1077,7 +1197,7 @@ or graphics APIs for the reasons below:</p>
 </ul>
 </section>
 <section id="ml-and-gpu-compilation">
-<h3><a class="toc-backref" href="#id64" role="doc-backlink">ML and GPU Compilation</a><a class="headerlink" href="#ml-and-gpu-compilation" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id67" role="doc-backlink">ML and GPU Compilation</a><a class="headerlink" href="#ml-and-gpu-compilation" title="Link to this heading">¶</a></h3>
 <p>This section outlines the intermediate representation (IR) flows used by
 NVIDIA, AMD, and ARM in machine learning and GPU compilation pipelines.
 It includes both inference engines and compiler toolchains.</p>
@@ -1092,10 +1212,10 @@ instead of driver for graphics.</p>
     MA [label=&quot;Machine&quot;, fillcolor=lightblue];
 }" class="graphviz" /></div>
 <section id="nvidia-ir-conversion-flow">
-<h4><a class="toc-backref" href="#id65" role="doc-backlink">NVIDIA IR Conversion Flow</a><a class="headerlink" href="#nvidia-ir-conversion-flow" title="Link to this heading">¶</a></h4>
+<h4><a class="toc-backref" href="#id68" role="doc-backlink">NVIDIA IR Conversion Flow</a><a class="headerlink" href="#nvidia-ir-conversion-flow" title="Link to this heading">¶</a></h4>
 <p>NVIDIA supports both TensorRT-based inference and MLIR-based compilation
 targeting CUDA GPUs is shown as <a class="reference internal" href="#nvidia-flow"><span class="std std-numref">Fig. 92</span></a>.</p>
-<figure class="align-default" id="id51">
+<figure class="align-default" id="id53">
 <span id="nvidia-flow"></span><div class="graphviz"><img src="_images/graphviz-9e7ea0b93900fccdd807f79e4b8f2bb6c23fc030.png" alt="digraph NVIDIA_IR_Flow {
         rankdir=LR;
   
@@ -1118,7 +1238,7 @@ targeting CUDA GPUs is shown as <a class="reference internal" href="#nvidia-flow
         TOSA -&gt; &quot;MLIR GPU Dialects&quot; -&gt; &quot;LLVM IR&quot; -&gt; PTX -&gt; SASS;
     }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 92 </span><span class="caption-text">NVIDIA IR Conversion Flow</span><a class="headerlink" href="#id51" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 92 </span><span class="caption-text">NVIDIA IR Conversion Flow</span><a class="headerlink" href="#id53" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <ul class="simple">
@@ -1129,7 +1249,7 @@ inference—the phase where trained models make predictions.</p>
 <ul>
 <li><p>It works with models trained in frameworks like TensorFlow, PyTorch, and
 ONNX, converting them into highly optimized engines for execution on NVIDIA
-hardware <a class="footnote-reference brackets" href="#tensor-rt-nvidia" id="id26" role="doc-noteref"><span class="fn-bracket">[</span>22<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#tensor-rt-geeks" id="id27" role="doc-noteref"><span class="fn-bracket">[</span>23<span class="fn-bracket">]</span></a>.</p></li>
+hardware <a class="footnote-reference brackets" href="#tensor-rt-nvidia" id="id28" role="doc-noteref"><span class="fn-bracket">[</span>23<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#tensor-rt-geeks" id="id29" role="doc-noteref"><span class="fn-bracket">[</span>24<span class="fn-bracket">]</span></a>.</p></li>
 </ul>
 </li>
 <li><p><strong>CUDA Kernel IR</strong> is a bridge between LLVM IR and PTX/SASS, or a direct
@@ -1144,10 +1264,10 @@ platforms.</p></li>
 </ul>
 </section>
 <section id="amd-ir-conversion-flow">
-<h4><a class="toc-backref" href="#id66" role="doc-backlink">AMD IR Conversion Flow</a><a class="headerlink" href="#amd-ir-conversion-flow" title="Link to this heading">¶</a></h4>
+<h4><a class="toc-backref" href="#id69" role="doc-backlink">AMD IR Conversion Flow</a><a class="headerlink" href="#amd-ir-conversion-flow" title="Link to this heading">¶</a></h4>
 <p>AMD uses ROCm and MIOpen for ML workloads, with LLVM-based compilation targeting
 GCN or RDNA architectures is shown as <a class="reference internal" href="#amd-flow"><span class="std std-numref">Fig. 93</span></a>.</p>
-<figure class="align-default" id="id52">
+<figure class="align-default" id="id54">
 <span id="amd-flow"></span><div class="graphviz"><img src="_images/graphviz-036275b186c4ea21ff8e302d4331db91d1ac2246.png" alt="digraph ROCm_Runtime_PyTorch_MIOpen_PreMLIR_Flow {
     rankdir=LR;
     node [shape=box];
@@ -1190,7 +1310,7 @@ GCN or RDNA architectures is shown as <a class="reference internal" href="#amd-f
     { rank = same; GCN_IR; MIOpen_IR }
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 93 </span><span class="caption-text">AMD IR Conversion Flow</span><a class="headerlink" href="#id52" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 93 </span><span class="caption-text">AMD IR Conversion Flow</span><a class="headerlink" href="#id54" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <ul class="simple">
@@ -1198,7 +1318,7 @@ GCN or RDNA architectures is shown as <a class="reference internal" href="#amd-f
 enables AMD GPUs to execute compute workloads across HIP
 (Heterogeneous-compute Interface for Portability), OpenCL, and ML frameworks.
 It’s <strong>analogous to NVIDIA’s CUDA runtime</strong> but built around open standards like
-HSA (Heterogeneous System Architecture) <a class="footnote-reference brackets" href="#hsa" id="id28" role="doc-noteref"><span class="fn-bracket">[</span>24<span class="fn-bracket">]</span></a>  and LLVM.</p></li>
+HSA (Heterogeneous System Architecture) <a class="footnote-reference brackets" href="#hsa" id="id30" role="doc-noteref"><span class="fn-bracket">[</span>25<span class="fn-bracket">]</span></a>  and LLVM.</p></li>
 <li><p><strong>MIOpen Graph IR</strong> includes different form and structure. <strong>(Pre-MLIR) and
 (Post-GCN)</strong> are different.</p>
 <ul>
@@ -1211,11 +1331,11 @@ transformation passes are internal.</p></li>
 </ul>
 </section>
 <section id="arm-ir-conversion-flow">
-<h4><a class="toc-backref" href="#id67" role="doc-backlink">ARM IR Conversion Flow</a><a class="headerlink" href="#arm-ir-conversion-flow" title="Link to this heading">¶</a></h4>
+<h4><a class="toc-backref" href="#id70" role="doc-backlink">ARM IR Conversion Flow</a><a class="headerlink" href="#arm-ir-conversion-flow" title="Link to this heading">¶</a></h4>
 <p>ARM supports both CPU/NPU deployment (e.g., Ethos-U/N) and GPU execution (e.g.,
 Mali via Vulkan). The IR flow diverges depending on the target is shown as
 <a class="reference internal" href="#arm-flow"><span class="std std-numref">Fig. 94</span></a>.</p>
-<figure class="align-default" id="id53">
+<figure class="align-default" id="id55">
 <span id="arm-flow"></span><div class="graphviz"><img src="_images/graphviz-727b81f5e50877d95fccbb291678ff174442f5fb.png" alt="digraph ARM_IR_Flow {
         rankdir=LR;
 
@@ -1243,7 +1363,7 @@ Mali via Vulkan). The IR flow diverges depending on the target is shown as
         SPIRV -&gt; Vulkan;
     }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 94 </span><span class="caption-text">ARM IR Conversion Flow</span><a class="headerlink" href="#id53" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 94 </span><span class="caption-text">ARM IR Conversion Flow</span><a class="headerlink" href="#id55" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <ul class="simple">
@@ -1279,8 +1399,8 @@ handles:</p>
 </ul>
 </section>
 <section id="imagination-technologies-ir-conversion-flow">
-<h4><a class="toc-backref" href="#id68" role="doc-backlink">Imagination Technologies IR Conversion Flow</a><a class="headerlink" href="#imagination-technologies-ir-conversion-flow" title="Link to this heading">¶</a></h4>
-<figure class="align-default" id="id54">
+<h4><a class="toc-backref" href="#id71" role="doc-backlink">Imagination Technologies IR Conversion Flow</a><a class="headerlink" href="#imagination-technologies-ir-conversion-flow" title="Link to this heading">¶</a></h4>
+<figure class="align-default" id="id56">
 <span id="imagination-flow"></span><div class="graphviz"><img src="_images/graphviz-e1e9c09ce11bc10928e97ec3bfb7e817a3d6b929.png" alt="digraph Imagination_IR_Flow {
         rankdir=LR;
         node [shape=box];
@@ -1298,7 +1418,7 @@ handles:</p>
         &quot;ONNX / TFLite&quot; -&gt; OpenCL -&gt; &quot;E-Series Compiler IR&quot;;
     }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 95 </span><span class="caption-text">Imagination Technologies IR Conversion Flow</span><a class="headerlink" href="#id54" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 95 </span><span class="caption-text">Imagination Technologies IR Conversion Flow</span><a class="headerlink" href="#id56" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>Notes:</p>
@@ -1311,7 +1431,7 @@ handles:</p>
 </ul>
 </section>
 <section id="comparison-summary">
-<h4><a class="toc-backref" href="#id69" role="doc-backlink">Comparison Summary</a><a class="headerlink" href="#comparison-summary" title="Link to this heading">¶</a></h4>
+<h4><a class="toc-backref" href="#id72" role="doc-backlink">Comparison Summary</a><a class="headerlink" href="#comparison-summary" title="Link to this heading">¶</a></h4>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Vendor</p></th>
@@ -1350,7 +1470,7 @@ handles:</p>
 </table>
 </section>
 <section id="references">
-<h4><a class="toc-backref" href="#id70" role="doc-backlink">References</a><a class="headerlink" href="#references" title="Link to this heading">¶</a></h4>
+<h4><a class="toc-backref" href="#id73" role="doc-backlink">References</a><a class="headerlink" href="#references" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>NVIDIA TensorRT: <a class="reference external" href="https://developer.nvidia.com/tensorrt">https://developer.nvidia.com/tensorrt</a></p></li>
 <li><p>AMD ROCm: <a class="reference external" href="https://rocm.docs.amd.com/">https://rocm.docs.amd.com/</a></p></li>
@@ -1370,12 +1490,12 @@ handles:</p>
 </section>
 </section>
 <section id="accelerate-ml-dl-on-opencl-sycl">
-<h2><a class="toc-backref" href="#id71" role="doc-backlink">Accelerate ML/DL on OpenCL/SYCL</a><a class="headerlink" href="#accelerate-ml-dl-on-opencl-sycl" title="Link to this heading">¶</a></h2>
-<figure class="align-center" id="id55">
+<h2><a class="toc-backref" href="#id74" role="doc-backlink">Accelerate ML/DL on OpenCL/SYCL</a><a class="headerlink" href="#accelerate-ml-dl-on-opencl-sycl" title="Link to this heading">¶</a></h2>
+<figure class="align-center" id="id57">
 <span id="opengl-ml-graph"></span><a class="reference internal image-reference" href="_images/opencl_ml_graph.png"><img alt="_images/opencl_ml_graph.png" height="325" src="_images/opencl_ml_graph.png" width="918" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 96 </span><span class="caption-text">Implement ML graph scheduler both on compiler and runtime</span><a class="headerlink" href="#id55" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 96 </span><span class="caption-text">Implement ML graph scheduler both on compiler and runtime</span><a class="headerlink" href="#id57" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>As shown in <a class="reference internal" href="#opengl-ml-graph"><span class="std std-numref">Fig. 96</span></a>, the Device, such as a GPU or a CPU+NPU,
@@ -1389,26 +1509,26 @@ on-line or off-line and then sent to the GPU as a programmable function.</p>
 GPU/NPU implement scheduling SW both on graph compiler and runtime.
 <strong>If OpenCL can extend to support ML graph, then graph compiler such as TVM or
 Runtime from Open Source have chance to leverage the effort of scheduling SW from
-programmers</strong> <a class="footnote-reference brackets" href="#paper-graph-on-opencl" id="id29" role="doc-noteref"><span class="fn-bracket">[</span>25<span class="fn-bracket">]</span></a>. Cuda graph is an idea  like this
-<a class="footnote-reference brackets" href="#cuda-graph-blog" id="id30" role="doc-noteref"><span class="fn-bracket">[</span>26<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#cuda-graph-pytorch" id="id31" role="doc-noteref"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></a> .</p>
+programmers</strong> <a class="footnote-reference brackets" href="#paper-graph-on-opencl" id="id31" role="doc-noteref"><span class="fn-bracket">[</span>26<span class="fn-bracket">]</span></a>. Cuda graph is an idea  like this
+<a class="footnote-reference brackets" href="#cuda-graph-blog" id="id32" role="doc-noteref"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#cuda-graph-pytorch" id="id33" role="doc-noteref"><span class="fn-bracket">[</span>28<span class="fn-bracket">]</span></a> .</p>
 <ul class="simple">
 <li><p>SYCL: Using C++ templates to optimize and genertate code for OpenCL and Cuda.
 Provides a consistent language, APIs, and ecosystem in which to write and tune
-code for different accelerator architecture, CPUs, GPUs, and FPGAs <a class="footnote-reference brackets" href="#sycl" id="id32" role="doc-noteref"><span class="fn-bracket">[</span>28<span class="fn-bracket">]</span></a>.</p>
+code for different accelerator architecture, CPUs, GPUs, and FPGAs <a class="footnote-reference brackets" href="#sycl" id="id34" role="doc-noteref"><span class="fn-bracket">[</span>29<span class="fn-bracket">]</span></a>.</p>
 <ul>
 <li><p>SYCL uses generic programming with templates and generic lambda functions to
 enable higher-level application software to be cleanly coded with optimized
 acceleration of kernel code across an extensive range of acceleration backend
-APIs, such as OpenCL and CUDA <a class="footnote-reference brackets" href="#sycl-cuda" id="id33" role="doc-noteref"><span class="fn-bracket">[</span>29<span class="fn-bracket">]</span></a>.</p></li>
+APIs, such as OpenCL and CUDA <a class="footnote-reference brackets" href="#sycl-cuda" id="id35" role="doc-noteref"><span class="fn-bracket">[</span>30<span class="fn-bracket">]</span></a>.</p></li>
 </ul>
 </li>
 </ul>
-<figure class="align-center" id="id56">
+<figure class="align-center" id="id58">
 <span id="sycl-role"></span><a class="reference internal image-reference" href="_images/sycl.png"><img alt="_images/sycl.png" height="448" src="_images/sycl.png" width="1158" />
 </a>
 <figcaption>
 <p><span class="caption-number">Fig. 97 </span><span class="caption-text">SYCL = C++ template and compiler for Data Parallel Applications on AI on CPUs,
-GPUs and HPGAs.</span><a class="headerlink" href="#id56" title="Link to this image">¶</a></p>
+GPUs and HPGAs.</span><a class="headerlink" href="#id58" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <ul>
@@ -1416,7 +1536,7 @@ GPUs and HPGAs.</span><a class="headerlink" href="#id56" title="Link to this ima
 for both CPU host and GPU device. DPC++ (Data Parallel C++) is a language
 developed by Intel and may be adopted into standard C++. The GPU-side
 (kernel code) is written in C++ but does not support exception handling
-<a class="footnote-reference brackets" href="#dpcpp" id="id34" role="doc-noteref"><span class="fn-bracket">[</span>30<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#dpcpp-book" id="id35" role="doc-noteref"><span class="fn-bracket">[</span>31<span class="fn-bracket">]</span></a>.</p>
+<a class="footnote-reference brackets" href="#dpcpp" id="id36" role="doc-noteref"><span class="fn-bracket">[</span>31<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#dpcpp-book" id="id37" role="doc-noteref"><span class="fn-bracket">[</span>32<span class="fn-bracket">]</span></a>.</p>
 <ul>
 <li><p>Features of Kernel Code:</p>
 <ul>
@@ -1429,7 +1549,7 @@ be called from kernel code. Recursion is not allowed within kernel code.</p>
 </li>
 <li><p>Supported:</p>
 <p>Lambdas, operator overloading, templates, classes, and static polymorphism
-<a class="footnote-reference brackets" href="#dpcpp-features" id="id36" role="doc-noteref"><span class="fn-bracket">[</span>32<span class="fn-bracket">]</span></a>.</p>
+<a class="footnote-reference brackets" href="#dpcpp-features" id="id38" role="doc-noteref"><span class="fn-bracket">[</span>33<span class="fn-bracket">]</span></a>.</p>
 </li>
 </ul>
 </li>
@@ -1439,104 +1559,108 @@ be called from kernel code. Recursion is not allowed within kernel code.</p>
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="gpgpuwiki" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
-<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id7">2</a>,<a role="doc-backlink" href="#id10">3</a>)</span>
+<span class="backrefs">(<a role="doc-backlink" href="#id2">1</a>,<a role="doc-backlink" href="#id9">2</a>,<a role="doc-backlink" href="#id12">3</a>)</span>
 <p><a class="reference external" href="https://en.wikipedia.org/wiki/General-purpose_computing_on_graphics_processing_units">https://en.wikipedia.org/wiki/General-purpose_computing_on_graphics_processing_units</a></p>
 </aside>
 <aside class="footnote brackets" id="cudaex" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">2</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id7">2</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://devblogs.nvidia.com/easy-introduction-cuda-c-and-c/">https://devblogs.nvidia.com/easy-introduction-cuda-c-and-c/</a></p>
 </aside>
 <aside class="footnote brackets" id="vmr" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">3</a><span class="fn-bracket">]</span></span>
-<p>subsection Vector Mask Registers: Handling IF Statements in Vector Loops of Computer Architecture: A Quantitative Approach 5th edition (The
-Morgan Kaufmann Series in Computer Architecture and Design)</p>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">3</a><span class="fn-bracket">]</span></span>
+<p>subsection Vector Mask Registers: Handling IF Statements in Vector Loops of Computer Architecture: A Quantitative Approach 5th edition (The Morgan Kaufmann Series in Computer Architecture and Design)</p>
+</aside>
+<aside class="footnote brackets" id="quantitative-cb" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id4">1</a>,<a role="doc-backlink" href="#id6">2</a>)</span>
+<p>subsection Conditional Branching in GPUs, page 300 - 303 of Computer Architecture: A Quantitative Approach 5th edition (The Morgan Kaufmann Series in Computer Architecture and Design)</p>
 </aside>
 <aside class="footnote brackets" id="quantitative-gpu-asm-daxpy" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">4</a><span class="fn-bracket">]</span></span>
-<p>Code written by refering page 208 - 302 of Computer Architecture: A Quantitative Approach 5th edition (The
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">5</a><span class="fn-bracket">]</span></span>
+<p>Code written by refering page 302 of Computer Architecture: A Quantitative Approach 5th edition (The
 Morgan Kaufmann Series in Computer Architecture and Design)</p>
 </aside>
 <aside class="footnote brackets" id="quantitative-gpu-sparse-matrix" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">5</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id8">6</a><span class="fn-bracket">]</span></span>
 <p>Reference “Gather-Scatter: Handling Sparse Matrices in Vector Architectures”: section 4.2 Vector Architecture of A Quantitative Approach 5th edition (The
 Morgan Kaufmann Series in Computer Architecture and Design)</p>
 </aside>
 <aside class="footnote brackets" id="shadingl1" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id8">6</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id10">7</a><span class="fn-bracket">]</span></span>
 <p>The whole chip shares a single L2 cache, but the different units will have individual L1 caches. <a class="reference external" href="https://computergraphics.stackexchange.com/questions/355/how-does-texture-cache-work-considering-multiple-shader-units">https://computergraphics.stackexchange.com/questions/355/how-does-texture-cache-work-considering-multiple-shader-units</a></p>
 </aside>
 <aside class="footnote brackets" id="mpeg4speedup" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id9">7</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id11">8</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://www.manchestervideo.com/2016/06/11/speed-h-264-encoding-budget-gpu/">https://www.manchestervideo.com/2016/06/11/speed-h-264-encoding-budget-gpu/</a></p>
 </aside>
 <aside class="footnote brackets" id="gpuspeedup" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></span>
-<span class="backrefs">(<a role="doc-backlink" href="#id11">1</a>,<a role="doc-backlink" href="#id12">2</a>)</span>
+<span class="label"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id13">1</a>,<a role="doc-backlink" href="#id14">2</a>)</span>
 <p><a class="reference external" href="https://en.wikipedia.org/wiki/Graphics_processing_unit">https://en.wikipedia.org/wiki/Graphics_processing_unit</a></p>
 </aside>
 <aside class="footnote brackets" id="diff-compute-shader-opencl" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id14">9</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id16">10</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://stackoverflow.com/questions/15868498/what-is-the-difference-between-opencl-and-opengls-compute-shader">https://stackoverflow.com/questions/15868498/what-is-the-difference-between-opencl-and-opengls-compute-shader</a></p>
 </aside>
-<aside class="footnote brackets" id="id37" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id13">10</a><span class="fn-bracket">]</span></span>
+<aside class="footnote brackets" id="id39" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id15">11</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://www.khronos.org/blog/offline-compilation-of-opencl-kernels-into-spir-v-using-open-source-tooling">https://www.khronos.org/blog/offline-compilation-of-opencl-kernels-into-spir-v-using-open-source-tooling</a></p>
 </aside>
 <aside class="footnote brackets" id="ogl-cpu-gpu" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id38">11</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id40">12</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://en.wikipedia.org/wiki/Vulkan">https://en.wikipedia.org/wiki/Vulkan</a></p>
 </aside>
 <aside class="footnote brackets" id="vulkanapiwiki" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span>12<span class="fn-bracket">]</span></span>
-<span class="backrefs">(<a role="doc-backlink" href="#id15">1</a>,<a role="doc-backlink" href="#id19">2</a>)</span>
-<p>Vulkan offers lower overhead, more direct control over the GPU, and lower CPU usage… By allowing shader pre-compilation, application initialization speed is improved… A Vulkan driver only needs to do GPU specific optimization and code generation, resulting in easier driver maintenance… <a class="footnote-reference brackets" href="#ogl-cpu-gpu" id="id38" role="doc-noteref"><span class="fn-bracket">[</span>11<span class="fn-bracket">]</span></a> <a class="reference external" href="https://en.wikipedia.org/wiki/Vulkan#OpenGL_vs._Vulkan">https://en.wikipedia.org/wiki/Vulkan#OpenGL_vs._Vulkan</a></p>
+<span class="label"><span class="fn-bracket">[</span>13<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id17">1</a>,<a role="doc-backlink" href="#id21">2</a>)</span>
+<p>Vulkan offers lower overhead, more direct control over the GPU, and lower CPU usage… By allowing shader pre-compilation, application initialization speed is improved… A Vulkan driver only needs to do GPU specific optimization and code generation, resulting in easier driver maintenance… <a class="footnote-reference brackets" href="#ogl-cpu-gpu" id="id40" role="doc-noteref"><span class="fn-bracket">[</span>12<span class="fn-bracket">]</span></a> <a class="reference external" href="https://en.wikipedia.org/wiki/Vulkan#OpenGL_vs._Vulkan">https://en.wikipedia.org/wiki/Vulkan#OpenGL_vs._Vulkan</a></p>
 </aside>
 <aside class="footnote brackets" id="vulkanex" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id16">13</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id18">14</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://github.com/SaschaWillems/Vulkan/blob/master/examples/triangle/triangle.cpp">https://github.com/SaschaWillems/Vulkan/blob/master/examples/triangle/triangle.cpp</a></p>
 </aside>
 <aside class="footnote brackets" id="spirvtoolchain" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id17">14</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id19">15</a><span class="fn-bracket">]</span></span>
 <p>glslangValidator is the tool used to compile GLSL shaders into SPIR-V, Vulkan’s shader format. <a class="reference external" href="https://vulkan.lunarg.com/doc/sdk/latest/windows/spirv_toolchain.html">https://vulkan.lunarg.com/doc/sdk/latest/windows/spirv_toolchain.html</a></p>
 </aside>
 <aside class="footnote brackets" id="spirvwiki" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id18">15</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id20">16</a><span class="fn-bracket">]</span></span>
 <p>SPIR 2.0: LLVM IR version 3.4. SPIR-V 1.X: 100% Khronos defined Round-trip lossless conversion to llvm.  <a class="reference external" href="https://en.wikipedia.org/wiki/Standard_Portable_Intermediate_Representation">https://en.wikipedia.org/wiki/Standard_Portable_Intermediate_Representation</a></p>
 </aside>
 <aside class="footnote brackets" id="opencl" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id20">16</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id22">17</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://www.khronos.org/opencl/">https://www.khronos.org/opencl/</a></p>
 </aside>
 <aside class="footnote brackets" id="computekernelwiki" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id21">17</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id23">18</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://en.wikipedia.org/wiki/Compute_kernel">https://en.wikipedia.org/wiki/Compute_kernel</a></p>
 </aside>
 <aside class="footnote brackets" id="openclexfft" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id22">18</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id24">19</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://en.wikipedia.org/wiki/OpenCL">https://en.wikipedia.org/wiki/OpenCL</a></p>
 </aside>
 <aside class="footnote brackets" id="opencl-wiki-supported-lang" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id23">19</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id25">20</a><span class="fn-bracket">]</span></span>
 <p>The OpenCL standard defines host APIs for C and C++; third-party APIs exist for other programming languages and platforms such as Python,[15] Java, Perl[15] and .NET.[11]:15 <a class="reference external" href="https://en.wikipedia.org/wiki/OpenCL">https://en.wikipedia.org/wiki/OpenCL</a></p>
 </aside>
 <aside class="footnote brackets" id="vulkan-subgroup" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id24">20</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id26">21</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://www.khronos.org/blog/vulkan-subgroup-tutorial">https://www.khronos.org/blog/vulkan-subgroup-tutorial</a></p>
 </aside>
 <aside class="footnote brackets" id="llvm-uniformity" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id25">21</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id27">22</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://llvm.org/docs/ConvergenceAndUniformity.html">https://llvm.org/docs/ConvergenceAndUniformity.html</a></p>
 </aside>
 <aside class="footnote brackets" id="tensor-rt-nvidia" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id26">22</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id28">23</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://resources.nvidia.com/en-us-inference-resources/nvidia-tensorrt">https://resources.nvidia.com/en-us-inference-resources/nvidia-tensorrt</a></p>
 </aside>
 <aside class="footnote brackets" id="tensor-rt-geeks" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id27">23</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id29">24</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://www.geeksforgeeks.org/deep-learning/what-is-tensorrt/">https://www.geeksforgeeks.org/deep-learning/what-is-tensorrt/</a></p>
 </aside>
 <aside class="footnote brackets" id="hsa" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id28">24</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id30">25</a><span class="fn-bracket">]</span></span>
 <p>HSA is an open standard developed to simplify programming across
 heterogeneous systems — especially those combining CPUs and GPUs.
 It defines:</p>
@@ -1548,35 +1672,35 @@ It defines:</p>
 </ul>
 </aside>
 <aside class="footnote brackets" id="paper-graph-on-opencl" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id29">25</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id31">26</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://easychair.org/publications/preprint/GjhX">https://easychair.org/publications/preprint/GjhX</a></p>
 </aside>
 <aside class="footnote brackets" id="cuda-graph-blog" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id30">26</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id32">27</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://developer.nvidia.com/blog/cuda-graphs/">https://developer.nvidia.com/blog/cuda-graphs/</a></p>
 </aside>
 <aside class="footnote brackets" id="cuda-graph-pytorch" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id31">27</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id33">28</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://pytorch.org/blog/accelerating-pytorch-with-cuda-graphs/">https://pytorch.org/blog/accelerating-pytorch-with-cuda-graphs/</a></p>
 </aside>
 <aside class="footnote brackets" id="sycl" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id32">28</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id34">29</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://www.khronos.org/sycl/">https://www.khronos.org/sycl/</a></p>
 </aside>
 <aside class="footnote brackets" id="sycl-cuda" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id33">29</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id35">30</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://github.com/codeplaysoftware/sycl-for-cuda/blob/cuda/sycl/doc/GetStartedWithSYCLCompiler.md">https://github.com/codeplaysoftware/sycl-for-cuda/blob/cuda/sycl/doc/GetStartedWithSYCLCompiler.md</a></p>
 </aside>
 <aside class="footnote brackets" id="dpcpp" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id34">30</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id36">31</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/dpc-compiler.html#gs.cxolyy">https://www.intel.com/content/www/us/en/developer/tools/oneapi/dpc-compiler.html#gs.cxolyy</a></p>
 </aside>
 <aside class="footnote brackets" id="dpcpp-book" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id35">31</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id37">32</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://link.springer.com/book/10.1007/978-1-4842-5574-2">https://link.springer.com/book/10.1007/978-1-4842-5574-2</a></p>
 </aside>
 <aside class="footnote brackets" id="dpcpp-features" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id36">32</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id38">33</a><span class="fn-bracket">]</span></span>
 <p>Page 14 of DPC++ book.</p>
 </aside>
 </aside>

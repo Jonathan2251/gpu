@@ -503,6 +503,37 @@ SM Scheduling
       - No pipeline flush needed and No data is saved/restored because 
         instructions are tracked per thread, not per warp.
 
+- Thread Active/Inactive
+
+  .. code-block::
+
+    GLSL example for branch divergence
+    ----------------------------------
+
+    // The value of x is different between threads
+    if (x > 0.0)
+        color = red;
+    else
+        color = blue;
+
+    GPUs use conditional instructions like CPUs.
+
+    When a shader executes a conditional branch and threads evaluate the 
+    condition differently, the GPU splits execution using a mask register.
+
+    predicate = cond       // predicate is the mask register
+    @predicate instruction
+
+    is a form of conditional (predicated) instruction execution on GPUs.
+
+    In NVIDIA PTX, it is activemask register.
+
+    if EXEC_MASK[thread] == 1
+        execute
+    else
+        skip
+
+
 SIMT and SPMD Pipelines
 ***********************
 
@@ -546,6 +577,7 @@ different data). However, the hardware actually executes instructions in
 
   Divergent Kernel Example:
   -------------------------
+
   if (tid % 2 == 0) {         // even threads: long loop
     for (...) { loop_body } // many iterations
   } else {                    // odd threads: short path

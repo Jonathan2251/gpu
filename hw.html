@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/haiku.css?v=fce32b03" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
-    <script src="_static/documentation_options.js?v=10f1778b"></script>
+    <script src="_static/documentation_options.js?v=b489f392"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="author" title="About these documents" href="about.html" />
@@ -741,6 +741,35 @@ instructions are tracked per thread, not per warp.</p></li>
 </li>
 </ul>
 </li>
+<li><p>Thread Active/Inactive</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GLSL</span> <span class="n">example</span> <span class="k">for</span> <span class="n">branch</span> <span class="n">divergence</span>
+<span class="o">----------------------------------</span>
+
+<span class="o">//</span> <span class="n">The</span> <span class="n">value</span> <span class="n">of</span> <span class="n">x</span> <span class="ow">is</span> <span class="n">different</span> <span class="n">between</span> <span class="n">threads</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="n">red</span><span class="p">;</span>
+<span class="k">else</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="n">blue</span><span class="p">;</span>
+
+<span class="n">GPUs</span> <span class="n">use</span> <span class="n">conditional</span> <span class="n">instructions</span> <span class="n">like</span> <span class="n">CPUs</span><span class="o">.</span>
+
+<span class="n">When</span> <span class="n">a</span> <span class="n">shader</span> <span class="n">executes</span> <span class="n">a</span> <span class="n">conditional</span> <span class="n">branch</span> <span class="ow">and</span> <span class="n">threads</span> <span class="n">evaluate</span> <span class="n">the</span>
+<span class="n">condition</span> <span class="n">differently</span><span class="p">,</span> <span class="n">the</span> <span class="n">GPU</span> <span class="n">splits</span> <span class="n">execution</span> <span class="n">using</span> <span class="n">a</span> <span class="n">mask</span> <span class="n">register</span><span class="o">.</span>
+
+<span class="n">predicate</span> <span class="o">=</span> <span class="n">cond</span>       <span class="o">//</span> <span class="n">predicate</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">mask</span> <span class="n">register</span>
+<span class="nd">@predicate</span> <span class="n">instruction</span>
+
+<span class="ow">is</span> <span class="n">a</span> <span class="n">form</span> <span class="n">of</span> <span class="n">conditional</span> <span class="p">(</span><span class="n">predicated</span><span class="p">)</span> <span class="n">instruction</span> <span class="n">execution</span> <span class="n">on</span> <span class="n">GPUs</span><span class="o">.</span>
+
+<span class="n">In</span> <span class="n">NVIDIA</span> <span class="n">PTX</span><span class="p">,</span> <span class="n">it</span> <span class="ow">is</span> <span class="n">activemask</span> <span class="n">register</span><span class="o">.</span>
+
+<span class="k">if</span> <span class="n">EXEC_MASK</span><span class="p">[</span><span class="n">thread</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="n">execute</span>
+<span class="k">else</span>
+    <span class="n">skip</span>
+</pre></div>
+</div>
+</li>
 </ul>
 </section>
 <section id="simt-and-spmd-pipelines">
@@ -776,6 +805,7 @@ different data). However, the hardware actually executes instructions in
 SIMT and SPMD.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Divergent Kernel Example:
 -------------------------
+
 if (tid % 2 == 0) {         // even threads: long loop
   for (...) { loop_body } // many iterations
 } else {                    // odd threads: short path
