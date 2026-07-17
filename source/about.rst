@@ -24,6 +24,8 @@ Revision history
 
 Version 0.4, not released yet.
 
+  opengl.rst: Add section 'Ray Tracing Pipeline'.
+
 Version 0.3, Released March 14, 2026.
 
   geo-math.rst: refine 'section Projection' and 'section Mapping data in GPU'.

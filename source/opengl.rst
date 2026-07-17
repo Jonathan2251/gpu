@@ -1726,6 +1726,238 @@ and the vertex shader applies animation math during the draw call. The
 GPU performs the animation only when the draw command is issued.
 
 
+Ray Tracing Pipeline
+********************
+
+.. _ray_trace_diagram: 
+.. figure:: ../Fig/opengl/ray_trace_diagram.png
+  :align: center
+  :scale: 20 %
+
+  Relationships between the texturing concept [#raytracewiki]_.
+
+The key conceptual difference between rasterization and ray tracing is the
+direction of processing.
+
+Rasterization starts from **geometry** and determines which pixels are covered
+by each triangle.
+
+Ray tracing starts from **pixels** and determines which object is visible
+through each pixel.
+
+**Typically, each ray must be tested for intersection with some subset of all 
+the objects in the scene. Once the nearest object has been identified, the 
+algorithm will estimate the incoming light at the point of intersection, 
+examine the material properties of the object, and combine this information to 
+calculate the final color of the pixel** [#raytracewiki]_. 
+
+Ray Tracing (Pixel → Object)
+
+Ray tracing reverses this process.
+
+::
+
+    Camera
+        │
+        ▼
+    For every pixel
+        │
+        ▼
+    Generate Viewing Ray
+        │
+        ▼
+    Traverse BVH
+        │
+        ▼
+    Find Closest Intersection
+        │
+        ▼
+    Evaluate Material
+        │
+        ▼
+    Pixel Color
+
+Instead of asking
+
+::
+
+    Which pixels belong to this triangle?
+
+ray tracing asks
+
+::
+
+    What object is visible through this pixel?
+
+Primary Ray Generation
+
+For an image of size
+
+::
+
+    1920 × 1080
+
+the renderer generates approximately
+
+::
+
+    2,073,600
+
+primary rays (one per pixel).
+
+For pixel ``(x, y)``:
+
+::
+
+    origin = camera_position
+
+    direction =
+        normalize(pixel_position - camera_position)
+
+Each ray represents the viewing direction through one screen pixel.
+
+Finding the Visible Object
+
+Suppose the scene contains
+
+::
+
+    Triangle A
+    Triangle B
+    Sphere
+    Floor
+
+The generated ray is tested against the acceleration structure (typically a
+Bounding Volume Hierarchy, or BVH).
+
+::
+
+    Ray
+      │
+      ├── Triangle A ?  no
+      │
+      ├── Triangle B ?  yes
+      │        distance = 8.2
+      │
+      ├── Sphere ?      yes
+      │        distance = 15.4
+      │
+      └── Floor ?       yes
+               distance = 32
+
+The closest intersection determines the visible object.
+
+::
+
+    Visible Object = Triangle B
+
+Material Evaluation
+
+Once the closest object is found, its material is evaluated.
+
+For example,
+
+::
+
+    Diffuse Texture
+    Normal Map
+    Roughness
+    Metallic
+    Emissive
+
+Lighting calculations are then performed similarly to a fragment shader,
+except that the visible surface was determined by ray intersection instead of
+rasterization.
+
+Texture Coordinate Interpolation
+
+Each triangle still stores per-vertex attributes.
+
+::
+
+    Vertex 0
+        position
+        normal
+        uv
+
+    Vertex 1
+        position
+        normal
+        uv
+
+    Vertex 2
+        position
+        normal
+        uv
+
+After the ray intersects the triangle, barycentric coordinates are computed.
+
+For example,
+
+::
+
+    u = 0.2
+    v = 0.3
+    w = 0.5
+
+The texture coordinates at the hit point are interpolated as
+
+::
+
+    uv =
+        u * uv0 +
+        v * uv1 +
+        w * uv2
+
+The interpolated texture coordinates are then used to sample textures exactly
+as in rasterization.
+
+Comparison
+
++-------------------------------+----------------------------------+
+| Rasterization                 | Ray Tracing                      |
++===============================+==================================+
+| Process one triangle          | Process one pixel                |
++-------------------------------+----------------------------------+
+| Triangle → Pixels             | Pixel → Ray                      |
++-------------------------------+----------------------------------+
+| Rasterizer finds covered      | BVH traversal finds intersected  |
+| pixels                        | object                           |
++-------------------------------+----------------------------------+
+| Interpolate vertex attributes | Interpolate attributes at the    |
+|                               | hit point                        |
++-------------------------------+----------------------------------+
+| Sample textures               | Sample textures                  |
++-------------------------------+----------------------------------+
+| Compute lighting              | Compute lighting                 |
++-------------------------------+----------------------------------+
+| Write pixel                   | Write pixel                      |
++-------------------------------+----------------------------------+
+
+Summary
+
+Ray tracing uses the same geometric and material information as rasterization,
+including:
+
+* Triangle meshes
+* Vertex normals
+* Texture coordinates
+* Materials
+* Textures
+
+The primary difference lies in how the visible surface is determined.
+
+* Rasterization determines visibility by projecting triangles onto the screen
+  and finding the pixels they cover.
+
+* Ray tracing determines visibility by casting a viewing ray through each pixel
+  and finding the closest surface intersected by that ray.
+
+After the visible surface has been identified, the remaining shading process
+(interpolating attributes, sampling textures, and evaluating materials) is
+very similar to traditional OpenGL fragment shading.
+
+
 GLSL (GL Shader Language)
 -------------------------
 
@@ -2587,6 +2819,8 @@ Here is the software stack of the 3D graphics system for OpenGL on Linux
 .. [#smoothshadingex] https://github.com/ruange/Gouraud-Shading-and-Phong-Shading
 
 .. [#on-line] Compiler and interpreter: (https://www.guru99.com/difference-compiler-vs-interpreter.html). AOT compiler: compiles before running; JIT compiler: compiles while running; interpreter: runs (reference https://softwareengineering.stackexchange.com/questions/246094/understanding-the-differences-traditional-interpreter-jit-compiler-jit-interp). Both online and offline compiler are AOT compiler. User call OpenGL api to run their program and the driver call call online compiler to compile user's shaders without user compiling their shader before running their program. When user run a CPU program of C language, he must compile C program before running the program. This is offline compiler.
+
+.. [#raytracewiki] <https://en.wikipedia.org/wiki/Ray_tracing_(graphics)>
 
 .. [#onlinecompile] https://community.khronos.org/t/offline-glsl-compilation/61784
 
