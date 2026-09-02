@@ -655,10 +655,10 @@ in TCS, Fixed-Function Tessellator and TES are described in below.
          - Sends fragments to fragment shader cores
 
    * - Fragment Shader
-     - - Interpolated varyings
+     - - gl_FragCoord
+       - Interpolated varyings
        - Textures / samplers
        - Uniforms
-       - gl_FragCoord
      - - gl_FragColor or user-defined outputs
        - Depth override (optional)
      - - **Fragment Processing Stage**:
