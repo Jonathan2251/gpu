@@ -1271,13 +1271,20 @@ NVIDIA, AMD, and Intel all needed:
 - better culling
 - GPU‑driven rendering
 - a **replacement** for VS → TCS → TES → GS
-- TCS → Fixed-Function Tessellator → TES: geometry amplification.
 
-  - Fixed‑Function Tessellator: subdivides the patch, generates new domain 
-    coordinates and creates the tessellated grid.
+  - TCS → Fixed-Function Tessellator → TES: geometry amplification.
 
-  - Mesh-Shader replaces the fixed‑function tessellator with compute‑like 
-    geometry pipeline.
+    - Fixed‑Function Tessellator: subdivides the patch, generates new domain 
+      coordinates and creates the tessellated grid.
+
+    - *Mesh-Shader replaces the fixed‑function tessellator** with compute‑like 
+      geometry pipeline.
+
+    - Mesh Shading provides a programmable alternative to the traditional 
+      tessellation and geometry-shader stages. 
+      A Mesh Shader can implement tessellation-like subdivision and geometry 
+      amplification while also integrating operations such as culling, LOD 
+      selection, and procedural geometry generation.
 
 So the vendors co‑designed the hardware pipeline.
 
