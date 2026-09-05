@@ -1,0 +1,19 @@
+digraph DiscreteGPUUniformUpdate {
+    rankdir=LR;
+
+    CPU [shape=box, label="CPU"];
+    SystemRAM [shape=box, label="System RAM"];
+    Driver [shape=box, label="OpenGL Driver\n(Command Buffer)"];
+    PCIe [shape=diamond, label="PCIe Bus\n(DMA Transfer)"];
+    VRAM [shape=box, label="GPU VRAM"];
+    GPU [shape=box, label="Discrete GPU\n(Shader Cores)"];
+
+    CPU -> SystemRAM [label="glUniform*\nwrite uniform data"];
+    SystemRAM -> Driver [label="driver reads\nand builds commands"];
+    Driver -> PCIe [label="schedule DMA\nhost→device"];
+    PCIe -> VRAM [label="copy uniform\ninto VRAM"];
+    VRAM -> GPU [label="shader reads\nuniforms during draw"];
+
+    /* layout hints */
+    { rank = same; SystemRAM; Driver }
+}

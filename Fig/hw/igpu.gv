@@ -1,0 +1,13 @@
+digraph IntegratedGPUUniformUpdate {
+    rankdir=LR;
+
+    CPU [shape=box, label="CPU"];
+    SharedRAM [shape=box, label="Shared System Memory\n(DRAM / UMA)"];
+    Driver [shape=box, label="OpenGL Driver\n(Command Buffer)"];
+    iGPU [shape=box, label="Integrated GPU\n(Shader Cores)"];
+
+    CPU -> SharedRAM [label="glUniform*\nwrite uniform data"];
+    SharedRAM -> Driver [label="driver marks\nGPU-visible region"];
+    Driver -> iGPU [label="submit commands\n(no PCIe copy)"];
+    iGPU -> SharedRAM [label="GPU reads uniforms\ndirectly from shared RAM"];
+}
