@@ -273,43 +273,7 @@ FreeSync** to prevent **screen tearing**, as described below:
   :align: center
   :scale: 50 %
 
-  VSync
-
-.. rubric:: VSync
-.. code-block:: text
-
-  No tearing occurs when the GPU and display operate at the same refresh rate,  
-  since the GPU refreshes faster than the display as shown below.
-
-                A    B
-
-  GPU      | ----| ----|
-
-  Display  |-----|-----|
-
-              B      A
-
-  Tearing occurs when the GPU has exact refresh cycles but VSync takes  
-  one more cycle than the display as shown below.
-
-                A
-
-  GPU      | -----|
-
-  Display  |-----|-----|
-
-              B      A
-
-  To avoid tearing, the GPU runs at half the refresh rate of the display,  
-  as shown below.
-
-                A          B
-
-  GPU      | -----|    | -----|
-
-  Display  |-----|-----|-----|-----|
-
-              B      B    A     A
+  VSync [#cg_basictheory]_
 
 - Double Buffering
 
@@ -325,6 +289,42 @@ FreeSync** to prevent **screen tearing**, as described below:
 
 - VSync
 
+  A refresh period is roughly:
+
+  visible scan-out → blanking interval (including VSync) → next visible scan-out
+
+  - Visible scan-out: the display reads pixel rows from top to bottom and shows 
+    them.
+  - Blanking interval: a short time after the last row and before the next first
+    row. Historically the electron beam returned to the top; modern LCD/LED 
+    displays retain a timing interval for coordination.
+  - VSync: a timing signal within that blanking interval indicating the boundary
+     between refreshes.
+
+  vertical blanking interval = front porch + VSync pulse + back porch
+
+  - Front porch: brief delay after the last visible row finishes.
+  - VSync pulse: timing signal that marks synchronization between refreshes.
+  - Back porch: brief delay after the VSync pulse before the first visible row 
+    of the next frame starts.
+
+  In most display modes, the **visible scan-out becomes slower** because the 
+  **pixel clock is lower**. The blanking/VSync interval may also change 
+  somewhat, depending on the timing mode, but it is usually a small part of the 
+  total period.
+
+  Changing from a 5-cycle refresh period to a 10-cycle refresh period doubles 
+  the time for the entire refresh interval:
+
+  active scan-out + blanking/VSync interval = 10 cycles
+
+  - 5 cycles per refresh → VSync occurs every 5 cycles.
+  - 10 cycles per refresh → VSync occurs every 10 cycles.
+
+  If setting refresh cycles/rate from 5 cycles to 10 cycles on LCD/LED. 
+  It scans the screen more slowly: the active display scan plus its blanking 
+  interval portion together occupy the 10 cycles.
+
   Double buffering alone does not solve the entire problem, as the buffer swap 
   might occur at an inappropriate time, for example, while the display is in 
   the middle of displaying the old frame. This is resolved via the so-called 
@@ -332,15 +332,37 @@ FreeSync** to prevent **screen tearing**, as described below:
   When we signal to the GPU to do a buffer swap, the GPU will wait till the next
   VSync to perform the actual swap, after the entire current frame is displayed.
 
+  .. rubric:: Tearing
+  .. code-block:: text
+
+    To avoid tearing, the GPU runs at half the refresh rate of the display,  
+    as shown below.
+
+    GPU      |  GPU is writing buffer A  | GPU is writing buffer B |
+
+    Display  | VSync B |
+
+    Display  | VSync B and stay on B | VSync A and stay on A |
+                                       ^
+                                       |
+                                    tearing 
+
   As above text digram.
   The most important point is: When the VSync buffer-swap is enabled, you cannot 
   refresh the display faster than the refresh rate of the display!!! 
   If GPU is capable of producing higher frame rates than the display's 
   refresh rate, then GPU can use fast rate without tearing.
-  If GPU has same or less frame rates then display's and you application 
-  refreshes at a fixed rate, the resultant refresh rate is 
-  likely to be an integral factor of the display's refresh rate, i.e., 1/2, 1/3, 
-  1/4, etc. Otherwise it will cause tearing [#cg_basictheory]_.
+
+  If an application presents frames with VSync enabled at a fixed cadence, its 
+  displayed-frame cadence may be an integral fraction of the display refresh 
+  rate: 1/1, 1/2, 1/3, 1/4, and so on.
+
+  Examples on a 60 Hz display:
+
+  - GPU/app ≥ 60 FPS: 1/1 → 60 presented FPS (extra rendered frames may be dropped or replaced).
+  - GPU/app = 30 FPS: 1/2 → 30 presented FPS.
+  - GPU/app = 20 FPS: 1/3 → 20 presented FPS.
+  - GPU/app = 15 FPS: 1/4 → 15 presented FPS.
 
 - NVIDIA G-SYNC and AMD FreeSync
 
