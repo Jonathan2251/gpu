@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/haiku.css?v=fce32b03" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
-    <script src="_static/documentation_options.js?v=b489f392"></script>
+    <script src="_static/documentation_options.js?v=7f00635f"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
@@ -130,7 +130,7 @@ x \\ y \\ z \\ 1
 <li><p>Model space: The is the vertices position mentioned under <a class="reference internal" href="3d-model.html#movement"><span class="std std-ref">Root bone in
 Animation flow</span></a>. All vertex coordinates are calcuated relative to the
 root bone.</p></li>
-<li><p>Model Rranform: <code class="docutils literal notranslate"><span class="pre">M</span></code> = Model matrix (object → world). This represents the
+<li><p>Model Transform: <code class="docutils literal notranslate"><span class="pre">M</span></code> = Model matrix (object → world). This represents the
 vertex positions mentioned under <a class="reference internal" href="3d-model.html#movement"><span class="std std-ref">Transform Animation in Animation flow</span></a>.</p></li>
 </ul>
 <p>Details for <a class="reference internal" href="#trans-steps"><span class="std std-numref">Fig. 15</span></a> can be found on “4.  Vertex Processing” of
@@ -273,7 +273,7 @@ parallelogram.</p>
 </figure>
 <p>The area of the parallelogram is given by:</p>
 <div class="math notranslate nohighlight">
-\[ \begin{align}\begin{aligned}\mathbf a = v_1-v_0, \mathbf b = v_2-v_0\\\Vert \mathbf a \mathsf x \mathbf b \Vert = \Vert a \Vert \Vert b \Vert |
+\[ \begin{align}\begin{aligned}\mathbf a = v_1-v_0, \mathbf b = v_2-v_1\\\Vert \mathbf a \mathsf x \mathbf b \Vert = \Vert a \Vert \Vert b \Vert |
 sin(\Theta) |\end{aligned}\end{align} \]</div>
 <p>The area of a parallelogram is same in both 2D and 3D.
 To extend the definition of the corss product to 3D, all we must additionally
@@ -371,8 +371,8 @@ a
 triangle and the area in the plane can be determined since the angle between
 <span class="math notranslate nohighlight">\(v_1 - v_0\)</span> and <span class="math notranslate nohighlight">\(v_2 - v_1\)</span> satisfied <span class="math notranslate nohighlight">\(0 &lt; \Theta &lt; 180^\circ\)</span>
 under CCW orientation.
-In fact <strong>one single vector :math:`v_1 - v_0` is sufficient</strong> to determine the
-area.
+In fact <strong>one single vector</strong> <span class="math notranslate nohighlight">\(v_1 - v_0\)</span> <strong>is sufficient</strong> to determine
+the area.
 We describle this below.</p>
 <p>In 2D, any two points <span class="math notranslate nohighlight">\(\text{from } P_i \text{ to } P_{i+1}\)</span> can form a
 vector and determine the inner or outer side.</p>

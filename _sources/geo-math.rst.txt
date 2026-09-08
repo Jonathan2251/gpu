@@ -108,7 +108,7 @@ This is the core of the OpenGL rendering pipeline, as shown in
 - Model space: The is the vertices position mentioned under :ref:`Root bone in 
   Animation flow <movement>`. All vertex coordinates are calcuated relative to the
   root bone.
-- Model Rranform: ``M`` = Model matrix (object → world). This represents the 
+- Model Transform: ``M`` = Model matrix (object → world). This represents the 
   vertex positions mentioned under :ref:`Transform Animation in Animation flow 
   <movement>`.
 
@@ -290,7 +290,7 @@ The area of the parallelogram is given by:
 
 .. math::
 
-  \mathbf a = v_1-v_0, \mathbf b = v_2-v_0
+  \mathbf a = v_1-v_0, \mathbf b = v_2-v_1
 
   \Vert \mathbf a \mathsf x \mathbf b \Vert = \Vert a \Vert \Vert b \Vert | 
   sin(\Theta) |
@@ -406,8 +406,8 @@ As described earlier of in this section, three vertices form a parallelogram or
 triangle and the area in the plane can be determined since the angle between
 :math:`v_1 - v_0` and :math:`v_2 - v_1` satisfied :math:`0 < \Theta < 180^\circ` 
 under CCW orientation.
-In fact **one single vector :math:`v_1 - v_0` is sufficient** to determine the 
-area.
+In fact **one single vector** :math:`v_1 - v_0` **is sufficient** to determine 
+the area.
 We describle this below.
 
 In 2D, any two points :math:`\text{from } P_i \text{ to } P_{i+1}` can form a  

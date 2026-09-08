@@ -1049,6 +1049,12 @@ VRAM dGPU
 .. graphviz:: ../Fig/hw/mem.gv
   :caption: iGPU versus dGPU
 
+.. graphviz:: ../Fig/hw/dgpu.gv
+   :caption: CPU send Uniform Updates Data to dGPU for rendering
+ 
+.. graphviz:: ../Fig/hw/igpu.gv
+   :caption: CPU send Uniform Updates Data to iGPU for rendering
+ 
 **Reason:**
 
 **1. Since CPU and GPU have different requirements, a shared memory design cannot 
@@ -1058,11 +1064,11 @@ match the performance of dedicated GPU memory.**
 access the same physical memory (DRAM). This leads to several forms of 
 contention:**
 
-  - a. Cache Coherency Overhead
+a. Cache Coherency Overhead
 
-  - b. DMA Contention
+b. DMA Contention
 
-  - c. Bus & Memory Controller Bottleneck
+c. Bus & Memory Controller Bottleneck
 
 **Advantages:**
 

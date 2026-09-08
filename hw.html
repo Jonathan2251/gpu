@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/haiku.css?v=fce32b03" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
-    <script src="_static/documentation_options.js?v=b489f392"></script>
+    <script src="_static/documentation_options.js?v=7f00635f"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="author" title="About these documents" href="about.html" />
@@ -40,55 +40,55 @@
 <span id="gpu-arch"></span><h1>GPU Architecture<a class="headerlink" href="#gpu-architecture" title="Link to this heading">¶</a></h1>
 <nav class="contents local" id="contents">
 <ul class="simple">
-<li><p><a class="reference internal" href="#gpu-hardware-units" id="id86">GPU Hardware Units</a></p></li>
-<li><p><a class="reference internal" href="#sm-simt" id="id87">SM (SIMT)</a></p>
+<li><p><a class="reference internal" href="#gpu-hardware-units" id="id88">GPU Hardware Units</a></p></li>
+<li><p><a class="reference internal" href="#sm-simt" id="id89">SM (SIMT)</a></p>
 <ul>
-<li><p><a class="reference internal" href="#sm-hardware" id="id88">SM Hardware</a></p></li>
-<li><p><a class="reference internal" href="#sm-scheduling" id="id89">SM Scheduling</a></p></li>
-<li><p><a class="reference internal" href="#simt-and-spmd-pipelines" id="id90">SIMT and SPMD Pipelines</a></p></li>
+<li><p><a class="reference internal" href="#sm-hardware" id="id90">SM Hardware</a></p></li>
+<li><p><a class="reference internal" href="#sm-scheduling" id="id91">SM Scheduling</a></p></li>
+<li><p><a class="reference internal" href="#simt-and-spmd-pipelines" id="id92">SIMT and SPMD Pipelines</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#processor-units-and-memory-hierarchy-in-nvidia-gpu" id="id91">Processor Units and Memory Hierarchy in NVIDIA GPU </a></p></li>
-<li><p><a class="reference internal" href="#memory-subsystem" id="id92">Memory Subsystem</a></p>
+<li><p><a class="reference internal" href="#processor-units-and-memory-hierarchy-in-nvidia-gpu" id="id93">Processor Units and Memory Hierarchy in NVIDIA GPU </a></p></li>
+<li><p><a class="reference internal" href="#memory-subsystem" id="id94">Memory Subsystem</a></p>
 <ul>
-<li><p><a class="reference internal" href="#address-coalescing-and-gather-scatter" id="id93">Address Coalescing and Gather-scatter</a></p></li>
-<li><p><a class="reference internal" href="#vram-dgpu" id="id94">VRAM dGPU</a></p></li>
-<li><p><a class="reference internal" href="#regless-style-architectures" id="id95">RegLess-style architectures </a></p></li>
+<li><p><a class="reference internal" href="#address-coalescing-and-gather-scatter" id="id95">Address Coalescing and Gather-scatter</a></p></li>
+<li><p><a class="reference internal" href="#vram-dgpu" id="id96">VRAM dGPU</a></p></li>
+<li><p><a class="reference internal" href="#regless-style-architectures" id="id97">RegLess-style architectures </a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#specialized-units" id="id96">Specialized Units</a></p>
+<li><p><a class="reference internal" href="#specialized-units" id="id98">Specialized Units</a></p>
 <ul>
-<li><p><a class="reference internal" href="#geometry-units" id="id97">Geometry Units</a></p></li>
-<li><p><a class="reference internal" href="#rasterization-units" id="id98">Rasterization Units </a></p></li>
-<li><p><a class="reference internal" href="#texture-mapping-units-tmus" id="id99">Texture Mapping Units (TMUs) </a></p></li>
-<li><p><a class="reference internal" href="#render-output-units-rops" id="id100">Render Output Units (ROPs) </a></p></li>
+<li><p><a class="reference internal" href="#geometry-units" id="id99">Geometry Units</a></p></li>
+<li><p><a class="reference internal" href="#rasterization-units" id="id100">Rasterization Units </a></p></li>
+<li><p><a class="reference internal" href="#texture-mapping-units-tmus" id="id101">Texture Mapping Units (TMUs) </a></p></li>
+<li><p><a class="reference internal" href="#render-output-units-rops" id="id102">Render Output Units (ROPs) </a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#system-features-buffers" id="id101">System Features – Buffers</a></p></li>
+<li><p><a class="reference internal" href="#system-features-buffers" id="id103">System Features – Buffers</a></p></li>
 </ul>
 </nav>
 <figure class="align-center" id="id49">
 <span id="cg-hw"></span><a class="reference internal image-reference" href="_images/cg-hw.png"><img alt="_images/cg-hw.png" height="327" src="_images/cg-hw.png" width="693" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 54 </span><span class="caption-text">Computer Graphics Hardware (figure from book <a class="footnote-reference brackets" href="#cg-basictheory" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>)</span><a class="headerlink" href="#id49" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 55 </span><span class="caption-text">Computer Graphics Hardware (figure from book <a class="footnote-reference brackets" href="#cg-basictheory" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>)</span><a class="headerlink" href="#id49" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <section id="gpu-hardware-units">
-<h2><a class="toc-backref" href="#id86" role="doc-backlink">GPU Hardware Units</a><a class="headerlink" href="#gpu-hardware-units" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id88" role="doc-backlink">GPU Hardware Units</a><a class="headerlink" href="#gpu-hardware-units" title="Link to this heading">¶</a></h2>
 <p>A GPU (graphics processing unit) is built as a massively generic parallel
 processor of SIMD/SIMT architecture with several specialized processing units
-inside shown as <a class="reference internal" href="#gpu-block-diagram-2"><span class="std std-numref">Fig. 55</span></a> from the
+inside shown as <a class="reference internal" href="#gpu-block-diagram-2"><span class="std std-numref">Fig. 56</span></a> from the
 <a class="reference internal" href="hw-sw-stack.html#hw-sw-stack"><span class="std std-ref">section Graphics HW and SW Stack</span></a>.</p>
 <figure class="align-center" id="id50">
 <span id="gpu-block-diagram-2"></span><a class="reference internal image-reference" href="_images/gpu-block-diagram.png"><img alt="_images/gpu-block-diagram.png" height="376" src="_images/gpu-block-diagram.png" width="400" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 55 </span><span class="caption-text">Components of a GPU: GPU has accelerated video decoding and encoding
+<p><span class="caption-number">Fig. 56 </span><span class="caption-text">Components of a GPU: GPU has accelerated video decoding and encoding
 <a class="footnote-reference brackets" href="#wiki-gpu" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id50" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
-<p>From compiler’s view, GPU is shown as <a class="reference internal" href="#gpu-hw"><span class="std std-numref">Fig. 56</span></a>.</p>
+<p>From compiler’s view, GPU is shown as <a class="reference internal" href="#gpu-hw"><span class="std std-numref">Fig. 57</span></a>.</p>
 <figure class="align-default" id="id51">
 <span id="gpu-hw"></span><div class="graphviz"><img src="_images/graphviz-ed153f27179a02053c73ab818e39fa56bd74a284.png" alt="digraph GPU {
   rankdir=LR;
@@ -192,14 +192,14 @@ inside shown as <a class="reference internal" href="#gpu-block-diagram-2"><span 
   }
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 56 </span><span class="caption-text">Components of a GPU: SIMD/SIMT + several specialized processing units</span><a class="headerlink" href="#id51" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 57 </span><span class="caption-text">Components of a GPU: SIMD/SIMT + several specialized processing units</span><a class="headerlink" href="#id51" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>A GPU is not just “many cores” — it’s a mix of general-purpose ompute clusters,
 specialized units, and the memory subsystem. It corresponds to the block
-diagram graph shown in <a class="reference internal" href="#gpu-hw"><span class="std std-numref">Fig. 56</span></a>.</p>
+diagram graph shown in <a class="reference internal" href="#gpu-hw"><span class="std std-numref">Fig. 57</span></a>.</p>
 <p>The stages of the OpenGL rendering pipeline and the GPU hardware units
-that accelerate them as shown in <a class="reference internal" href="#ogl-pipeline-hw"><span class="std std-numref">Fig. 57</span></a>:</p>
+that accelerate them as shown in <a class="reference internal" href="#ogl-pipeline-hw"><span class="std std-numref">Fig. 58</span></a>:</p>
 <figure class="align-default" id="id52">
 <span id="ogl-pipeline-hw"></span><div class="graphviz"><img src="_images/graphviz-c9358e8b6218d8f7f1a13fac7ddd6a4772b42720.png" alt="digraph OpenGL_GPU_Mapping {
     rankdir=TB;
@@ -289,7 +289,7 @@ that accelerate them as shown in <a class="reference internal" href="#ogl-pipeli
     { rank = same; Coalescing; GatherScatter }
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 57 </span><span class="caption-text">The stages of OpenGL pipeline and GPU’s acceleration components</span><a class="headerlink" href="#id52" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 58 </span><span class="caption-text">The stages of OpenGL pipeline and GPU’s acceleration components</span><a class="headerlink" href="#id52" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p><strong>Compute Cluster</strong></p>
@@ -476,7 +476,7 @@ supported <a class="footnote-reference brackets" href="#vrs" id="id4" role="doc-
 </ul>
 </section>
 <section id="sm-simt">
-<h2><a class="toc-backref" href="#id87" role="doc-backlink">SM (SIMT)</a><a class="headerlink" href="#sm-simt" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id89" role="doc-backlink">SM (SIMT)</a><a class="headerlink" href="#sm-simt" title="Link to this heading">¶</a></h2>
 <p>Single instruction, multiple threads (SIMT) is an execution model used in
 parallel computing where a single central “Control Unit” broadcasts an
 instruction to multiple “Processing Units” for them to all optionally perform
@@ -493,15 +493,15 @@ memory.</p></li>
 <li><p>The PU is a pipleline execution unit compared to CPU architecture.</p></li>
 </ul>
 <section id="sm-hardware">
-<h3><a class="toc-backref" href="#id88" role="doc-backlink">SM Hardware</a><a class="headerlink" href="#sm-hardware" title="Link to this heading">¶</a></h3>
-<p>The leading NVIDIA GPU architecture is illustrated in <a class="reference internal" href="#gpu-sched"><span class="std std-numref">Fig. 58</span></a>,
+<h3><a class="toc-backref" href="#id90" role="doc-backlink">SM Hardware</a><a class="headerlink" href="#sm-hardware" title="Link to this heading">¶</a></h3>
+<p>The leading NVIDIA GPU architecture is illustrated in <a class="reference internal" href="#gpu-sched"><span class="std std-numref">Fig. 59</span></a>,
 <strong>where the scoreboard is shown without the mask field</strong>.
 This represents a SIMT pipeline with a scoreboard.</p>
 <figure class="align-center" id="id53">
 <span id="gpu-sched"></span><a class="reference internal image-reference" href="_images/gpu-sched.png"><img alt="_images/gpu-sched.png" height="556" src="_images/gpu-sched.png" width="606" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 58 </span><span class="caption-text">Simplified block diagram of a Multithreaded SIMD Processor. (figure from book
+<p><span class="caption-number">Fig. 59 </span><span class="caption-text">Simplified block diagram of a Multithreaded SIMD Processor. (figure from book
 <a class="footnote-reference brackets" href="#quantitative-threads-lanes" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></a>)</span><a class="headerlink" href="#id53" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
@@ -519,7 +519,7 @@ This represents a SIMT pipeline with a scoreboard.</p>
 <span id="sm-left"></span><a class="reference internal image-reference" href="_images/sm.png"><img alt="_images/sm.png" height="603" src="_images/sm.png" width="468" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 59 </span><span class="caption-text">Streaming Multiprocessor SM figure from book <a class="footnote-reference brackets" href="#quantitative-gpu-sm" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id54" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 60 </span><span class="caption-text">Streaming Multiprocessor SM figure from book <a class="footnote-reference brackets" href="#quantitative-gpu-sm" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id54" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </td>
@@ -527,7 +527,7 @@ This represents a SIMT pipeline with a scoreboard.</p>
 <span id="sm-right"></span><a class="reference internal image-reference" href="_images/sm2.png"><img alt="_images/sm2.png" height="552" src="_images/sm2.png" width="349" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 60 </span><span class="caption-text">SM figure from websites <a class="footnote-reference brackets" href="#cuda-sm" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#fermi" id="id9" role="doc-noteref"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id55" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 61 </span><span class="caption-text">SM figure from websites <a class="footnote-reference brackets" href="#cuda-sm" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#fermi" id="id9" role="doc-noteref"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id55" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </td>
@@ -545,7 +545,7 @@ ALUs run at twice the clock rate of rest of chip. So each
 decoded instruction runs on 32 pieces of data on the 16 ALUs over two ALU
 clocks <a class="footnote-reference brackets" href="#chime" id="id10" role="doc-noteref"><span class="fn-bracket">[</span>10<span class="fn-bracket">]</span></a>. However after Fermi, the ALUs run at the same clock rate
 of rest of chip.</p></li>
-<li><p>As <a class="reference internal" href="#sm-left"><span class="std std-numref">Fig. 59</span></a> in Fermi and Volta, it can dual-issue “float + integer” or
+<li><p>As <a class="reference internal" href="#sm-left"><span class="std std-numref">Fig. 60</span></a> in Fermi and Volta, it can dual-issue “float + integer” or
 “integer + load/store” but cannot dual-issue “float + float” or “int + int”.</p></li>
 <li><p>Uniform cache: used for storing constant variables in OpenGL (see
 <a class="reference internal" href="opengl.html#pipeline-qualifier"><span class="std std-ref">uniform of Pipeline Qualifiers</span></a>) and in OpenCL/CUDA.</p></li>
@@ -620,7 +620,7 @@ with 16 KB of Local Memory <a class="footnote-reference brackets" href="#quantit
 <span id="threadblock"></span><a class="reference internal image-reference" href="_images/threadblock.jpg"><img alt="_images/threadblock.jpg" height="295" src="_images/threadblock.jpg" width="596" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 61 </span><span class="caption-text">SM select Thread Blocks to run <a class="footnote-reference brackets" href="#wiki-tbcp" id="id12" role="doc-noteref"><span class="fn-bracket">[</span>12<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id56" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 62 </span><span class="caption-text">SM select Thread Blocks to run <a class="footnote-reference brackets" href="#wiki-tbcp" id="id12" role="doc-noteref"><span class="fn-bracket">[</span>12<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id56" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </td>
@@ -628,7 +628,7 @@ with 16 KB of Local Memory <a class="footnote-reference brackets" href="#quantit
 <span id="threadblocks-map"></span><a class="reference internal image-reference" href="_images/threadblocks-map.png"><img alt="_images/threadblocks-map.png" height="400" src="_images/threadblocks-map.png" width="389" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 62 </span><span class="caption-text">Mapping Thread Block to SMs <a class="footnote-reference brackets" href="#mapping-blocks-to-sm" id="id13" role="doc-noteref"><span class="fn-bracket">[</span>13<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id57" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 63 </span><span class="caption-text">Mapping Thread Block to SMs <a class="footnote-reference brackets" href="#mapping-blocks-to-sm" id="id13" role="doc-noteref"><span class="fn-bracket">[</span>13<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id57" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </td>
@@ -637,7 +637,7 @@ with 16 KB of Local Memory <a class="footnote-reference brackets" href="#quantit
 </table>
 </section>
 <section id="sm-scheduling">
-<h3><a class="toc-backref" href="#id89" role="doc-backlink">SM Scheduling</a><a class="headerlink" href="#sm-scheduling" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id91" role="doc-backlink">SM Scheduling</a><a class="headerlink" href="#sm-scheduling" title="Link to this heading">¶</a></h3>
 <ul>
 <li><p>A GPU is built around an array of Streaming Multiprocessors (SMs).
 A multithreaded program is partitioned into blocks of threads that execute
@@ -656,8 +656,8 @@ centers).</p>
 (lock-step in Warp):</p>
 <p>A Warp includes 32 threads in Fermi GPU.
 Each Streaming Multiprocessor SM includes 32 Lanes in Fermi GPU, as shown
-in <a class="reference internal" href="#threadblock"><span class="std std-numref">Fig. 61</span></a>, the Thread Block includes a Warp (32 threads).
-According <a class="reference internal" href="#threadblocks-map"><span class="std std-numref">Fig. 62</span></a>, more than one block can be assigned
+in <a class="reference internal" href="#threadblock"><span class="std std-numref">Fig. 62</span></a>, the Thread Block includes a Warp (32 threads).
+According <a class="reference internal" href="#threadblocks-map"><span class="std std-numref">Fig. 63</span></a>, more than one block can be assigned
 and run on a same SM.</p>
 <p id="l1-warp-sched">When an SM executes a Thread Block, all the threads within the block are
 are executed at the same time. If any thread in a Warp is not ready due to
@@ -773,7 +773,7 @@ instructions are tracked per thread, not per warp.</p></li>
 </ul>
 </section>
 <section id="simt-and-spmd-pipelines">
-<h3><a class="toc-backref" href="#id90" role="doc-backlink">SIMT and SPMD Pipelines</a><a class="headerlink" href="#simt-and-spmd-pipelines" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id92" role="doc-backlink">SIMT and SPMD Pipelines</a><a class="headerlink" href="#simt-and-spmd-pipelines" title="Link to this heading">¶</a></h3>
 <p>This section illustrates the difference between SIMT and SPMD
 pipelines using the same pipeline stages: Fetch (F), Decode (D),
 Execute (E), Memory (M), and Writeback (W).</p>
@@ -895,12 +895,12 @@ progress inside a Warp)</p></li>
 </section>
 </section>
 <section id="processor-units-and-memory-hierarchy-in-nvidia-gpu">
-<span id="sec-mem-hierarchy"></span><h2><a class="toc-backref" href="#id91" role="doc-backlink">Processor Units and Memory Hierarchy in NVIDIA GPU <a class="footnote-reference brackets" href="#chatgpt-pumh" id="id18" role="doc-noteref"><span class="fn-bracket">[</span>15<span class="fn-bracket">]</span></a></a><a class="headerlink" href="#processor-units-and-memory-hierarchy-in-nvidia-gpu" title="Link to this heading">¶</a></h2>
+<span id="sec-mem-hierarchy"></span><h2><a class="toc-backref" href="#id93" role="doc-backlink">Processor Units and Memory Hierarchy in NVIDIA GPU <a class="footnote-reference brackets" href="#chatgpt-pumh" id="id18" role="doc-noteref"><span class="fn-bracket">[</span>15<span class="fn-bracket">]</span></a></a><a class="headerlink" href="#processor-units-and-memory-hierarchy-in-nvidia-gpu" title="Link to this heading">¶</a></h2>
 <figure class="align-center" id="id58">
 <span id="gpu-mem"></span><a class="reference internal image-reference" href="_images/memory.png"><img alt="_images/memory.png" height="380" src="_images/memory.png" width="407" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 63 </span><span class="caption-text">GPU memory (figure from book <a class="footnote-reference brackets" href="#quantitative-gpu-mem" id="id19" role="doc-noteref"><span class="fn-bracket">[</span>16<span class="fn-bracket">]</span></a>).</span><a class="headerlink" href="#id58" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 64 </span><span class="caption-text">GPU memory (figure from book <a class="footnote-reference brackets" href="#quantitative-gpu-mem" id="id19" role="doc-noteref"><span class="fn-bracket">[</span>16<span class="fn-bracket">]</span></a>).</span><a class="headerlink" href="#id58" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-default" id="id59">
@@ -953,19 +953,19 @@ progress inside a Warp)</p></li>
     }
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 64 </span><span class="caption-text">Processor Units and Memory Hierarchy in NVIDIA GPU
+<p><span class="caption-number">Fig. 65 </span><span class="caption-text">Processor Units and Memory Hierarchy in NVIDIA GPU
 <strong>Local Memory is shared by all threads and Cached in L1 and L2.</strong>
 In addition, the <strong>Shared Memory is provided to use per-SM, not
 cacheable</strong>.</span><a class="headerlink" href="#id59" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>Illustrate L1, L2 and Global Memory used by SM and whole chip of GPU as
-<a class="reference internal" href="#l1-l2"><span class="std std-numref">Fig. 65</span></a>.</p>
+<a class="reference internal" href="#l1-l2"><span class="std std-numref">Fig. 66</span></a>.</p>
 <figure class="align-center" id="id60">
 <span id="l1-l2"></span><a class="reference internal image-reference" href="_images/l1-l2.png"><img alt="_images/l1-l2.png" height="362" src="_images/l1-l2.png" width="632" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 65 </span><span class="caption-text"><strong>L1 Cache: Per-SM, Coherent across all 16 Lanes in the same SM.</strong>
+<p><span class="caption-number">Fig. 66 </span><span class="caption-text"><strong>L1 Cache: Per-SM, Coherent across all 16 Lanes in the same SM.</strong>
 L2 Cache: Coherent across all SMs and GPCs.
 Global Memory (DRAM: HBM/GDDR). Both HBM and GDDR are DRAM.
 GDDR (Graphics DDR) – optimized for GPUs (GDDR5, GDDR6, GDDR6X).
@@ -974,7 +974,7 @@ HBM (High Bandwidth Memory) – 3D-stacked DRAM connected via TSVs
 <a class="footnote-reference brackets" href="#mapping-blocks-to-sm" id="id20" role="doc-noteref"><span class="fn-bracket">[</span>13<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id60" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
-<p>The <a class="reference internal" href="#mem-hierarchy"><span class="std std-numref">Fig. 64</span></a> <strong>illustrates the memory hierarchy in NVIDIA GPU</strong>.
+<p>The <a class="reference internal" href="#mem-hierarchy"><span class="std std-numref">Fig. 65</span></a> <strong>illustrates the memory hierarchy in NVIDIA GPU</strong>.
 The Cache flow for 3D Model Information, Animation Parameters, and GLSL Variables
 is as follows:</p>
 <dl class="simple">
@@ -1004,17 +1004,17 @@ is as follows:</p>
 <li><p><strong>Registers</strong></p>
 <ul>
 <li><p>Per-thread, fastest memory, located in CUDA cores, as illustrated also in
-<a class="reference internal" href="#sm-left"><span class="std std-numref">Fig. 59</span></a>.</p></li>
+<a class="reference internal" href="#sm-left"><span class="std std-numref">Fig. 60</span></a>.</p></li>
 <li><p><a class="reference internal" href="#cfg-warps"><span class="std std-ref">Configurable maximum resident warps and
 allocated registers per thread</span></a> following
-<a class="reference internal" href="#sm-left"><span class="std std-numref">Fig. 59</span></a>.</p></li>
+<a class="reference internal" href="#sm-left"><span class="std std-numref">Fig. 60</span></a>.</p></li>
 <li><p>Latency: ~1 cycle.</p></li>
 </ul>
 </li>
 <li><p><strong>Uniform / Constant cache</strong></p>
 <ul>
 <li><p>Stored constant variables in OpenGL and OpenCL/CUDA, as illustrated in
-<a class="reference internal" href="#sm-left"><span class="std std-numref">Fig. 59</span></a>.</p></li>
+<a class="reference internal" href="#sm-left"><span class="std std-numref">Fig. 60</span></a>.</p></li>
 </ul>
 </li>
 <li><p><strong>Local Memory</strong></p>
@@ -1027,7 +1027,7 @@ allocated registers per thread</span></a> following
 <li><p><strong>Shared Memory</strong></p>
 <ul>
 <li><p><strong>Per-SM, shared across threads in a Thread Block as shown in</strong>
-<a class="reference internal" href="#sm-left"><span class="std std-numref">Fig. 59</span></a>.</p></li>
+<a class="reference internal" href="#sm-left"><span class="std std-numref">Fig. 60</span></a>.</p></li>
 <li><p><strong>On-chip, programmer-controlled.</strong></p></li>
 <li><p>Latency: ~20 cycles.</p></li>
 </ul>
@@ -1042,7 +1042,7 @@ allocated registers per thread</span></a> following
 <li><p><strong>L2 Cache</strong></p>
 <ul>
 <li><p>Shared across the entire GPU chip.</p></li>
-<li><p><strong>Coherent across all SMs and GPCs as shown in</strong> <a class="reference internal" href="#l1-l2"><span class="std std-numref">Fig. 65</span></a>.</p></li>
+<li><p><strong>Coherent across all SMs and GPCs as shown in</strong> <a class="reference internal" href="#l1-l2"><span class="std std-numref">Fig. 66</span></a>.</p></li>
 </ul>
 </li>
 <li><p><strong>Global Memory (DRAM: HBM/GDDR)</strong></p>
@@ -1091,7 +1091,7 @@ allocated registers per thread</span></a> following
 <span id="gpu-terms"></span><a class="reference internal image-reference" href="_images/gpu-terms.png"><img alt="_images/gpu-terms.png" height="721" src="_images/gpu-terms.png" width="621" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 66 </span><span class="caption-text">Terms in Nvidia’s gpu (figure from book <a class="footnote-reference brackets" href="#quantitative-gpu-terms" id="id21" role="doc-noteref"><span class="fn-bracket">[</span>17<span class="fn-bracket">]</span></a>)</span><a class="headerlink" href="#id61" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 67 </span><span class="caption-text">Terms in Nvidia’s gpu (figure from book <a class="footnote-reference brackets" href="#quantitative-gpu-terms" id="id21" role="doc-noteref"><span class="fn-bracket">[</span>17<span class="fn-bracket">]</span></a>)</span><a class="headerlink" href="#id61" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-default" id="id62">
@@ -1121,7 +1121,7 @@ allocated registers per thread</span></a> following
     Lane31 [label=&quot;Lane 31\n(Chime A / Chime B)&quot;, fillcolor=lightyellow];
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 67 </span><span class="caption-text">In <strong>dual-issue mode</strong>, Chime A carries floating-point data while Chime
+<p><span class="caption-number">Fig. 68 </span><span class="caption-text">In <strong>dual-issue mode</strong>, Chime A carries floating-point data while Chime
 B carries integer data—both issued by the same CUDA thread.
 In contrast, under <strong>time-sliced execution</strong>, Chime A and Chime B carry
 either floating-point or integer data independently, and are
@@ -1131,11 +1131,11 @@ assigned to separate CUDA threads.</span><a class="headerlink" href="#id62" titl
 <ul class="simple">
 <li><p>A Warp of 32 threads is mapped across 16 Lanes. If each Lane has 2 Chimes,
 it may support dual-issue or time-sliced execution as
-<a class="reference internal" href="#warp-sched-pipeline"><span class="std std-numref">Fig. 67</span></a>.</p></li>
+<a class="reference internal" href="#warp-sched-pipeline"><span class="std std-numref">Fig. 68</span></a>.</p></li>
 </ul>
 <p>In the following matrix multiplication code, the 8096 elements of matrix
 A = B × C are mapped to Thread Blocks, SIMD Threads, Lanes, and Chimes as
-illustrated in the <a class="reference internal" href="#grid"><span class="std std-numref">Fig. 68</span></a>. In this example, it run on
+illustrated in the <a class="reference internal" href="#grid"><span class="std std-numref">Fig. 69</span></a>. In this example, it run on
 <strong>time-sliced execution</strong>.</p>
 <div class="literal-block-wrapper docutils container" id="id63">
 <span id="matmul-cuda"></span><div class="code-block-caption"><span class="caption-number">Listing 2 </span><span class="caption-text">MATMUL CUDA Example</span><a class="headerlink" href="#id63" title="Link to this code">¶</a></div>
@@ -1156,13 +1156,13 @@ illustrated in the <a class="reference internal" href="#grid"><span class="std s
 <span id="grid"></span><a class="reference internal image-reference" href="_images/grid.png"><img alt="_images/grid.png" height="694" src="_images/grid.png" width="558" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 68 </span><span class="caption-text">Mapping 8192 elements of matrix multiplication for Nvidia’s GPU
+<p><span class="caption-number">Fig. 69 </span><span class="caption-text">Mapping 8192 elements of matrix multiplication for Nvidia’s GPU
 (figure from <a class="footnote-reference brackets" href="#quantitative-grid" id="id22" role="doc-noteref"><span class="fn-bracket">[</span>18<span class="fn-bracket">]</span></a>).
 SIMT: 16 SIMD threads in one Thread Block.</span><a class="headerlink" href="#id64" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
-<p>Explain the mapping and execution in <a class="reference internal" href="#grid"><span class="std std-numref">Fig. 68</span></a> for <a class="reference internal" href="#matmul-cuda"><span class="std std-ref">MATMUL CUDA Example</span></a> using the terminology from
-<a class="reference internal" href="#gpu-terms"><span class="std std-numref">Fig. 66</span></a> and the previous sections of this book, presented in the
+<p>Explain the mapping and execution in <a class="reference internal" href="#grid"><span class="std std-numref">Fig. 69</span></a> for <a class="reference internal" href="#matmul-cuda"><span class="std std-ref">MATMUL CUDA Example</span></a> using the terminology from
+<a class="reference internal" href="#gpu-terms"><span class="std std-numref">Fig. 67</span></a> and the previous sections of this book, presented in the
 table below.</p>
 <table class="docutils align-default" id="id65">
 <caption><span class="caption-number">Table 9 </span><span class="caption-text">Summary terms for GPU.</span><a class="headerlink" href="#id65" title="Link to this table">¶</a></caption>
@@ -1180,7 +1180,7 @@ table below.</p>
 <tbody>
 <tr class="row-even"><td><p>Grid, Giga Thread Engine</p></td>
 <td><p>Each loop (Grid) consists of multiple Thread Blocks.</p></td>
-<td><p>Grid is Vectorizable Loop as <a class="reference internal" href="#gpu-terms"><span class="std std-numref">Fig. 66</span></a>.
+<td><p>Grid is Vectorizable Loop as <a class="reference internal" href="#gpu-terms"><span class="std std-numref">Fig. 67</span></a>.
 The hardware scheduler Guda Thread Engine schedules the Thread Blocks to
 SMs.</p></td>
 </tr>
@@ -1188,23 +1188,23 @@ SMs.</p></td>
 <td><p>In this example, each Grid has 16 Giga Thread <a class="footnote-reference brackets" href="#quantitative-gpu-threadblock" id="id23" role="doc-noteref"><span class="fn-bracket">[</span>19<span class="fn-bracket">]</span></a>.</p></td>
 <td><p>Each Thread Block is assigned 512 elements of the vectors to
 work on.
-As <a class="reference internal" href="#grid"><span class="std std-numref">Fig. 68</span></a>, it assigns 16 Thread Block to 16 SMs.
+As <a class="reference internal" href="#grid"><span class="std std-numref">Fig. 69</span></a>, it assigns 16 Thread Block to 16 SMs.
 Giga Thread is the name of the scheduler that distributes Thread Blocks
 to Multiprocessors, each of which has its own SIMD Thread Scheduler
 <a class="footnote-reference brackets" href="#quantitative-gpu-threadblock" id="id24" role="doc-noteref"><span class="fn-bracket">[</span>19<span class="fn-bracket">]</span></a>.
 More than one Block can be mapped to a same SM as the explanation in
-“Level 1: Thread Block Scheduler” for <a class="reference internal" href="#threadblocks-map"><span class="std std-numref">Fig. 62</span></a>.</p></td>
+“Level 1: Thread Block Scheduler” for <a class="reference internal" href="#threadblocks-map"><span class="std std-numref">Fig. 63</span></a>.</p></td>
 </tr>
 <tr class="row-even"><td><p>Streaming Multiprocessor, <strong>SM</strong>, GPU Core (Warp) <a class="footnote-reference brackets" href="#gpu-core" id="id25" role="doc-noteref"><span class="fn-bracket">[</span>20<span class="fn-bracket">]</span></a></p></td>
 <td><p>Each SIMD Processor has 16 SIMD Threads.</p></td>
-<td><p>Each SIMD processor includes local memory, as in <a class="reference internal" href="#gpu-mem"><span class="std std-numref">Fig. 63</span></a>. Local
+<td><p>Each SIMD processor includes local memory, as in <a class="reference internal" href="#gpu-mem"><span class="std std-numref">Fig. 64</span></a>. Local
 memory is shared among SIMD Lanes within a SIMD processor but not across
 different SIMD processors. A Warp has its own PC and may correspond to a
 whole function or part of a function. Compiler and runtime may assign
 functions to the same or different Warps <a class="footnote-reference brackets" href="#quantitative-gpu-warp" id="id26" role="doc-noteref"><span class="fn-bracket">[</span>21<span class="fn-bracket">]</span></a>.</p></td>
 </tr>
 <tr class="row-odd"><td><p>Cuda core</p></td>
-<td><p>Fermi has 32 Cuda cores in a SM as <a class="reference internal" href="#sm-right"><span class="std std-numref">Fig. 60</span></a>.</p></td>
+<td><p>Fermi has 32 Cuda cores in a SM as <a class="reference internal" href="#sm-right"><span class="std std-numref">Fig. 61</span></a>.</p></td>
 <td><p>A CUDA core is the scalar execution unit inside an SM.
 It is capable of executing one integer or floating-point instruction from
 one Lane of a Warp.
@@ -1220,7 +1220,7 @@ Each thread executes the kernel code independently with its own registers,
 program counter (PC), and per-thread local memory.
 Each Thread has its TLR
 (Thread Level Registers) allocated from Register file (32768 x
-32-bit) by SIMD Processor (SM) as <a class="reference internal" href="#sm-left"><span class="std std-numref">Fig. 59</span></a>.</p></td>
+32-bit) by SIMD Processor (SM) as <a class="reference internal" href="#sm-left"><span class="std std-numref">Fig. 60</span></a>.</p></td>
 </tr>
 <tr class="row-odd"><td><p>SIMD Lane</p></td>
 <td><p>Each SIMD Thread has 32 Lanes.</p></td>
@@ -1230,7 +1230,7 @@ processing 32-elements.
 A Warp of 32 threads is mapped across 32 Lanes.
 Lane = per-thread execution slot inside a Warp.
 If each Lane has 2 Chimes, it may support dual-issue or time-sliced
-execution as <a class="reference internal" href="#warp-sched-pipeline"><span class="std std-numref">Fig. 67</span></a>.</p></td>
+execution as <a class="reference internal" href="#warp-sched-pipeline"><span class="std std-numref">Fig. 68</span></a>.</p></td>
 </tr>
 <tr class="row-even"><td><p>Chime</p></td>
 <td><p>Each Lane has 2 Chimes.</p></td>
@@ -1249,10 +1249,10 @@ load/store” for “fadd and load C[i]” in this example).</p></td>
 </ul>
 </section>
 <section id="memory-subsystem">
-<h2><a class="toc-backref" href="#id92" role="doc-backlink">Memory Subsystem</a><a class="headerlink" href="#memory-subsystem" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id94" role="doc-backlink">Memory Subsystem</a><a class="headerlink" href="#memory-subsystem" title="Link to this heading">¶</a></h2>
 <section id="address-coalescing-and-gather-scatter">
-<h3><a class="toc-backref" href="#id93" role="doc-backlink">Address Coalescing and Gather-scatter</a><a class="headerlink" href="#address-coalescing-and-gather-scatter" title="Link to this heading">¶</a></h3>
-<p>Brief description is shown in <a class="reference internal" href="#coalescing-gather"><span class="std std-numref">Fig. 69</span></a>.</p>
+<h3><a class="toc-backref" href="#id95" role="doc-backlink">Address Coalescing and Gather-scatter</a><a class="headerlink" href="#address-coalescing-and-gather-scatter" title="Link to this heading">¶</a></h3>
+<p>Brief description is shown in <a class="reference internal" href="#coalescing-gather"><span class="std std-numref">Fig. 70</span></a>.</p>
 <figure class="align-default" id="id66">
 <span id="coalescing-gather"></span><div class="graphviz"><img src="_images/graphviz-d9fea9549f1cbe50dc6738ecc80dd695b5dfcce8.png" alt="digraph GPU_Memory {
     rankdir=LR;
@@ -1297,7 +1297,7 @@ load/store” for “fadd and load C[i]” in this example).</p></td>
     }
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 69 </span><span class="caption-text">Coalescing and Gather-scatter</span><a class="headerlink" href="#id66" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 70 </span><span class="caption-text">Coalescing and Gather-scatter</span><a class="headerlink" href="#id66" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>The Load/Store Units (LD/ST) is important because memory latency is huge
@@ -1400,7 +1400,7 @@ data to improve coalescing often provides significant performance gains.</p></li
 </ul>
 </section>
 <section id="vram-dgpu">
-<h3><a class="toc-backref" href="#id94" role="doc-backlink">VRAM dGPU</a><a class="headerlink" href="#vram-dgpu" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id96" role="doc-backlink">VRAM dGPU</a><a class="headerlink" href="#vram-dgpu" title="Link to this heading">¶</a></h3>
 <figure class="align-default" id="id67">
 <span id="mem"></span><div class="graphviz"><img src="_images/graphviz-b15d10ede9aed5eda2be8f259ad29270b1cced99.png" alt="digraph gpu_memory {
   rankdir=LR;
@@ -1433,7 +1433,49 @@ data to improve coalescing often provides significant performance gains.</p></li
   DRAM -&gt; CPU2;
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 70 </span><span class="caption-text">iGPU versus dGPU</span><a class="headerlink" href="#id67" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 71 </span><span class="caption-text">iGPU versus dGPU</span><a class="headerlink" href="#id67" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-default" id="id68">
+<div class="graphviz"><img src="_images/graphviz-7926236941adcb78df9744dc87d3181f45a3cdbd.png" alt="digraph DiscreteGPUUniformUpdate {
+    rankdir=LR;
+
+    CPU [shape=box, label=&quot;CPU&quot;];
+    SystemRAM [shape=box, label=&quot;System RAM&quot;];
+    Driver [shape=box, label=&quot;OpenGL Driver\n(Command Buffer)&quot;];
+    PCIe [shape=diamond, label=&quot;PCIe Bus\n(DMA Transfer)&quot;];
+    VRAM [shape=box, label=&quot;GPU VRAM&quot;];
+    GPU [shape=box, label=&quot;Discrete GPU\n(Shader Cores)&quot;];
+
+    CPU -&gt; SystemRAM [label=&quot;glUniform*\nwrite uniform data&quot;];
+    SystemRAM -&gt; Driver [label=&quot;driver reads\nand builds commands&quot;];
+    Driver -&gt; PCIe [label=&quot;schedule DMA\nhost→device&quot;];
+    PCIe -&gt; VRAM [label=&quot;copy uniform\ninto VRAM&quot;];
+    VRAM -&gt; GPU [label=&quot;shader reads\nuniforms during draw&quot;];
+
+    /* layout hints */
+    { rank = same; SystemRAM; Driver }
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 72 </span><span class="caption-text">CPU send Uniform Updates Data to dGPU for rendering</span><a class="headerlink" href="#id68" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-default" id="id69">
+<div class="graphviz"><img src="_images/graphviz-5596b865ebbf3f5f21f9579fda425207efd1407e.png" alt="digraph IntegratedGPUUniformUpdate {
+    rankdir=LR;
+
+    CPU [shape=box, label=&quot;CPU&quot;];
+    SharedRAM [shape=box, label=&quot;Shared System Memory\n(DRAM / UMA)&quot;];
+    Driver [shape=box, label=&quot;OpenGL Driver\n(Command Buffer)&quot;];
+    iGPU [shape=box, label=&quot;Integrated GPU\n(Shader Cores)&quot;];
+
+    CPU -&gt; SharedRAM [label=&quot;glUniform*\nwrite uniform data&quot;];
+    SharedRAM -&gt; Driver [label=&quot;driver marks\nGPU-visible region&quot;];
+    Driver -&gt; iGPU [label=&quot;submit commands\n(no PCIe copy)&quot;];
+    iGPU -&gt; SharedRAM [label=&quot;GPU reads uniforms\ndirectly from shared RAM&quot;];
+}" class="graphviz" /></div>
+<figcaption>
+<p><span class="caption-number">Fig. 73 </span><span class="caption-text">CPU send Uniform Updates Data to iGPU for rendering</span><a class="headerlink" href="#id69" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p><strong>Reason:</strong></p>
@@ -1442,25 +1484,14 @@ match the performance of dedicated GPU memory.</strong></p>
 <p><strong>2. In systems with shared memory (like integrated GPUs), both the CPU and GPU
 access the same physical memory (DRAM). This leads to several forms of
 contention:</strong></p>
-<blockquote>
-<div><ul class="simple">
-<li><ol class="loweralpha simple">
+<ol class="loweralpha simple">
 <li><p>Cache Coherency Overhead</p></li>
-</ol>
-</li>
-<li><ol class="loweralpha simple" start="2">
 <li><p>DMA Contention</p></li>
-</ol>
-</li>
-<li><ol class="loweralpha simple" start="3">
 <li><p>Bus &amp; Memory Controller Bottleneck</p></li>
 </ol>
-</li>
-</ul>
-</div></blockquote>
 <p><strong>Advantages:</strong></p>
 <p>A discrete GPU has its own dedicated memory (VRAM) while an integrated GPU (iGPU)
-shares memory with the CPU as shown in <a class="reference internal" href="#mem"><span class="std std-numref">Fig. 70</span></a>.</p>
+shares memory with the CPU as shown in <a class="reference internal" href="#mem"><span class="std std-numref">Fig. 71</span></a>.</p>
 <p>Dedicated GPU memory (VRAM) outperforms shared CPU-GPU memory due to
 higher bandwidth, lower latency, parallel access optimization, and no
 contention with CPU resources.</p>
@@ -1543,7 +1574,7 @@ GDDR6X, or HBM2/3, which are much faster than standard system RAM (DDR4/DDR5).</
 </div></blockquote>
 </section>
 <section id="regless-style-architectures">
-<h3><a class="toc-backref" href="#id95" role="doc-backlink">RegLess-style architectures <a class="footnote-reference brackets" href="#reg-less" id="id29" role="doc-noteref"><span class="fn-bracket">[</span>24<span class="fn-bracket">]</span></a></a><a class="headerlink" href="#regless-style-architectures" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id97" role="doc-backlink">RegLess-style architectures <a class="footnote-reference brackets" href="#reg-less" id="id29" role="doc-noteref"><span class="fn-bracket">[</span>24<span class="fn-bracket">]</span></a></a><a class="headerlink" href="#regless-style-architectures" title="Link to this heading">¶</a></h3>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>RegLess remains a research concept, not (as far as public evidence shows) a
@@ -1553,8 +1584,8 @@ commercial design in shipping GPUs.</strong></p>
 <p>This section outlines the transition from traditional GPU operand coherence
 using a monolithic register file and L1 data cache, to a RegLess-style
 architecture that employs operand staging and register file-local coherence.</p>
-<p>✅ Operand Delivery in Traditional GPU: <a class="reference internal" href="#no-regless"><span class="std std-numref">Fig. 71</span></a>:</p>
-<figure class="align-default" id="id68">
+<p>✅ Operand Delivery in Traditional GPU: <a class="reference internal" href="#no-regless"><span class="std std-numref">Fig. 74</span></a>:</p>
+<figure class="align-default" id="id70">
 <span id="no-regless"></span><div class="graphviz"><img src="_images/graphviz-bd33b042318ecfdaa386dbde3588947469e0c564.png" alt="digraph TraditionalOperandDelivery {
      rankdir=LR;       
      node [shape=box, style=filled, fontname=&quot;Helvetica&quot;, fontsize=10];
@@ -1587,8 +1618,8 @@ architecture that employs operand staging and register file-local coherence.</p>
      L1 -&gt; EU [label=&quot;Cached Data (optional)&quot;, style=dashed];
    }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 71 </span><span class="caption-text"><strong>Operand Delivery in Traditional GPU
-(Traditional Model: Register File + L1 Cache)</strong></span><a class="headerlink" href="#id68" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 74 </span><span class="caption-text"><strong>Operand Delivery in Traditional GPU
+(Traditional Model: Register File + L1 Cache)</strong></span><a class="headerlink" href="#id70" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <dl class="simple">
@@ -1618,8 +1649,8 @@ thread</span></a>)</p></li>
 <span class="c1"># All operands reside in register file and may be cached in L1</span>
 </pre></div>
 </div>
-<p>✅ Operand Delivery in RegLess GPU (with L1 Cache in LD Path): <a class="reference internal" href="#regless"><span class="std std-numref">Fig. 72</span></a>:</p>
-<figure class="align-default" id="id69">
+<p>✅ Operand Delivery in RegLess GPU (with L1 Cache in LD Path): <a class="reference internal" href="#regless"><span class="std std-numref">Fig. 75</span></a>:</p>
+<figure class="align-default" id="id71">
 <span id="regless"></span><div class="graphviz"><img src="_images/graphviz-046ca113194c53e32adcabaed1f027734e64e7a4.png" alt="digraph RegLessOperandDeliveryWithL1 {
      rankdir=LR;
      node [shape=box, style=filled, fontname=&quot;Helvetica&quot;, fontsize=10];
@@ -1655,7 +1686,7 @@ thread</span></a>)</p></li>
      RF -&gt; RF [label=&quot;Internal Coherence&quot;, color=green];
    }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 72 </span><span class="caption-text"><strong>Operand Delivery in RegLess GPU (with L1 Cache in LD Path)</strong></span><a class="headerlink" href="#id69" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 75 </span><span class="caption-text"><strong>Operand Delivery in RegLess GPU (with L1 Cache in LD Path)</strong></span><a class="headerlink" href="#id71" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>Description</p>
@@ -1739,11 +1770,11 @@ burdening the instruction stream with excessive metadata.</p>
 </section>
 </section>
 <section id="specialized-units">
-<h2><a class="toc-backref" href="#id96" role="doc-backlink">Specialized Units</a><a class="headerlink" href="#specialized-units" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id98" role="doc-backlink">Specialized Units</a><a class="headerlink" href="#specialized-units" title="Link to this heading">¶</a></h2>
 <p>As shown in <cite>section GPU Hardware Units</cite>,
 the stages of the OpenGL rendering pipeline and the GPU hardware units
-that accelerate them as shown in <a class="reference internal" href="#ogl-pipeline-hw2"><span class="std std-numref">Fig. 73</span></a>:</p>
-<figure class="align-default" id="id70">
+that accelerate them as shown in <a class="reference internal" href="#ogl-pipeline-hw2"><span class="std std-numref">Fig. 76</span></a>:</p>
+<figure class="align-default" id="id72">
 <span id="ogl-pipeline-hw2"></span><div class="graphviz"><img src="_images/graphviz-c9358e8b6218d8f7f1a13fac7ddd6a4772b42720.png" alt="digraph OpenGL_GPU_Mapping {
     rankdir=TB;
 
@@ -1832,24 +1863,24 @@ that accelerate them as shown in <a class="reference internal" href="#ogl-pipeli
     { rank = same; Coalescing; GatherScatter }
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 73 </span><span class="caption-text">The stages of OpenGL pipeline and GPU’s acceleration components</span><a class="headerlink" href="#id70" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 76 </span><span class="caption-text">The stages of OpenGL pipeline and GPU’s acceleration components</span><a class="headerlink" href="#id72" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>We now explain how these GPU hardware acceleration units—Geometry Units,
 Rasterization Units, Texture Mapping Units (TMUs), and Render Output Units (ROPs)
 —- work together with SMs to provide GPU-ISA instructions that accelerate the
-graphics pipeline illustrated in <a class="reference internal" href="#short-rendering-pipeline2"><span class="std std-numref">Fig. 74</span></a> of
+graphics pipeline illustrated in <a class="reference internal" href="#short-rendering-pipeline2"><span class="std std-numref">Fig. 77</span></a> of
 section <a class="reference internal" href="opengl.html#rendering3d"><span class="std std-ref">3D Rendering</span></a>.</p>
 <p class="rubric">Figure illustrated in section 3D Rendering</p>
-<figure class="align-center" id="id71">
+<figure class="align-center" id="id73">
 <span id="short-rendering-pipeline2"></span><a class="reference internal image-reference" href="_images/short-rendering-pipeline.png"><img alt="_images/short-rendering-pipeline.png" height="347" src="_images/short-rendering-pipeline.png" width="915" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 74 </span><span class="caption-text">3D Graphics Rendering Pipeline <a class="footnote-reference brackets" href="#cg-basictheory" id="id30" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id71" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 77 </span><span class="caption-text">3D Graphics Rendering Pipeline <a class="footnote-reference brackets" href="#cg-basictheory" id="id30" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id73" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <section id="geometry-units">
-<h3><a class="toc-backref" href="#id97" role="doc-backlink">Geometry Units</a><a class="headerlink" href="#geometry-units" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id99" role="doc-backlink">Geometry Units</a><a class="headerlink" href="#geometry-units" title="Link to this heading">¶</a></h3>
 <p><strong>Function:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Raw Vertices &amp; Primitives → Transformed Vertices &amp; Primitives
 </pre></div>
@@ -1871,8 +1902,8 @@ section <a class="reference internal" href="opengl.html#rendering3d"><span class
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>The corresponding PTX instructions and pipeline flow as <a class="reference internal" href="#sm-geometry"><span class="std std-numref">Fig. 75</span></a>.</p>
-<figure class="align-default" id="id72">
+<p>The corresponding PTX instructions and pipeline flow as <a class="reference internal" href="#sm-geometry"><span class="std std-numref">Fig. 78</span></a>.</p>
+<figure class="align-default" id="id74">
 <span id="sm-geometry"></span><div class="graphviz"><img src="_images/graphviz-3520d4c71614f02e3751f7366f08dc83bbc2df60.png" alt="digraph SM_Geometry_Assembly {
   rankdir=LR;
   bgcolor=&quot;white&quot;;
@@ -1968,7 +1999,7 @@ section <a class="reference internal" href="opengl.html#rendering3d"><span class
   { rank = same; OutRegs; GeoUnit; Rasterizer }
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 75 </span><span class="caption-text">Fetch a sequence of Geometry instructions and pass to Geometry Unit</span><a class="headerlink" href="#id72" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 78 </span><span class="caption-text">Fetch a sequence of Geometry instructions and pass to Geometry Unit</span><a class="headerlink" href="#id74" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>The <strong>Geometry Unit</strong> in a GPU is a collection of fixed-function and programmable stages
@@ -1980,8 +2011,8 @@ When we say emit and cut in NVIDIA PTX (or HLSL/GLSL geometry shaders), they’r
 not ALU instructions that run in the SM like add or mul. Instead, they act like
 special control instructions that tell the GPU’s fixed-function Geometry Unit
 what to do with the vertex data currently in the SM’s output registers
-illustrated in <a class="reference internal" href="#emit-cut-flow"><span class="std std-numref">Fig. 76</span></a>.</p>
-<figure class="align-default" id="id73">
+illustrated in <a class="reference internal" href="#emit-cut-flow"><span class="std std-numref">Fig. 79</span></a>.</p>
+<figure class="align-default" id="id75">
 <span id="emit-cut-flow"></span><div class="graphviz"><img src="_images/graphviz-29decf5480a0516f56f24779af6154d2a5a50c3f.png" alt="digraph EmitCut_Flow {
     rankdir=LR;
     fontsize=12;
@@ -2039,15 +2070,15 @@ illustrated in <a class="reference internal" href="#emit-cut-flow"><span class="
     legend [shape=note, label=&quot;LEGEND:\nEmitVertex() = vertex data write\nEndPrimitive() = mark primitive end\nSM → FIFO → Geometry Unit → Rasterizer&quot;, fontsize=10];
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 76 </span><span class="caption-text">Micro-level flow: SM → Geometry Unit via Emit/Cut</span><a class="headerlink" href="#id73" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 79 </span><span class="caption-text">Micro-level flow: SM → Geometry Unit via Emit/Cut</span><a class="headerlink" href="#id75" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>Unlike GLSL textures, which are converted into a specific hardware ISA, the
-Geometry Shader in <a class="reference internal" href="#ogl-pipeline-hw2"><span class="std std-numref">Fig. 73</span></a> maps directly to the Geometry
+Geometry Shader in <a class="reference internal" href="#ogl-pipeline-hw2"><span class="std std-numref">Fig. 76</span></a> maps directly to the Geometry
 Units instead of the SMs.</p>
 <p>Geometry Unit bridges the <strong>vertex shading</strong> stage and the <strong>rasterization</strong>
-stage as shown in <a class="reference internal" href="#geometry-unit"><span class="std std-numref">Fig. 77</span></a>.</p>
-<figure class="align-default" id="id74">
+stage as shown in <a class="reference internal" href="#geometry-unit"><span class="std std-numref">Fig. 80</span></a>.</p>
+<figure class="align-default" id="id76">
 <span id="geometry-unit"></span><div class="graphviz"><img src="_images/graphviz-13c3d7422428bc9890e18baa9b965b70ae1a63b2.png" alt="digraph Geometry_Unit {
   rankdir=TB;
   bgcolor=&quot;white&quot;;
@@ -2170,8 +2201,8 @@ stage as shown in <a class="reference internal" href="#geometry-unit"><span clas
   { rank = same; Culling; Viewport; Setup }
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 77 </span><span class="caption-text">Geometry Unit with its sub-functions (assembly, tessellation,
-clipping, viewport transform, etc.)</span><a class="headerlink" href="#id74" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 80 </span><span class="caption-text">Geometry Unit with its sub-functions (assembly, tessellation,
+clipping, viewport transform, etc.)</span><a class="headerlink" href="#id76" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>Role</p>
@@ -2246,7 +2277,7 @@ are interpolated correctly.</p></li>
 </ul>
 </section>
 <section id="rasterization-units">
-<h3><a class="toc-backref" href="#id98" role="doc-backlink">Rasterization Units <a class="footnote-reference brackets" href="#raster-unit" id="id31" role="doc-noteref"><span class="fn-bracket">[</span>25<span class="fn-bracket">]</span></a></a><a class="headerlink" href="#rasterization-units" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id100" role="doc-backlink">Rasterization Units <a class="footnote-reference brackets" href="#raster-unit" id="id31" role="doc-noteref"><span class="fn-bracket">[</span>25<span class="fn-bracket">]</span></a></a><a class="headerlink" href="#rasterization-units" title="Link to this heading">¶</a></h3>
 <p><strong>Function:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Transformed Vertices &amp; Primitives → Fragments
 </pre></div>
@@ -2257,8 +2288,8 @@ modern GPUs. It converts geometric primitives (typically triangles) into
 fragments that correspond to pixels on the screen. This process is essential
 for rendering 3D scenes into 2D images.</p>
 <p>The pipeline flow for Rasterization Units is shown as
-<a class="reference internal" href="#rasterization-pipeline"><span class="std std-numref">Fig. 78</span></a>.</p>
-<figure class="align-default" id="id75">
+<a class="reference internal" href="#rasterization-pipeline"><span class="std std-numref">Fig. 81</span></a>.</p>
+<figure class="align-default" id="id77">
 <span id="rasterization-pipeline"></span><div class="graphviz"><img src="_images/graphviz-e4e264eb12ed55639b742c87dc6a166c299316ea.png" alt="digraph RasterizationPipeline {
     rankdir=TB;
     node [shape=box, style=filled, fillcolor=lightgray];
@@ -2281,7 +2312,7 @@ for rendering 3D scenes into 2D images.</p>
     { rank = same; FragmentGeneration; FragmentShader }
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 78 </span><span class="caption-text">Rasterization pipeline</span><a class="headerlink" href="#id75" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 81 </span><span class="caption-text">Rasterization pipeline</span><a class="headerlink" href="#id77" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>Key Functions</p>
@@ -2326,7 +2357,7 @@ tests.</p></li>
 </ul>
 </section>
 <section id="texture-mapping-units-tmus">
-<h3><a class="toc-backref" href="#id99" role="doc-backlink">Texture Mapping Units (TMUs) <a class="footnote-reference brackets" href="#tpu" id="id32" role="doc-noteref"><span class="fn-bracket">[</span>26<span class="fn-bracket">]</span></a></a><a class="headerlink" href="#texture-mapping-units-tmus" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id101" role="doc-backlink">Texture Mapping Units (TMUs) <a class="footnote-reference brackets" href="#tpu" id="id32" role="doc-noteref"><span class="fn-bracket">[</span>26<span class="fn-bracket">]</span></a></a><a class="headerlink" href="#texture-mapping-units-tmus" title="Link to this heading">¶</a></h3>
 <p><strong>Function:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Fragments → Processed Fragments
 </pre></div>
@@ -2338,12 +2369,12 @@ responsible for <em>fetching, filtering, and preparing texture data</em> that sh
 <p>As explained in previous
 <a class="reference internal" href="opengl.html#opengl-shader-compiler"><span class="std std-ref">section OpenGL Shader Compiler</span></a>, the texture
 instruction using TMU to accelerate calculation as the following explanation
-with <a class="reference internal" href="#texture-fetch"><span class="std std-numref">Fig. 79</span></a>.</p>
+with <a class="reference internal" href="#texture-fetch"><span class="std std-numref">Fig. 82</span></a>.</p>
 <p>TMUs sit between the shader cores (SMs/CUs) and the memory subsystem.
 They provide high-performance, specialized texture access operations that
 would be too slow or costly to emulate in general-purpose ALUs is shown as
-<a class="reference internal" href="#texture-fetch"><span class="std std-numref">Fig. 79</span></a>.</p>
-<figure class="align-default" id="id76">
+<a class="reference internal" href="#texture-fetch"><span class="std std-numref">Fig. 82</span></a>.</p>
+<figure class="align-default" id="id78">
 <span id="texture-fetch"></span><div class="graphviz"><img src="_images/graphviz-1bc38c98eb64118abe67a5585e6045ed178dc3d4.png" alt="digraph TextureFetch {
   rankdir=TB;
   node [shape=box, fontname=&quot;Helvetica&quot;, fontsize=10, style=rounded];
@@ -2369,7 +2400,7 @@ would be too slow or costly to emulate in general-purpose ALUs is shown as
   { rank = same; VRAM }
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 79 </span><span class="caption-text">The flow of issuing texture instruction from SM to TMU.</span><a class="headerlink" href="#id76" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 82 </span><span class="caption-text">The flow of issuing texture instruction from SM to TMU.</span><a class="headerlink" href="#id78" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>Pipeline Role</p>
@@ -2385,8 +2416,8 @@ and texture sampling.</p></li>
 <li><p>Texture Addressing</p>
 <ul>
 <li><p>Compute the correct texture coordinate for a given fragment or pixel.</p></li>
-<li><p>Handle the following wrapping modes are shown as <a class="reference internal" href="#texture-wrap-2"><span class="std std-numref">Fig. 80</span></a>
-and as <a class="reference internal" href="#texture-wrap"><span class="std std-numref">Fig. 81</span></a>:</p>
+<li><p>Handle the following wrapping modes are shown as <a class="reference internal" href="#texture-wrap-2"><span class="std std-numref">Fig. 83</span></a>
+and as <a class="reference internal" href="#texture-wrap"><span class="std std-numref">Fig. 84</span></a>:</p>
 <p>Texture coordinates usually range from (0,0) to (1,1) but what happens if
 we specify coordinates outside this range? OpenGL provides the following
 wrapping modes for outside this range.</p>
@@ -2411,18 +2442,18 @@ the mirroring includes both left-right and up-down swaps.</p></li>
 </ul>
 </li>
 </ul>
-<figure class="align-center" id="id77">
+<figure class="align-center" id="id79">
 <span id="texture-wrap-2"></span><a class="reference internal image-reference" href="_images/texture-wrap-2.png"><img alt="_images/texture-wrap-2.png" height="186" src="_images/texture-wrap-2.png" width="669" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 80 </span><span class="caption-text">Texture Warpping</span><a class="headerlink" href="#id77" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 83 </span><span class="caption-text">Texture Warpping</span><a class="headerlink" href="#id79" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
-<figure class="align-center" id="id78">
+<figure class="align-center" id="id80">
 <span id="texture-wrap"></span><a class="reference internal image-reference" href="_images/texture-wrap.png"><img alt="_images/texture-wrap.png" height="168" src="_images/texture-wrap.png" width="597" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 81 </span><span class="caption-text">Texture Warpping <a class="footnote-reference brackets" href="#texturewrapper" id="id33" role="doc-noteref"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id78" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 84 </span><span class="caption-text">Texture Warpping <a class="footnote-reference brackets" href="#texturewrapper" id="id33" role="doc-noteref"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id80" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </li>
@@ -2447,19 +2478,19 @@ then L2/VRAM on miss).</p></li>
 <li><p>Perform <em>interpolation</em> between texels to produce smooth visual results.</p></li>
 <li><p>Filtering requires multiple texel reads + weighted average calculations.</p></li>
 <li><p>Common filtering modes as the following are shown as
-<a class="reference internal" href="#texture-filter"><span class="std std-numref">Fig. 84</span></a>:</p>
+<a class="reference internal" href="#texture-filter"><span class="std std-numref">Fig. 87</span></a>:</p>
 <ul>
 <li><p>Nearest-neighbor (point sampling) (GL_NEAREST)</p>
 <ul>
 <li><p>When set to GL_NEAREST, OpenGL selects the color of the texel that
 center is closest to the texture coordinate shown as the example in
-<a class="reference internal" href="#nearest"><span class="std std-numref">Fig. 82</span></a>. ‘+’ is the coordinates of texel.
+<a class="reference internal" href="#nearest"><span class="std std-numref">Fig. 85</span></a>. ‘+’ is the coordinates of texel.
 ‘Returns’ is the color of result.</p>
-<figure class="align-center" id="id79">
+<figure class="align-center" id="id81">
 <span id="nearest"></span><a class="reference internal image-reference" href="_images/nearest.png"><img alt="_images/nearest.png" height="98" src="_images/nearest.png" width="162" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 82 </span><span class="caption-text">GL_NEAREST <a class="footnote-reference brackets" href="#texturewrapper" id="id34" role="doc-noteref"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id79" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 85 </span><span class="caption-text">GL_NEAREST <a class="footnote-reference brackets" href="#texturewrapper" id="id34" role="doc-noteref"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id81" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </li>
@@ -2470,12 +2501,12 @@ center is closest to the texture coordinate shown as the example in
 <li><p>The return color is the mix of four neighboring pixels. The smaller
 the distance from the texture coordinate to a texel’s center, the more
 that texel’s color contributes to the sampled color shown as the
-example in <a class="reference internal" href="#linear"><span class="std std-numref">Fig. 83</span></a>.</p>
-<figure class="align-center" id="id80">
+example in <a class="reference internal" href="#linear"><span class="std std-numref">Fig. 86</span></a>.</p>
+<figure class="align-center" id="id82">
 <span id="linear"></span><a class="reference internal image-reference" href="_images/linear.png"><img alt="_images/linear.png" height="97" src="_images/linear.png" width="152" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 83 </span><span class="caption-text">GL_LINEAR <a class="footnote-reference brackets" href="#texturewrapper" id="id35" role="doc-noteref"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id80" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 86 </span><span class="caption-text">GL_LINEAR <a class="footnote-reference brackets" href="#texturewrapper" id="id35" role="doc-noteref"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id82" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </li>
@@ -2486,15 +2517,15 @@ example in <a class="reference internal" href="#linear"><span class="std std-num
 <li><p>Let’s see how these methods work when using a texture with a low
 resolution on a large object (texture is therefore scaled upwards and
 individual texels are noticeable). The GL_NEAREST and GL_LINEAR as the
-following <a class="reference internal" href="#texture-filter"><span class="std std-numref">Fig. 84</span></a>.
+following <a class="reference internal" href="#texture-filter"><span class="std std-numref">Fig. 87</span></a>.
 As result, GL_LINEAR produces a more blurred color and smooth edge’s
 output.</p>
-<figure class="align-center" id="id81">
+<figure class="align-center" id="id83">
 <span id="texture-filter"></span><a class="reference internal image-reference" href="_images/texture-filter.png"><img alt="_images/texture-filter.png" height="534" src="_images/texture-filter.png" width="1080" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 84 </span><span class="caption-text">Texture Filter: GL_NEAREST has sharp color and jagged edge
-<a class="footnote-reference brackets" href="#texturewrapper" id="id36" role="doc-noteref"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id81" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 87 </span><span class="caption-text">Texture Filter: GL_NEAREST has sharp color and jagged edge
+<a class="footnote-reference brackets" href="#texturewrapper" id="id36" role="doc-noteref"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id83" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </li>
@@ -2559,7 +2590,7 @@ in realistic rendering.</p></li>
 resulting in drastically lower performance and efficiency.</p>
 </section>
 <section id="render-output-units-rops">
-<h3><a class="toc-backref" href="#id100" role="doc-backlink">Render Output Units (ROPs) <a class="footnote-reference brackets" href="#rops" id="id37" role="doc-noteref"><span class="fn-bracket">[</span>28<span class="fn-bracket">]</span></a></a><a class="headerlink" href="#render-output-units-rops" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id102" role="doc-backlink">Render Output Units (ROPs) <a class="footnote-reference brackets" href="#rops" id="id37" role="doc-noteref"><span class="fn-bracket">[</span>28<span class="fn-bracket">]</span></a></a><a class="headerlink" href="#render-output-units-rops" title="Link to this heading">¶</a></h3>
 <p><strong>Function:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Processed Fragments → Pixels
 </pre></div>
@@ -2579,8 +2610,8 @@ buffers.</p></li>
 <li><p><strong>Multisample Resolve</strong>: Merges multiple samples into a final pixel (for MSAA).</p></li>
 <li><p><strong>Framebuffer Write</strong>: Commits final pixel data to memory for display.</p></li>
 </ul>
-<p>The pipeline flow is shown as <a class="reference internal" href="#render-output-pipeline"><span class="std std-numref">Fig. 85</span></a>.</p>
-<figure class="align-default" id="id82">
+<p>The pipeline flow is shown as <a class="reference internal" href="#render-output-pipeline"><span class="std std-numref">Fig. 88</span></a>.</p>
+<figure class="align-default" id="id84">
 <span id="render-output-pipeline"></span><div class="graphviz"><img src="_images/graphviz-1920b7fefd29ca5ab8e864cb21aa89e42bb5c963.png" alt="digraph RenderOutputPipeline {
     rankdir=LR;
     node [shape=box, style=filled, fillcolor=lightgray];
@@ -2595,7 +2626,7 @@ buffers.</p></li>
     FramebufferWrite [label=&quot;Framebuffer Write&quot;, fillcolor=lightblue];
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 85 </span><span class="caption-text">The pipeline for Render Output Units (ROPs)</span><a class="headerlink" href="#id82" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 88 </span><span class="caption-text">The pipeline for Render Output Units (ROPs)</span><a class="headerlink" href="#id84" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>Performance Considerations</p>
@@ -2627,11 +2658,11 @@ rendering.</p></li>
 </section>
 </section>
 <section id="system-features-buffers">
-<h2><a class="toc-backref" href="#id101" role="doc-backlink">System Features – Buffers</a><a class="headerlink" href="#system-features-buffers" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id103" role="doc-backlink">System Features – Buffers</a><a class="headerlink" href="#system-features-buffers" title="Link to this heading">¶</a></h2>
 <p>CPU and GPU provides different
 Buffers to speedup OpenGL pipeline rendering <a class="footnote-reference brackets" href="#buffers-redbook" id="id38" role="doc-noteref"><span class="fn-bracket">[</span>30<span class="fn-bracket">]</span></a>.</p>
-<table class="docutils align-default" id="id83">
-<caption><span class="caption-number">Table 10 </span><span class="caption-text">Graphics Buffers</span><a class="headerlink" href="#id83" title="Link to this table">¶</a></caption>
+<table class="docutils align-default" id="id85">
+<caption><span class="caption-number">Table 10 </span><span class="caption-text">Graphics Buffers</span><a class="headerlink" href="#id85" title="Link to this table">¶</a></caption>
 <colgroup>
 <col style="width: 20.0%" />
 <col style="width: 10.0%" />
@@ -2748,8 +2779,8 @@ seen, a framebuffer is an area in memory that can be rendered to
 rendering (stenciling) <a class="footnote-reference brackets" href="#stencils-buffer-wiki" id="id44" role="doc-noteref"><span class="fn-bracket">[</span>36<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#depthstencils-ogl" id="id45" role="doc-noteref"><span class="fn-bracket">[</span>34<span class="fn-bracket">]</span></a>.</p>
 </li>
 </ul>
-<table class="docutils align-default" id="id84">
-<caption><span class="caption-number">Table 11 </span><span class="caption-text">Compute Buffers</span><a class="headerlink" href="#id84" title="Link to this table">¶</a></caption>
+<table class="docutils align-default" id="id86">
+<caption><span class="caption-number">Table 11 </span><span class="caption-text">Compute Buffers</span><a class="headerlink" href="#id86" title="Link to this table">¶</a></caption>
 <colgroup>
 <col style="width: 20.0%" />
 <col style="width: 10.0%" />
@@ -2804,8 +2835,8 @@ GPU acceleration.</p></li>
 <li><p>Indirect Draw Buffer: A GPU-side buffer holding draw parameters so that GPU
 (not CPU) can issue rendering work dynamically.</p></li>
 </ul>
-<table class="docutils align-default" id="id85">
-<caption><span class="caption-number">Table 12 </span><span class="caption-text">System-Level and Utility Buffers</span><a class="headerlink" href="#id85" title="Link to this table">¶</a></caption>
+<table class="docutils align-default" id="id87">
+<caption><span class="caption-number">Table 12 </span><span class="caption-text">System-Level and Utility Buffers</span><a class="headerlink" href="#id87" title="Link to this table">¶</a></caption>
 <colgroup>
 <col style="width: 20.0%" />
 <col style="width: 10.0%" />

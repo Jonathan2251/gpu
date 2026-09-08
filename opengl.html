@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/haiku.css?v=fce32b03" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
-    <script src="_static/documentation_options.js?v=b489f392"></script>
+    <script src="_static/documentation_options.js?v=7f00635f"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
@@ -41,36 +41,37 @@
 <span id="id1"></span><h1>OpenGL<a class="headerlink" href="#opengl" title="Link to this heading">¶</a></h1>
 <nav class="contents local" id="contents">
 <ul class="simple">
-<li><p><a class="reference internal" href="#example-of-opengl-program" id="id89">Example of OpenGL program</a></p></li>
-<li><p><a class="reference internal" href="#d-rendering" id="id90">3D Rendering</a></p>
+<li><p><a class="reference internal" href="#example-of-opengl-program" id="id92">Example of OpenGL program</a></p></li>
+<li><p><a class="reference internal" href="#d-rendering" id="id93">3D Rendering</a></p>
 <ul>
-<li><p><a class="reference internal" href="#animation-parameters" id="id91">Animation Parameters</a></p></li>
-<li><p><a class="reference internal" href="#d-rendering-pipeline" id="id92">3D Rendering Pipeline</a></p></li>
-<li><p><a class="reference internal" href="#tessellation-example" id="id93">Tessellation Example</a></p></li>
-<li><p><a class="reference internal" href="#mobile-gpu-3d-rendering" id="id94">Mobile GPU 3D Rendering</a></p>
+<li><p><a class="reference internal" href="#animation-parameters" id="id94">Animation Parameters</a></p></li>
+<li><p><a class="reference internal" href="#d-rendering-pipeline" id="id95">3D Rendering Pipeline</a></p></li>
+<li><p><a class="reference internal" href="#tessellation-example" id="id96">Tessellation Example</a></p></li>
+<li><p><a class="reference internal" href="#mobile-gpu-3d-rendering" id="id97">Mobile GPU 3D Rendering</a></p>
 <ul>
-<li><p><a class="reference internal" href="#tbdr-tilebased-deferred-rendering" id="id95">TBDR — Tile‑Based Deferred Rendering</a></p></li>
-<li><p><a class="reference internal" href="#tbdr-rendering" id="id96">TBDR Rendering</a></p></li>
+<li><p><a class="reference internal" href="#tbdr-tilebased-deferred-rendering" id="id98">TBDR — Tile‑Based Deferred Rendering</a></p></li>
+<li><p><a class="reference internal" href="#tbdr-rendering" id="id99">TBDR Rendering</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#mesh-shader-pipeline" id="id97">Mesh-Shader Pipeline</a></p></li>
-<li><p><a class="reference internal" href="#animation-example" id="id98">Animation Example</a></p></li>
+<li><p><a class="reference internal" href="#mesh-shader-pipeline" id="id100">Mesh-Shader Pipeline</a></p></li>
+<li><p><a class="reference internal" href="#animation-example" id="id101">Animation Example</a></p></li>
+<li><p><a class="reference internal" href="#ray-tracing-pipeline" id="id102">Ray Tracing Pipeline</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#glsl-gl-shader-language" id="id99">GLSL (GL Shader Language)</a></p>
+<li><p><a class="reference internal" href="#glsl-gl-shader-language" id="id103">GLSL (GL Shader Language)</a></p>
 <ul>
-<li><p><a class="reference internal" href="#background" id="id100">Background</a></p></li>
-<li><p><a class="reference internal" href="#examples" id="id101">Examples</a></p></li>
-<li><p><a class="reference internal" href="#goals" id="id102">Goals</a></p></li>
-<li><p><a class="reference internal" href="#glsl-vs-c-feature-overview" id="id103">GLSL vs. C: Feature Overview</a></p></li>
-<li><p><a class="reference internal" href="#glsl-qualifiers-by-shader-stage" id="id104">GLSL Qualifiers by Shader Stage</a></p></li>
+<li><p><a class="reference internal" href="#background" id="id104">Background</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id105">Examples</a></p></li>
+<li><p><a class="reference internal" href="#goals" id="id106">Goals</a></p></li>
+<li><p><a class="reference internal" href="#glsl-vs-c-feature-overview" id="id107">GLSL vs. C: Feature Overview</a></p></li>
+<li><p><a class="reference internal" href="#glsl-qualifiers-by-shader-stage" id="id108">GLSL Qualifiers by Shader Stage</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#opengl-shader-compiler" id="id105">OpenGL Shader Compiler</a></p></li>
+<li><p><a class="reference internal" href="#opengl-shader-compiler" id="id109">OpenGL Shader Compiler</a></p></li>
 </ul>
 </nav>
 <section id="example-of-opengl-program">
-<h2><a class="toc-backref" href="#id89" role="doc-backlink">Example of OpenGL program</a><a class="headerlink" href="#example-of-opengl-program" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id92" role="doc-backlink">Example of OpenGL program</a><a class="headerlink" href="#example-of-opengl-program" title="Link to this heading">¶</a></h2>
 <p>The following example is from the OpenGL Red Book and its example code
 <a class="footnote-reference brackets" href="#redbook" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#redbook-examples" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</p>
 <p class="rubric">References/triangles.vert</p>
@@ -339,7 +340,7 @@ the GPU (once per vertex)! We can also expect all 6 instances of the shader to
 be executed in parallel, since a GPU have so many cores.</p>
 </section>
 <section id="d-rendering">
-<span id="rendering3d"></span><h2><a class="toc-backref" href="#id90" role="doc-backlink">3D Rendering</a><a class="headerlink" href="#d-rendering" title="Link to this heading">¶</a></h2>
+<span id="rendering3d"></span><h2><a class="toc-backref" href="#id93" role="doc-backlink">3D Rendering</a><a class="headerlink" href="#d-rendering" title="Link to this heading">¶</a></h2>
 <p>3D animation is the process of creating moving images by manipulating digital
 objects within a three‑dimensional space.
 3D rendering is the process of converting 3D models into 2D images on a
@@ -352,7 +353,7 @@ image for each frame according the 3D Inforamtion and Uniform Updates sent from
 CPU, and write each of the final frame of data in the form of color pixels to
 framebuffer (video memory) as <a class="reference internal" href="hw-sw-stack.html#in-out-rendering"><span class="std std-numref">Fig. 10</span></a>.</p>
 <section id="animation-parameters">
-<span id="id15"></span><h3><a class="toc-backref" href="#id91" role="doc-backlink">Animation Parameters</a><a class="headerlink" href="#animation-parameters" title="Link to this heading">¶</a></h3>
+<span id="id15"></span><h3><a class="toc-backref" href="#id94" role="doc-backlink">Animation Parameters</a><a class="headerlink" href="#animation-parameters" title="Link to this heading">¶</a></h3>
 <p>✅ CPU only updates small animation parameters named <strong>Uniform Updates</strong> as
 appeared in <a class="reference internal" href="hw-sw-stack.html#graphic-sw-stack-2"><span class="std std-numref">Fig. 9</span></a>; GPU computes the heavy per‑vertex work.</p>
 <p>The 3D animation will
@@ -430,13 +431,13 @@ trigger the 3D rendering process for each 2D image drawing accoriding the
 small CPU‑updated data that the GPU reads during shading.</p>
 </section>
 <section id="d-rendering-pipeline">
-<span id="three-d-rendering-pipeline"></span><h3><a class="toc-backref" href="#id92" role="doc-backlink">3D Rendering Pipeline</a><a class="headerlink" href="#d-rendering-pipeline" title="Link to this heading">¶</a></h3>
+<span id="three-d-rendering-pipeline"></span><h3><a class="toc-backref" href="#id95" role="doc-backlink">3D Rendering Pipeline</a><a class="headerlink" href="#d-rendering-pipeline" title="Link to this heading">¶</a></h3>
 <p>The steps are shown in <a class="reference internal" href="#short-rendering-pipeline"><span class="std std-numref">Fig. 33</span></a>.</p>
-<figure class="align-center" id="id61">
+<figure class="align-center" id="id63">
 <span id="short-rendering-pipeline"></span><a class="reference internal image-reference" href="_images/short-rendering-pipeline.png"><img alt="_images/short-rendering-pipeline.png" height="347" src="_images/short-rendering-pipeline.png" width="915" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 33 </span><span class="caption-text">3D Graphics Rendering Pipeline <a class="footnote-reference brackets" href="#cg-basictheory" id="id16" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id61" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 33 </span><span class="caption-text">3D Graphics Rendering Pipeline <a class="footnote-reference brackets" href="#cg-basictheory" id="id16" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id63" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <ul class="simple">
@@ -463,28 +464,28 @@ Primitive Assembly (fixed-function) and Primitive Setup (fixed-function).</p>
 <col style="width: 70.0%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><figure class="align-default" id="id62">
+<tr class="row-odd"><td><figure class="align-default" id="id64">
 <span id="rp-left"></span><a class="reference internal image-reference" href="_images/rendering_pipeline.png"><img alt="_images/rendering_pipeline.png" height="292" src="_images/rendering_pipeline.png" width="126" />
 </a>
 <figcaption>
 <p><span class="caption-number">Fig. 34 </span><span class="caption-text">Diagram of the Rendering Pipeline. The blue boxes are programmable
 shader stages. Shaders with dashed outlines indicate optional shader
-stages.</span><a class="headerlink" href="#id62" title="Link to this image">¶</a></p>
+stages.</span><a class="headerlink" href="#id64" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </td>
-<td><figure class="align-default" id="id63">
+<td><figure class="align-default" id="id65">
 <span id="rp-right"></span><a class="reference internal image-reference" href="_images/OpenGL-pipeline.png"><img alt="_images/OpenGL-pipeline.png" height="326" src="_images/OpenGL-pipeline.png" width="512" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 35 </span><span class="caption-text">OpenGL pipeline in blue book</span><a class="headerlink" href="#id63" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 35 </span><span class="caption-text">OpenGL pipeline in blue book</span><a class="headerlink" href="#id65" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </td>
 </tr>
 </tbody>
 </table>
-<figure class="align-default" id="id64">
+<figure class="align-default" id="id66">
 <span id="gpu-pipeline"></span><div class="graphviz"><img src="_images/graphviz-0bf2423624181ecfd1a4422a4479bcc85a0dca9a.png" alt="digraph GPU_Pipeline {
     rankdir=LR;
     node [shape=box, style=rounded, fontsize=12];
@@ -539,7 +540,7 @@ stages.</span><a class="headerlink" href="#id62" title="Link to this image">¶</
     { rank = same; FS; FB }
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 36 </span><span class="caption-text">Modern GPU Pipeline</span><a class="headerlink" href="#id64" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 36 </span><span class="caption-text">Modern GPU Pipeline</span><a class="headerlink" href="#id66" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>As shown in <a class="reference internal" href="#gpu-pipeline"><span class="std std-numref">Fig. 36</span></a>:</p>
@@ -580,7 +581,7 @@ they <strong>never show Animation Parameters as part of the rendering flow</stro
 The animation flow from CPU to GPU is shown in
 <a class="reference internal" href="#short-rendering-pipeline-shaders-cpu-gpu"><span class="std std-numref">Fig. 37</span></a>, based on
 <a class="reference internal" href="#short-rendering-pipeline"><span class="std std-numref">Fig. 33</span></a>.</p>
-<figure class="align-default" id="id65">
+<figure class="align-default" id="id67">
 <span id="short-rendering-pipeline-shaders-cpu-gpu"></span><div class="graphviz"><img src="_images/graphviz-78b8444233f6768a7fb19362c300b29ad5f807e7.png" alt="digraph CPU_GPU_Pipeline {
     rankdir=LR;
     node [shape=box, style=rounded, fontsize=12];
@@ -609,7 +610,7 @@ The animation flow from CPU to GPU is shown in
     FS -&gt; FB;
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 37 </span><span class="caption-text">CPU and GPU Pipeline For Shaders</span><a class="headerlink" href="#id65" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 37 </span><span class="caption-text">CPU and GPU Pipeline For Shaders</span><a class="headerlink" href="#id67" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>Each draw call may correspond to:</p>
@@ -627,9 +628,9 @@ pipeline is still applicable.</p>
 <p>However the following table from OpenGL rendering pipeline Figure 1.2 and its
 stages from the book <em>OpenGL Programming Guide, 9th Edition</em> <a class="footnote-reference brackets" href="#redbook" id="id18" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> is
 broad enough to cover animation.</p>
-<table class="docutils align-default" id="id66">
+<table class="docutils align-default" id="id68">
 <caption><span class="caption-number">Table 3 </span><span class="caption-text">OpenGL rendering pipeline from page 10 and page 36 of book
-“OpenGL Programming Guide 9th Edition” <a class="footnote-reference brackets" href="#redbook" id="id19" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> and <a class="footnote-reference brackets" href="#rendering" id="id20" role="doc-noteref"><span class="fn-bracket">[</span>17<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id66" title="Link to this table">¶</a></caption>
+“OpenGL Programming Guide 9th Edition” <a class="footnote-reference brackets" href="#redbook" id="id19" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> and <a class="footnote-reference brackets" href="#rendering" id="id20" role="doc-noteref"><span class="fn-bracket">[</span>17<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id68" title="Link to this table">¶</a></caption>
 <colgroup>
 <col style="width: 25.0%" />
 <col style="width: 75.0%" />
@@ -720,9 +721,9 @@ be.</p></td>
 </tr>
 </tbody>
 </table>
-<table class="docutils align-default" id="id67">
+<table class="docutils align-default" id="id69">
 <caption><span class="caption-number">Table 4 </span><span class="caption-text">Continue OpenGL rendering pipeline from page 10 and page 36 of
-book “OpenGL Programming Guide 9th Edition” <a class="footnote-reference brackets" href="#redbook" id="id21" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> and <a class="footnote-reference brackets" href="#rendering" id="id22" role="doc-noteref"><span class="fn-bracket">[</span>17<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id67" title="Link to this table">¶</a></caption>
+book “OpenGL Programming Guide 9th Edition” <a class="footnote-reference brackets" href="#redbook" id="id21" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> and <a class="footnote-reference brackets" href="#rendering" id="id22" role="doc-noteref"><span class="fn-bracket">[</span>17<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id69" title="Link to this table">¶</a></caption>
 <colgroup>
 <col style="width: 25.0%" />
 <col style="width: 75.0%" />
@@ -798,7 +799,7 @@ The rasterizer can <strong>reduce fragments</strong>, but it cannot reduce verti
 <p>Sumarize the OpenGL Rendering Pipeline as shown in the
 <a class="reference internal" href="#imr-rendering-pipeline-1"><span class="std std-numref">Fig. 38</span></a> and
 <a class="reference internal" href="#imr-rendering-pipeline-2"><span class="std std-numref">Fig. 39</span></a>.</p>
-<figure class="align-default" id="id68">
+<figure class="align-default" id="id70">
 <span id="imr-rendering-pipeline-1"></span><div class="graphviz"><img src="_images/graphviz-ba04c637ee1adaf20982232a206c5d60a453c5c6.png" alt="digraph OpenGL_Pipeline_Part1 {
     rankdir=LR;
     node [shape=box, style=rounded, fontsize=12];
@@ -842,10 +843,10 @@ The rasterizer can <strong>reduce fragments</strong>, but it cannot reduce verti
     //{ rank = same; TCS; TES }
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 38 </span><span class="caption-text">The part 1 of GPU Rendering Pipeline Stages</span><a class="headerlink" href="#id68" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 38 </span><span class="caption-text">The part 1 of GPU Rendering Pipeline Stages</span><a class="headerlink" href="#id70" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
-<figure class="align-default" id="id69">
+<figure class="align-default" id="id71">
 <span id="imr-rendering-pipeline-2"></span><div class="graphviz"><img src="_images/graphviz-3c813ddb9e432947f1991ce338444f3762e3efcc.png" alt="digraph OpenGL_Pipeline_Part2 {
     rankdir=LR;
     node [shape=box, style=rounded, fontsize=12];
@@ -862,13 +863,13 @@ The rasterizer can <strong>reduce fragments</strong>, but it cannot reduce verti
     PF     -&gt; FB      [label=&quot;Final Fragments&quot;];
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 39 </span><span class="caption-text">The part 2 of GPU Rendering Pipeline Stages</span><a class="headerlink" href="#id69" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 39 </span><span class="caption-text">The part 2 of GPU Rendering Pipeline Stages</span><a class="headerlink" href="#id71" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>The data flow through the OpenGL Shader and the details flow
 in TCS, Fixed-Function Tessellator and TES are described in below.</p>
-<table class="docutils align-default" id="id70">
-<caption><span class="caption-number">Table 5 </span><span class="caption-text">Data Flow Through the OpenGL Shader Pipeline</span><a class="headerlink" href="#id70" title="Link to this table">¶</a></caption>
+<table class="docutils align-default" id="id72">
+<caption><span class="caption-number">Table 5 </span><span class="caption-text">Data Flow Through the OpenGL Shader Pipeline</span><a class="headerlink" href="#id72" title="Link to this table">¶</a></caption>
 <colgroup>
 <col style="width: 14.8%" />
 <col style="width: 25.9%" />
@@ -1010,8 +1011,8 @@ in TCS, Fixed-Function Tessellator and TES are described in below.</p>
 </tr>
 </tbody>
 </table>
-<table class="docutils align-default" id="id71">
-<caption><span class="caption-number">Table 6 </span><span class="caption-text">Data Flow Through the OpenGL Shader Pipeline Continue</span><a class="headerlink" href="#id71" title="Link to this table">¶</a></caption>
+<table class="docutils align-default" id="id73">
+<caption><span class="caption-number">Table 6 </span><span class="caption-text">Data Flow Through the OpenGL Shader Pipeline Continue</span><a class="headerlink" href="#id73" title="Link to this table">¶</a></caption>
 <colgroup>
 <col style="width: 14.8%" />
 <col style="width: 25.9%" />
@@ -1051,10 +1052,10 @@ in TCS, Fixed-Function Tessellator and TES are described in below.</p>
 </tr>
 <tr class="row-odd"><td><p>Fragment Shader</p></td>
 <td><ul class="simple">
+<li><p>gl_FragCoord</p></li>
 <li><p>Interpolated varyings</p></li>
 <li><p>Textures / samplers</p></li>
 <li><p>Uniforms</p></li>
-<li><p>gl_FragCoord</p></li>
 </ul>
 </td>
 <td><ul class="simple">
@@ -1108,8 +1109,8 @@ in TCS, Fixed-Function Tessellator and TES are described in below.</p>
 </ul>
 <p>It is called <strong>varying</strong> because its value <strong>varies across the surface of a
 triangle</strong>.</p>
-<table class="docutils align-default" id="id72">
-<caption><span class="caption-number">Table 7 </span><span class="caption-text">Examples of Common Varyings</span><a class="headerlink" href="#id72" title="Link to this table">¶</a></caption>
+<table class="docutils align-default" id="id74">
+<caption><span class="caption-number">Table 7 </span><span class="caption-text">Examples of Common Varyings</span><a class="headerlink" href="#id74" title="Link to this table">¶</a></caption>
 <colgroup>
 <col style="width: 22.2%" />
 <col style="width: 33.3%" />
@@ -1148,7 +1149,7 @@ multiple 2D models need to be created and switch these 2D models from face(flame
 face(flame) from time to time <a class="footnote-reference brackets" href="#danimation" id="id26" role="doc-noteref"><span class="fn-bracket">[</span>20<span class="fn-bracket">]</span></a>.</p>
 </section>
 <section id="tessellation-example">
-<span id="tessellation-ex"></span><h3><a class="toc-backref" href="#id93" role="doc-backlink">Tessellation Example</a><a class="headerlink" href="#tessellation-example" title="Link to this heading">¶</a></h3>
+<span id="tessellation-ex"></span><h3><a class="toc-backref" href="#id96" role="doc-backlink">Tessellation Example</a><a class="headerlink" href="#tessellation-example" title="Link to this heading">¶</a></h3>
 <p>In Chapter 9 (Tessellation), the Red Book <a class="footnote-reference brackets" href="#redbook" id="id27" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> focuses on:</p>
 <ul class="simple">
 <li><p>gl_TessLevelOuter[]</p></li>
@@ -1378,19 +1379,19 @@ Evaluated surface points P(u,v) are also vec4.</p>
 <col style="width: 50.0%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><figure class="align-default" id="id73">
+<tr class="row-odd"><td><figure class="align-default" id="id75">
 <span id="ts-ex-left"></span><a class="reference internal image-reference" href="_images/ts-ex.png"><img alt="_images/ts-ex.png" height="512" src="_images/ts-ex.png" width="512" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 40 </span><span class="caption-text">The final rendering result for 5×5 tessellated mesh.</span><a class="headerlink" href="#id73" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 40 </span><span class="caption-text">The final rendering result for 5×5 tessellated mesh.</span><a class="headerlink" href="#id75" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </td>
-<td><figure class="align-default" id="id74">
+<td><figure class="align-default" id="id76">
 <span id="ts-ex-right"></span><a class="reference internal image-reference" href="_images/ts-gs-ex.png"><img alt="_images/ts-gs-ex.png" height="512" src="_images/ts-gs-ex.png" width="512" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 41 </span><span class="caption-text">Geometry Shader (GS) can expand a 5×5 tessellated grid into a 6×6 mesh</span><a class="headerlink" href="#id74" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 41 </span><span class="caption-text">Geometry Shader (GS) can expand a 5×5 tessellated grid into a 6×6 mesh</span><a class="headerlink" href="#id76" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </td>
@@ -1484,7 +1485,7 @@ or anything related to surface appearance.</p>
 </div>
 </section>
 <section id="mobile-gpu-3d-rendering">
-<h3><a class="toc-backref" href="#id94" role="doc-backlink">Mobile GPU 3D Rendering</a><a class="headerlink" href="#mobile-gpu-3d-rendering" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id97" role="doc-backlink">Mobile GPU 3D Rendering</a><a class="headerlink" href="#mobile-gpu-3d-rendering" title="Link to this heading">¶</a></h3>
 <p>The traditional desktop GPUs is <strong>IMR — Immediate‑Mode Rendering</strong>:
 Cache misses dominate bandwidth.</p>
 <p><strong>TBDR — Tile‑Based Deferred Rendering</strong>:
@@ -1512,7 +1513,7 @@ In addition, desktop GPUs adopt IMR because they have the <strong>power</strong>
 geometry pipelines</strong> and massive workloads that would break TBDR’s
 tile‑based constraints.</p>
 <section id="tbdr-tilebased-deferred-rendering">
-<h4><a class="toc-backref" href="#id95" role="doc-backlink">TBDR — Tile‑Based Deferred Rendering</a><a class="headerlink" href="#tbdr-tilebased-deferred-rendering" title="Link to this heading">¶</a></h4>
+<h4><a class="toc-backref" href="#id98" role="doc-backlink">TBDR — Tile‑Based Deferred Rendering</a><a class="headerlink" href="#tbdr-tilebased-deferred-rendering" title="Link to this heading">¶</a></h4>
 <p>⚠️  For <strong>low power</strong> mobile device, mobile GPUs use <strong>tile-based</strong>
 rendering to <strong>reduce the traffice to DRAM</strong> as
 described below:</p>
@@ -1529,7 +1530,7 @@ described below:</p>
 TBDR processes it into two phases as follows:</p>
 <p><strong>Phase 1 — Binning</strong> (Full‑Frame Geometry Processing) is shown as
 <a class="reference internal" href="#tbdr-pipeline"><span class="std std-numref">Fig. 42</span></a>.</p>
-<figure class="align-default" id="id75">
+<figure class="align-default" id="id77">
 <span id="tbdr-pipeline"></span><div class="graphviz"><img src="_images/graphviz-5291ce49f44e160e6def66db390fea63123c8cc9.png" alt="digraph TBDR_Binning_Flow {
     rankdir=LR;
     node [shape=box, style=rounded];
@@ -1543,7 +1544,7 @@ TBDR processes it into two phases as follows:</p>
     CPU_DrawCall -&gt; VS -&gt; TriangleSetup -&gt; Binner -&gt; TileLists;
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 42 </span><span class="caption-text">TBDR Pipeline</span><a class="headerlink" href="#id75" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 42 </span><span class="caption-text">TBDR Pipeline</span><a class="headerlink" href="#id77" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>When a draw call arrives on a TBDR GPU:</p>
@@ -1570,7 +1571,7 @@ In Phase 2 — Tile Rendering, GPU rendering each tile and
 keep the rendering result of each <strong>tile in SRAM</strong>.</p>
 </section>
 <section id="tbdr-rendering">
-<h4><a class="toc-backref" href="#id96" role="doc-backlink">TBDR Rendering</a><a class="headerlink" href="#tbdr-rendering" title="Link to this heading">¶</a></h4>
+<h4><a class="toc-backref" href="#id99" role="doc-backlink">TBDR Rendering</a><a class="headerlink" href="#tbdr-rendering" title="Link to this heading">¶</a></h4>
 <p>✅ Rendering flow:</p>
 <blockquote>
 <div><ul class="simple">
@@ -1592,7 +1593,7 @@ Shader (TVS) can generate millions of micro‑triangles.
 GS and Tessellation introduce <strong>unbounded geometry amplification</strong>, which
 breaks these assumptions and forces expensive DRAM spills for TBDR as shown in
 <a class="reference internal" href="#mobile-tile-base-pipeline"><span class="std std-numref">Fig. 43</span></a>,</p>
-<figure class="align-default" id="id76">
+<figure class="align-default" id="id78">
 <span id="mobile-tile-base-pipeline"></span><div class="graphviz"><img src="_images/graphviz-70955bb21f759683ee89690930fa5b839289b5a6.png" alt="digraph TBDR_GS_Comparison {
     rankdir=LR;
     node [shape=box, style=rounded, fontsize=11];
@@ -1633,7 +1634,7 @@ breaks these assumptions and forces expensive DRAM spills for TBDR as shown in
     G_Tile -&gt; G_WB   [label=&quot;DRAM spills\n(high power)&quot;, color=&quot;red&quot;];
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 43 </span><span class="caption-text">CPU and GPU Pipeline For Shaders in Mobile Device</span><a class="headerlink" href="#id76" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 43 </span><span class="caption-text">CPU and GPU Pipeline For Shaders in Mobile Device</span><a class="headerlink" href="#id78" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>This is why Mali,
@@ -1657,7 +1658,7 @@ section.</p></li>
 <li><p>generate new index/vertex buffers</p></li>
 </ul>
 <p>This is developer‑controlled, not automatic.</p>
-<figure class="align-default" id="id77">
+<figure class="align-default" id="id79">
 <span id="mobile-mesh-to-meshlets-to-render"></span><div class="graphviz"><img src="_images/graphviz-749407db8010fc515a20c400c5d634f6760629a1.png" alt="digraph Meshlet_Convert_To_Render_Mobile {
     rankdir=LR;
     node [shape=box, style=rounded, fontsize=12];
@@ -1691,7 +1692,7 @@ section.</p></li>
     Meshlets -&gt; VS;
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 44 </span><span class="caption-text">CPU and GPU Pipeline For Shader`s in Mobile Device</span><a class="headerlink" href="#id77" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 44 </span><span class="caption-text">CPU and GPU Pipeline For Shader`s in Mobile Device</span><a class="headerlink" href="#id79" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>The compute shader writes results into:</p>
@@ -1704,7 +1705,7 @@ section.</p></li>
 <p>✔ Step 2 — Developer issues a normal draw call</p>
 <p>The Mali and PowerVR’s rendering flow is illustrated as
 <a class="reference internal" href="#mobile-rendering-pipeline-shaders-cpu-gpu"><span class="std std-numref">Fig. 45</span></a>.</p>
-<figure class="align-default" id="id78">
+<figure class="align-default" id="id80">
 <span id="mobile-rendering-pipeline-shaders-cpu-gpu"></span><div class="graphviz"><img src="_images/graphviz-097ea5cb41cca1f7737d4370737fe770caf3d3d3.png" alt="digraph Mobile_GPU_Comparison {
     rankdir=TB;
     node [shape=box, style=rounded, fontsize=11];
@@ -1753,7 +1754,7 @@ section.</p></li>
     CPU -&gt; PV_VS       [label=&quot;draw call&quot;];
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 45 </span><span class="caption-text">CPU and GPU Pipeline For Shaders in Mobile Device</span><a class="headerlink" href="#id78" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 45 </span><span class="caption-text">CPU and GPU Pipeline For Shaders in Mobile Device</span><a class="headerlink" href="#id80" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <ul class="simple">
@@ -1766,7 +1767,7 @@ in the section <a class="reference internal" href="#mesh-shader"><span class="st
 </section>
 </section>
 <section id="mesh-shader-pipeline">
-<span id="mesh-shader"></span><h3><a class="toc-backref" href="#id97" role="doc-backlink">Mesh-Shader Pipeline</a><a class="headerlink" href="#mesh-shader-pipeline" title="Link to this heading">¶</a></h3>
+<span id="mesh-shader"></span><h3><a class="toc-backref" href="#id100" role="doc-backlink">Mesh-Shader Pipeline</a><a class="headerlink" href="#mesh-shader-pipeline" title="Link to this heading">¶</a></h3>
 <p>A single 3D object can contain 1 mesh, multiple meshes or hundreds of meshes
 (complex characters, vehicles, weapons).</p>
 <p><strong>Reasons</strong></p>
@@ -1783,20 +1784,28 @@ while meshlets intentionally restrict clusters to ~32–128 vertices and
 <li><p>meshlet‑based processing</p></li>
 <li><p>better culling</p></li>
 <li><p>GPU‑driven rendering</p></li>
-<li><p>a <strong>replacement</strong> for VS → TCS → TES → GS</p></li>
+<li><p>a <strong>replacement</strong> for VS → TCS → TES → GS</p>
+<ul>
 <li><p>TCS → Fixed-Function Tessellator → TES: geometry amplification.</p>
 <ul>
 <li><p>Fixed‑Function Tessellator: subdivides the patch, generates new domain
 coordinates and creates the tessellated grid.</p></li>
-<li><p>Mesh-Shader replaces the fixed‑function tessellator with compute‑like
+<li><p><em>Mesh-Shader replaces the fixed‑function tessellator*</em> with compute‑like
 geometry pipeline.</p></li>
+<li><p>Mesh Shading provides a programmable alternative to the traditional
+tessellation and geometry-shader stages.
+A Mesh Shader can implement tessellation-like subdivision and geometry
+amplification while also integrating operations such as culling, LOD
+selection, and procedural geometry generation.</p></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
 <p>So the vendors co‑designed the hardware pipeline.</p>
 <p>✔ Microsoft and Khronos (Vulkan) each standardized it in their own APIs</p>
 <p>✅ <strong>Solution</strong>: As shown in <a class="reference internal" href="#meshlet-offline-to-render"><span class="std std-numref">Fig. 46</span></a>.</p>
-<figure class="align-default" id="id79">
+<figure class="align-default" id="id81">
 <span id="meshlet-offline-to-render"></span><div class="graphviz"><img src="_images/graphviz-e9ac08a8ed97d378d22482f6d1cc4e71a943fa63.png" alt="digraph Meshlet_Offline_To_Render {
     rankdir=LR;
     node [shape=box, style=rounded, fontsize=12];
@@ -1831,7 +1840,7 @@ geometry pipeline.</p></li>
     Loader -&gt; RenderFlow;
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 46 </span><span class="caption-text">Meshlet Offline To Render</span><a class="headerlink" href="#id79" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 46 </span><span class="caption-text">Meshlet Offline To Render</span><a class="headerlink" href="#id81" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p><strong>Rendering Pipeline</strong></p>
@@ -1865,7 +1874,7 @@ shown in <a class="reference internal" href="#short-rendering-pipeline-shaders-c
 <p>Mesh shading (Vulkan VK_EXT_mesh_shader, similarly in NV mesh shader) replaces
 the fixed vertex-input + VS + optional tess/GS stages with a compute-like
 geometry pipeline:</p>
-<figure class="align-default" id="id80">
+<figure class="align-default" id="id82">
 <span id="short-rendering-pipeline-shaders-cpu-gpu-2"></span><div class="graphviz"><img src="_images/graphviz-4c42872853d72d2c3e664016415994f17fe45e68.png" alt="digraph CPU_GPU_Pipeline {
     rankdir=LR;
     node [shape=box, style=rounded, fontsize=12];
@@ -1931,10 +1940,10 @@ geometry pipeline:</p>
     FS -&gt; FB;
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 47 </span><span class="caption-text">CPU and GPU <strong>Traditional</strong> Pipeline For Shaders</span><a class="headerlink" href="#id80" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 47 </span><span class="caption-text">CPU and GPU <strong>Traditional</strong> Pipeline For Shaders</span><a class="headerlink" href="#id82" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
-<figure class="align-default" id="id81">
+<figure class="align-default" id="id83">
 <span id="short-mobile-rendering-pipeline-shaders-cpu-gpu"></span><div class="graphviz"><img src="_images/graphviz-47a61012dfa1253a84c011a3a925ca46afa577f3.png" alt="digraph CPU_GPU_MobilePipeline {
     rankdir=LR;
     node [shape=box, style=rounded, fontsize=12];
@@ -1973,10 +1982,10 @@ geometry pipeline:</p>
     FS -&gt; FB;
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 48 </span><span class="caption-text">CPU and GPU <strong>Mobile</strong> Pipeline For Shaders</span><a class="headerlink" href="#id81" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 48 </span><span class="caption-text">CPU and GPU <strong>Mobile</strong> Pipeline For Shaders</span><a class="headerlink" href="#id83" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
-<figure class="align-default" id="id82">
+<figure class="align-default" id="id84">
 <span id="short-mesh-rendering-pipeline-shaders-cpu-gpu"></span><div class="graphviz"><img src="_images/graphviz-80fe60cbc9521f2c4d4655a32cfcd733b65f4e7a.png" alt="digraph CPU_GPU_Pipeline {
     rankdir=LR;
     node [shape=box, style=rounded, fontsize=12];
@@ -2012,7 +2021,7 @@ geometry pipeline:</p>
     FS -&gt; FB;
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 49 </span><span class="caption-text">CPU and GPU <strong>Mesh Shader</strong> Pipeline For Shaders</span><a class="headerlink" href="#id82" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 49 </span><span class="caption-text">CPU and GPU <strong>Mesh Shader</strong> Pipeline For Shaders</span><a class="headerlink" href="#id84" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>As in <a class="reference internal" href="#short-mesh-rendering-pipeline-shaders-cpu-gpu"><span class="std std-numref">Fig. 49</span></a>,
@@ -2085,8 +2094,8 @@ The comparsion is shown in the following table.</p>
 <p><strong>Comparsion: Mobile GPU (Compute-Shader Based) vs Desktop Mesh-Shader GPU</strong></p>
 <p>The <strong>Mesh Shader</strong> is similar to the previous section of <strong>Mobile
 Compute Shader</strong> based Meshlets as the following table:</p>
-<table class="docutils align-default" id="id83">
-<caption><span class="caption-number">Table 8 </span><span class="caption-text">Mobile GPU vs Desktop Mesh-Shader GPU – <strong>Concept Comparison</strong></span><a class="headerlink" href="#id83" title="Link to this table">¶</a></caption>
+<table class="docutils align-default" id="id85">
+<caption><span class="caption-number">Table 8 </span><span class="caption-text">Mobile GPU vs Desktop Mesh-Shader GPU – <strong>Concept Comparison</strong></span><a class="headerlink" href="#id85" title="Link to this table">¶</a></caption>
 <colgroup>
 <col style="width: 26.3%" />
 <col style="width: 36.8%" />
@@ -2137,7 +2146,7 @@ achieve higher throughput, better culling efficiency, and reduced CPU
 overhead compared to the traditional vertex-processing pipeline.</p>
 </section>
 <section id="animation-example">
-<span id="animation-ex"></span><h3><a class="toc-backref" href="#id98" role="doc-backlink">Animation Example</a><a class="headerlink" href="#animation-example" title="Link to this heading">¶</a></h3>
+<span id="animation-ex"></span><h3><a class="toc-backref" href="#id101" role="doc-backlink">Animation Example</a><a class="headerlink" href="#animation-example" title="Link to this heading">¶</a></h3>
 <p>The skinning formula is described in <a class="reference internal" href="hw-sw-stack.html#sw-stack"><span class="std std-ref">SW Stack and Data Flow</span></a> section as follows:</p>
 <div class="math notranslate nohighlight">
 \[finalPosition =
@@ -2145,8 +2154,8 @@ overhead compared to the traditional vertex-processing pipeline.</p>
 \mathbf{weight}_i \left( \mathbf{boneMatrix}_i \cdot originalPosition \right)\]</div>
 <p>The following code implements the formula shown above.</p>
 <p class="rubric">GLSL Vertex Shader</p>
-<div class="literal-block-wrapper docutils container" id="id84">
-<div class="code-block-caption"><span class="caption-number">Listing 1 </span><span class="caption-text">Example GPU skinning</span><a class="headerlink" href="#id84" title="Link to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id86">
+<div class="code-block-caption"><span class="caption-number">Listing 1 </span><span class="caption-text">Example GPU skinning</span><a class="headerlink" href="#id86" title="Link to this code">¶</a></div>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">layout</span><span class="p">(</span><span class="n">location</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="n">vec3</span><span class="w"> </span><span class="n">position</span><span class="p">;</span>
 <span class="n">layout</span><span class="p">(</span><span class="n">location</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="n">uvec4</span><span class="w"> </span><span class="n">boneIndex</span><span class="p">;</span>
 <span class="n">layout</span><span class="p">(</span><span class="n">location</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="n">vec4</span><span class="w"> </span><span class="n">boneWeights</span><span class="p">;</span>
@@ -2370,9 +2379,208 @@ occurs because the application updates Animation Parameters each frame
 and the vertex shader applies animation math during the draw call. The
 GPU performs the animation only when the draw command is issued.</p>
 </section>
+<section id="ray-tracing-pipeline">
+<h3><a class="toc-backref" href="#id102" role="doc-backlink">Ray Tracing Pipeline</a><a class="headerlink" href="#ray-tracing-pipeline" title="Link to this heading">¶</a></h3>
+<figure class="align-center" id="id87">
+<span id="ray-trace-diagram"></span><a class="reference internal image-reference" href="_images/ray_trace_diagram.png"><img alt="_images/ray_trace_diagram.png" height="244" src="_images/ray_trace_diagram.png" width="367" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 50 </span><span class="caption-text">Relationships between the texturing concept <a class="footnote-reference brackets" href="#raytracewiki" id="id30" role="doc-noteref"><span class="fn-bracket">[</span>29<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id87" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The key conceptual difference between rasterization and ray tracing is the
+direction of processing.</p>
+<p>Rasterization starts from <strong>geometry</strong> and determines which pixels are covered
+by each triangle.</p>
+<p>Ray tracing starts from <strong>pixels</strong> and determines which object is visible
+through each pixel.</p>
+<p><strong>Typically, each ray must be tested for intersection with some subset of all
+the objects in the scene. Once the nearest object has been identified, the
+algorithm will estimate the incoming light at the point of intersection,
+examine the material properties of the object, and combine this information to
+calculate the final color of the pixel</strong> <a class="footnote-reference brackets" href="#raytracewiki" id="id31" role="doc-noteref"><span class="fn-bracket">[</span>29<span class="fn-bracket">]</span></a>.</p>
+<p>Ray Tracing (Pixel → Object)</p>
+<p>Ray tracing reverses this process.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Camera
+    │
+    ▼
+For every pixel
+    │
+    ▼
+Generate Viewing Ray
+    │
+    ▼
+Traverse BVH
+    │
+    ▼
+Find Closest Intersection
+    │
+    ▼
+Evaluate Material
+    │
+    ▼
+Pixel Color
+</pre></div>
+</div>
+<p>Instead of asking</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Which pixels belong to this triangle?
+</pre></div>
+</div>
+<p>ray tracing asks</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>What object is visible through this pixel?
+</pre></div>
+</div>
+<p>Primary Ray Generation</p>
+<p>For an image of size</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1920 × 1080
+</pre></div>
+</div>
+<p>the renderer generates approximately</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2</span><span class="p">,</span><span class="mi">073</span><span class="p">,</span><span class="mi">600</span>
+</pre></div>
+</div>
+<p>primary rays (one per pixel).</p>
+<p>For pixel <code class="docutils literal notranslate"><span class="pre">(x,</span> <span class="pre">y)</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">origin</span> <span class="o">=</span> <span class="n">camera_position</span>
+
+<span class="n">direction</span> <span class="o">=</span>
+    <span class="n">normalize</span><span class="p">(</span><span class="n">pixel_position</span> <span class="o">-</span> <span class="n">camera_position</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Each ray represents the viewing direction through one screen pixel.</p>
+<p>Finding the Visible Object</p>
+<p>Suppose the scene contains</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Triangle</span> <span class="n">A</span>
+<span class="n">Triangle</span> <span class="n">B</span>
+<span class="n">Sphere</span>
+<span class="n">Floor</span>
+</pre></div>
+</div>
+<p>The generated ray is tested against the acceleration structure (typically a
+Bounding Volume Hierarchy, or BVH).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Ray
+  │
+  ├── Triangle A ?  no
+  │
+  ├── Triangle B ?  yes
+  │        distance = 8.2
+  │
+  ├── Sphere ?      yes
+  │        distance = 15.4
+  │
+  └── Floor ?       yes
+           distance = 32
+</pre></div>
+</div>
+<p>The closest intersection determines the visible object.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Visible</span> <span class="n">Object</span> <span class="o">=</span> <span class="n">Triangle</span> <span class="n">B</span>
+</pre></div>
+</div>
+<p>Material Evaluation</p>
+<p>Once the closest object is found, its material is evaluated.</p>
+<p>For example,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Diffuse</span> <span class="n">Texture</span>
+<span class="n">Normal</span> <span class="n">Map</span>
+<span class="n">Roughness</span>
+<span class="n">Metallic</span>
+<span class="n">Emissive</span>
+</pre></div>
+</div>
+<p>Lighting calculations are then performed similarly to a fragment shader,
+except that the visible surface was determined by ray intersection instead of
+rasterization.</p>
+<p>Texture Coordinate Interpolation</p>
+<p>Each triangle still stores per-vertex attributes.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Vertex</span> <span class="mi">0</span>
+    <span class="n">position</span>
+    <span class="n">normal</span>
+    <span class="n">uv</span>
+
+<span class="n">Vertex</span> <span class="mi">1</span>
+    <span class="n">position</span>
+    <span class="n">normal</span>
+    <span class="n">uv</span>
+
+<span class="n">Vertex</span> <span class="mi">2</span>
+    <span class="n">position</span>
+    <span class="n">normal</span>
+    <span class="n">uv</span>
+</pre></div>
+</div>
+<p>After the ray intersects the triangle, barycentric coordinates are computed.</p>
+<p>For example,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">u</span> <span class="o">=</span> <span class="mf">0.2</span>
+<span class="n">v</span> <span class="o">=</span> <span class="mf">0.3</span>
+<span class="n">w</span> <span class="o">=</span> <span class="mf">0.5</span>
+</pre></div>
+</div>
+<p>The texture coordinates at the hit point are interpolated as</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">uv</span> <span class="o">=</span>
+    <span class="n">u</span> <span class="o">*</span> <span class="n">uv0</span> <span class="o">+</span>
+    <span class="n">v</span> <span class="o">*</span> <span class="n">uv1</span> <span class="o">+</span>
+    <span class="n">w</span> <span class="o">*</span> <span class="n">uv2</span>
+</pre></div>
+</div>
+<p>The interpolated texture coordinates are then used to sample textures exactly
+as in rasterization.</p>
+<p>Comparison</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Rasterization</p></th>
+<th class="head"><p>Ray Tracing</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Process one triangle</p></td>
+<td><p>Process one pixel</p></td>
+</tr>
+<tr class="row-odd"><td><p>Triangle → Pixels</p></td>
+<td><p>Pixel → Ray</p></td>
+</tr>
+<tr class="row-even"><td><p>Rasterizer finds covered
+pixels</p></td>
+<td><p>BVH traversal finds intersected
+object</p></td>
+</tr>
+<tr class="row-odd"><td><p>Interpolate vertex attributes</p></td>
+<td><p>Interpolate attributes at the
+hit point</p></td>
+</tr>
+<tr class="row-even"><td><p>Sample textures</p></td>
+<td><p>Sample textures</p></td>
+</tr>
+<tr class="row-odd"><td><p>Compute lighting</p></td>
+<td><p>Compute lighting</p></td>
+</tr>
+<tr class="row-even"><td><p>Write pixel</p></td>
+<td><p>Write pixel</p></td>
+</tr>
+</tbody>
+</table>
+<p>Summary</p>
+<p>Ray tracing uses the same geometric and material information as rasterization,
+including:</p>
+<ul class="simple">
+<li><p>Triangle meshes</p></li>
+<li><p>Vertex normals</p></li>
+<li><p>Texture coordinates</p></li>
+<li><p>Materials</p></li>
+<li><p>Textures</p></li>
+</ul>
+<p>The primary difference lies in how the visible surface is determined.</p>
+<ul class="simple">
+<li><p>Rasterization determines visibility by projecting triangles onto the screen
+and finding the pixels they cover.</p></li>
+<li><p>Ray tracing determines visibility by casting a viewing ray through each pixel
+and finding the closest surface intersected by that ray.</p></li>
+</ul>
+<p>After the visible surface has been identified, the remaining shading process
+(interpolating attributes, sampling textures, and evaluating materials) is
+very similar to traditional OpenGL fragment shading.</p>
+</section>
 </section>
 <section id="glsl-gl-shader-language">
-<h2><a class="toc-backref" href="#id99" role="doc-backlink">GLSL (GL Shader Language)</a><a class="headerlink" href="#glsl-gl-shader-language" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id103" role="doc-backlink">GLSL (GL Shader Language)</a><a class="headerlink" href="#glsl-gl-shader-language" title="Link to this heading">¶</a></h2>
 <p>OpenGL is a standard specification for designing 2D and 3D graphics and animation
 in computer graphics. To support advanced animation and rendering, OpenGL provides
 a large set of APIs (functions) for graphics processing. Popular 3D modeling and
@@ -2381,7 +2589,7 @@ animation tools—such as Maya, Blender, and others—can utilize these APIs to 
 <p>The hardware-specific implementation of these APIs is provided by GPU manufacturers,
 ensuring that rendering is optimized for the underlying hardware.</p>
 <section id="background">
-<h3><a class="toc-backref" href="#id100" role="doc-backlink">Background</a><a class="headerlink" href="#background" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id104" role="doc-backlink">Background</a><a class="headerlink" href="#background" title="Link to this heading">¶</a></h3>
 <p>In the previous section <a class="reference internal" href="hw-sw-stack.html#sw-stack"><span class="std std-ref">SW Stack and Data Flow</span></a> described <strong>how each frame is
 generated</strong> to display the <strong>movement animation or skinning effects</strong> using the
 small animation parameters stored in 3D model and sent from CPU.</p>
@@ -2482,7 +2690,7 @@ are fully programmable shader GPUs.</p></li>
 </div></blockquote>
 </section>
 <section id="examples">
-<h3><a class="toc-backref" href="#id101" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id105" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading">¶</a></h3>
 <p>An OpenGL program typically follows a structure like the example below:</p>
 <p class="rubric">Vertex shader</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#version 330 core</span>
@@ -2544,28 +2752,28 @@ control over the rendering process.</p>
 accurate name for the same functionality as Pixel shaders. They aren’t pixels
 yet, since the output still has to past several tests (depth, alpha, stencil)
 as well as the fact that one may be using antialiasing, which renders
-one-fragment-to-one-pixel non-true <a class="footnote-reference brackets" href="#fragmentshader-reason" id="id30" role="doc-noteref"><span class="fn-bracket">[</span>23<span class="fn-bracket">]</span></a>.
+one-fragment-to-one-pixel non-true <a class="footnote-reference brackets" href="#fragmentshader-reason" id="id32" role="doc-noteref"><span class="fn-bracket">[</span>23<span class="fn-bracket">]</span></a>.
 Programmer is allowed to add their converting functions that compiler translate them
 into GPU instructions running on GPU processor. With these two shaders, new
 features have been added to allow for increased flexibility in the rendering
-pipeline at the vertex and fragment level <a class="footnote-reference brackets" href="#shaderswiki" id="id31" role="doc-noteref"><span class="fn-bracket">[</span>24<span class="fn-bracket">]</span></a>.
-Unlike the shaders example here <a class="footnote-reference brackets" href="#shadersex" id="id32" role="doc-noteref"><span class="fn-bracket">[</span>25<span class="fn-bracket">]</span></a>, some converting functions
+pipeline at the vertex and fragment level <a class="footnote-reference brackets" href="#shaderswiki" id="id33" role="doc-noteref"><span class="fn-bracket">[</span>24<span class="fn-bracket">]</span></a>.
+Unlike the shaders example here <a class="footnote-reference brackets" href="#shadersex" id="id34" role="doc-noteref"><span class="fn-bracket">[</span>25<span class="fn-bracket">]</span></a>, some converting functions
 for coordinate in vertex shader or for color in fragment shade are more
 complicated according the scenes of
-animation. Here is an example <a class="footnote-reference brackets" href="#glsleffect" id="id33" role="doc-noteref"><span class="fn-bracket">[</span>26<span class="fn-bracket">]</span></a>.
-In wiki shading page <a class="footnote-reference brackets" href="#shading" id="id34" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>, Gourand and Phong shading methods make the
+animation. Here is an example <a class="footnote-reference brackets" href="#glsleffect" id="id35" role="doc-noteref"><span class="fn-bracket">[</span>26<span class="fn-bracket">]</span></a>.
+In wiki shading page <a class="footnote-reference brackets" href="#shading" id="id36" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>, Gourand and Phong shading methods make the
 surface of object more smooth by glsl. Example glsl code of Gourand
-and Phong shading on OpenGL api are here <a class="footnote-reference brackets" href="#smoothshadingex" id="id35" role="doc-noteref"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></a>.
+and Phong shading on OpenGL api are here <a class="footnote-reference brackets" href="#smoothshadingex" id="id37" role="doc-noteref"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></a>.
 Since the hardware of graphic card and software graphic driver can be replaced,
 the compiler is run on-line meaning driver will compile the shaders program when
-it is run at first time and kept in cache after compilation <a class="footnote-reference brackets" href="#on-line" id="id36" role="doc-noteref"><span class="fn-bracket">[</span>28<span class="fn-bracket">]</span></a>.</p>
+it is run at first time and kept in cache after compilation <a class="footnote-reference brackets" href="#on-line" id="id38" role="doc-noteref"><span class="fn-bracket">[</span>28<span class="fn-bracket">]</span></a>.</p>
 <p>The shaders program is C-like syntax and can be compiled in few mini-seconds,
 add up this few mini-seconds of on-line compilation time in running OpenGL
 program is a good choice for dealing the cases of driver software or gpu
-hardware replacement <a class="footnote-reference brackets" href="#onlinecompile" id="id37" role="doc-noteref"><span class="fn-bracket">[</span>29<span class="fn-bracket">]</span></a>.</p>
+hardware replacement <a class="footnote-reference brackets" href="#onlinecompile" id="id39" role="doc-noteref"><span class="fn-bracket">[</span>30<span class="fn-bracket">]</span></a>.</p>
 </section>
 <section id="goals">
-<h3><a class="toc-backref" href="#id102" role="doc-backlink">Goals</a><a class="headerlink" href="#goals" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id106" role="doc-backlink">Goals</a><a class="headerlink" href="#goals" title="Link to this heading">¶</a></h3>
 <p>Goals of GLSL Shader Language:</p>
 <p>GLSL was designed for real-time graphics using programmable GPUs.</p>
 <ol class="arabic simple">
@@ -2619,7 +2827,7 @@ hardware replacement <a class="footnote-reference brackets" href="#onlinecompile
 </ul>
 </section>
 <section id="glsl-vs-c-feature-overview">
-<h3><a class="toc-backref" href="#id103" role="doc-backlink">GLSL vs. C: Feature Overview</a><a class="headerlink" href="#glsl-vs-c-feature-overview" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id107" role="doc-backlink">GLSL vs. C: Feature Overview</a><a class="headerlink" href="#glsl-vs-c-feature-overview" title="Link to this heading">¶</a></h3>
 <p>GLSL expands upon C for GPU-based graphics programming.</p>
 <p><strong>Additions to C:</strong></p>
 <ol class="arabic simple">
@@ -2722,11 +2930,11 @@ section.</p></li>
 </ul>
 </section>
 <section id="glsl-qualifiers-by-shader-stage">
-<h3><a class="toc-backref" href="#id104" role="doc-backlink">GLSL Qualifiers by Shader Stage</a><a class="headerlink" href="#glsl-qualifiers-by-shader-stage" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id108" role="doc-backlink">GLSL Qualifiers by Shader Stage</a><a class="headerlink" href="#glsl-qualifiers-by-shader-stage" title="Link to this heading">¶</a></h3>
 <p>The CPU and GPU Pipeline For Shaders is introduced in section
 <a class="reference internal" href="#three-d-rendering-pipeline"><span class="std std-ref">3D Rendering Pipeline</span></a>.
-The <a class="reference internal" href="#shaders-pipeline-in-out"><span class="std std-numref">Fig. 50</span></a> is the summary of GLSL Qualifiers below.</p>
-<figure class="align-default" id="id85">
+The <a class="reference internal" href="#shaders-pipeline-in-out"><span class="std std-numref">Fig. 51</span></a> is the summary of GLSL Qualifiers below.</p>
+<figure class="align-default" id="id88">
 <span id="shaders-pipeline-in-out"></span><div class="graphviz"><img src="_images/graphviz-780e408f0b952281248bb73814dcb1a07f202597.png" alt="digraph CPU_GPU_Pipeline {
     rankdir=LR;
     node [shape=box, style=rounded, fontsize=12];
@@ -2766,17 +2974,17 @@ The <a class="reference internal" href="#shaders-pipeline-in-out"><span class="s
     CPU_Anim -&gt; CS [style=dashed, label=&quot;Dispatch Compute&quot;];
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 50 </span><span class="caption-text">Shaders input and output</span><a class="headerlink" href="#id85" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 51 </span><span class="caption-text">Shaders input and output</span><a class="headerlink" href="#id88" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p><strong>Vertex Shader:</strong></p>
 <ul class="simple">
 <li><p>in: Receives per-vertex attributes from buffer objects, it is
-<strong>3D Model Information</strong> described in <a class="reference internal" href="#shaders-pipeline-in-out"><span class="std std-numref">Fig. 50</span></a>.</p></li>
+<strong>3D Model Information</strong> described in <a class="reference internal" href="#shaders-pipeline-in-out"><span class="std std-numref">Fig. 51</span></a>.</p></li>
 <li><p>out: Passes data to next stage (e.g., fragment shader)</p></li>
 <li><p><strong>uniform</strong>: Global parameters like matrices or lighting, it is
 <strong>Animation Parameters</strong>, also referred to as <strong>Uniform Updates</strong> described
-in <a class="reference internal" href="#shaders-pipeline-in-out"><span class="std std-numref">Fig. 50</span></a>.
+in <a class="reference internal" href="#shaders-pipeline-in-out"><span class="std std-numref">Fig. 51</span></a>.
 The <a class="reference internal" href="#animation-ex"><span class="std std-ref">Animation Example</span></a> section provides an example in Vertex Shader (VS) that
 demostrates animation using both the 3D model information and Uniform Updates.</p></li>
 <li><p><strong>layout(location = x)</strong>: Binds input/output to attribute index. See
@@ -2787,10 +2995,10 @@ demostrates animation using both the 3D model information and Uniform Updates.</
 <p><strong>Fragment Shader:</strong></p>
 <ul class="simple">
 <li><p>in: Receives <strong>interpolated data</strong> from previous stage as shown in
-<a class="reference internal" href="#shaders-pipeline-in-out"><span class="std std-numref">Fig. 50</span></a>.</p></li>
+<a class="reference internal" href="#shaders-pipeline-in-out"><span class="std std-numref">Fig. 51</span></a>.</p></li>
 <li><p>out: Writes <strong>Final Fragement Color</strong> to FrameBuffer</p></li>
 <li><p>uniform: Global parameters like <strong>textures</strong> or <strong>lighting</strong> as shown in
-<a class="reference internal" href="#shaders-pipeline-in-out"><span class="std std-numref">Fig. 50</span></a>.
+<a class="reference internal" href="#shaders-pipeline-in-out"><span class="std std-numref">Fig. 51</span></a>.
 <strong>Uniform data remains unchanged</strong> across all pipeline stages and is shared by
 all shaders in the pipeline.
 This means that uniform data represents global parameters for 3D GPU rendering.</p></li>
@@ -2911,14 +3119,14 @@ This means that uniform data represents global parameters for 3D GPU rendering.<
 </section>
 </section>
 <section id="opengl-shader-compiler">
-<span id="id38"></span><h2><a class="toc-backref" href="#id105" role="doc-backlink">OpenGL Shader Compiler</a><a class="headerlink" href="#opengl-shader-compiler" title="Link to this heading">¶</a></h2>
-<p>The OpenGL standard is defined in <a class="footnote-reference brackets" href="#openglspec" id="id39" role="doc-noteref"><span class="fn-bracket">[</span>30<span class="fn-bracket">]</span></a>. OpenGL is primarily designed for
+<span id="id40"></span><h2><a class="toc-backref" href="#id109" role="doc-backlink">OpenGL Shader Compiler</a><a class="headerlink" href="#opengl-shader-compiler" title="Link to this heading">¶</a></h2>
+<p>The OpenGL standard is defined in <a class="footnote-reference brackets" href="#openglspec" id="id41" role="doc-noteref"><span class="fn-bracket">[</span>31<span class="fn-bracket">]</span></a>. OpenGL is primarily designed for
 desktop computers and servers, whereas OpenGL ES is a subset tailored for embedded systems
-<a class="footnote-reference brackets" href="#opengleswiki" id="id40" role="doc-noteref"><span class="fn-bracket">[</span>31<span class="fn-bracket">]</span></a>.</p>
+<a class="footnote-reference brackets" href="#opengleswiki" id="id42" role="doc-noteref"><span class="fn-bracket">[</span>32<span class="fn-bracket">]</span></a>.</p>
 <p>Although shaders represent only a small part of the entire OpenGL software/hardware
 stack, implementing a compiler for them is still a significant undertaking. This is
 because a large number of APIs need to be supported. For instance, there are over 80
-texture-related APIs alone <a class="footnote-reference brackets" href="#textureapi" id="id41" role="doc-noteref"><span class="fn-bracket">[</span>32<span class="fn-bracket">]</span></a>.</p>
+texture-related APIs alone <a class="footnote-reference brackets" href="#textureapi" id="id43" role="doc-noteref"><span class="fn-bracket">[</span>33<span class="fn-bracket">]</span></a>.</p>
 <p>A practical approach to implementing such a compiler involves generating LLVM extended
 intrinsic functions from the shader frontend (parser and AST generator). These intrinsics
 can then be lowered into GPU-specific instructions in the LLVM backend. The overall
@@ -2964,7 +3172,7 @@ OpenGL API calls, the GPU can access and utilize Texture Unit hardware efficient
 This binding mechanism ensures that texture sampling and mapping are executed with
 minimal overhead during rendering.</p>
 <p>For more information about LLVM extended intrinsic functions, please refer to
-<a class="footnote-reference brackets" href="#intrinsiccpu0" id="id42" role="doc-noteref"><span class="fn-bracket">[</span>33<span class="fn-bracket">]</span></a>.</p>
+<a class="footnote-reference brackets" href="#intrinsiccpu0" id="id44" role="doc-noteref"><span class="fn-bracket">[</span>34<span class="fn-bracket">]</span></a>.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">gvec4</span><span class="w"> </span><span class="nf">texture</span><span class="p">(</span><span class="n">gsampler2D</span><span class="w"> </span><span class="n">sampler</span><span class="p">,</span><span class="w"> </span><span class="n">vec2</span><span class="w"> </span><span class="n">P</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="kt">float</span><span class="w"> </span><span class="n">bias</span><span class="p">]);</span>
 </pre></div>
 </div>
@@ -2974,52 +3182,52 @@ are available on a GPU. To manage this limitation, the OpenGL driver can associa
 a <em>Texture Unit</em> with a <cite>sampler</cite> variable using OpenGL API calls. This association
 can be updated or switched between shaders as needed. The following statements
 demonstrate how to bind and switch <em>Texture Units</em> across shaders:</p>
-<figure class="align-center" id="id86">
+<figure class="align-center" id="id89">
 <span id="sampling"></span><a class="reference internal image-reference" href="_images/sampling_diagram.png"><img alt="_images/sampling_diagram.png" height="330" src="_images/sampling_diagram.png" width="490" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 51 </span><span class="caption-text">Relationships between the texturing concept <a class="footnote-reference brackets" href="#textureobject" id="id43" role="doc-noteref"><span class="fn-bracket">[</span>34<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id86" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 52 </span><span class="caption-text">Relationships between the texturing concept <a class="footnote-reference brackets" href="#textureobject" id="id45" role="doc-noteref"><span class="fn-bracket">[</span>35<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id89" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
-<p>As shown in <a class="reference internal" href="#sampling"><span class="std std-numref">Fig. 51</span></a>, the texture object is not bound directly to a shader
+<p>As shown in <a class="reference internal" href="#sampling"><span class="std std-numref">Fig. 52</span></a>, the texture object is not bound directly to a shader
 (where sampling operations occur). Instead, it is bound to a <em>texture unit</em>, and the
 index of this texture unit is passed to the shader. This means the shader accesses
 the texture object through the assigned texture unit. Most GPUs support multiple
 texture units, though the exact number depends on the hardware capabilities
-<a class="footnote-reference brackets" href="#textureobject" id="id44" role="doc-noteref"><span class="fn-bracket">[</span>34<span class="fn-bracket">]</span></a>.</p>
+<a class="footnote-reference brackets" href="#textureobject" id="id46" role="doc-noteref"><span class="fn-bracket">[</span>35<span class="fn-bracket">]</span></a>.</p>
 <p>A <em>texture unit</em>—also known as a <em>Texture Mapping Unit (TMU)</em> or <em>Texture Processing Unit (TPU)</em>—
 is a dedicated hardware component in the GPU that performs texture sampling operations.</p>
 <p>The <cite>sampler</cite> argument in the texture sampling function refers to a <cite>sampler2D</cite> (or similar)
 uniform variable. This variable represents the texture unit index used to access the
-associated texture object <a class="footnote-reference brackets" href="#textureobject" id="id45" role="doc-noteref"><span class="fn-bracket">[</span>34<span class="fn-bracket">]</span></a>.</p>
+associated texture object <a class="footnote-reference brackets" href="#textureobject" id="id47" role="doc-noteref"><span class="fn-bracket">[</span>35<span class="fn-bracket">]</span></a>.</p>
 <p><strong>Sampler Uniform Variables</strong>:</p>
 <p>OpenGL provides a set of special uniform variables for texture sampling, named according to
 the texture target: <cite>sampler1D</cite>, <cite>sampler2D</cite>, <cite>sampler3D</cite>, <cite>samplerCube</cite>, etc.</p>
 <p>You can create as many <em>sampler uniform variables</em> as needed and assign each one to a
 specific texture unit index using OpenGL API calls. Whenever a sampling function is
 invoked with a sampler uniform, the GPU uses the texture unit (and its bound texture object)
-associated with that sampler <a class="footnote-reference brackets" href="#textureobject" id="id46" role="doc-noteref"><span class="fn-bracket">[</span>34<span class="fn-bracket">]</span></a>.</p>
-<figure class="align-center" id="id87">
+associated with that sampler <a class="footnote-reference brackets" href="#textureobject" id="id48" role="doc-noteref"><span class="fn-bracket">[</span>35<span class="fn-bracket">]</span></a>.</p>
+<figure class="align-center" id="id90">
 <span id="sampling-binding"></span><img alt="_images/sampling_diagram_binding.png" src="_images/sampling_diagram_binding.png" />
 <figcaption>
-<p><span class="caption-number">Fig. 52 </span><span class="caption-text">Binding sampler variables <a class="footnote-reference brackets" href="#tpu" id="id47" role="doc-noteref"><span class="fn-bracket">[</span>35<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id87" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 53 </span><span class="caption-text">Binding sampler variables <a class="footnote-reference brackets" href="#tpu" id="id49" role="doc-noteref"><span class="fn-bracket">[</span>36<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id90" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>For Java programmers, JOGL provides same level of API in Java for wrapping to
 OpenGL C API.
-As shown in <a class="reference internal" href="#sampling-binding"><span class="std std-numref">Fig. 52</span></a>, the JOGL <cite>gl.bindTexture()</cite>
+As shown in <a class="reference internal" href="#sampling-binding"><span class="std std-numref">Fig. 53</span></a>, the JOGL <cite>gl.bindTexture()</cite>
 binds a <em>Texture Object</em> to a specific <em>Texture Unit</em>. Then, using
 <strong>gl.getUniformLocation() and gl.uniform1i()</strong>, you <strong>associate</strong> the
 <strong>Texture Unit</strong> with a <em>sampler uniform variable</em> in the shader.</p>
 <p>For example, <strong>gl.uniform1i(xLoc, 1)</strong> assigns <strong>Texture Unit 1</strong> to the
 sampler variable at location <strong>xLoc</strong>.
 Similarly, passing <cite>2</cite> would refer to <em>Texture Unit 2</em>, and so on
-<a class="footnote-reference brackets" href="#tpu" id="id48" role="doc-noteref"><span class="fn-bracket">[</span>35<span class="fn-bracket">]</span></a>.</p>
-<p>The following <a class="reference internal" href="#driver-sampler-table"><span class="std std-numref">Fig. 53</span></a> illustrates how the OpenGL driver
+<a class="footnote-reference brackets" href="#tpu" id="id50" role="doc-noteref"><span class="fn-bracket">[</span>36<span class="fn-bracket">]</span></a>.</p>
+<p>The following <a class="reference internal" href="#driver-sampler-table"><span class="std std-numref">Fig. 54</span></a> illustrates how the OpenGL driver
 reads metadata from a compiled GLSL object, how the OpenGL API <strong>links</strong>
 <strong>sampler uniform variables</strong> to <strong>Texture Units</strong>,
 and how the GPU <strong>executes</strong> the corresponding <strong>texture instructions</strong>.</p>
-<figure class="align-default" id="id88">
+<figure class="align-default" id="id91">
 <span id="driver-sampler-table"></span><div class="graphviz"><img src="_images/graphviz-01d45d110db537133c346b3b675ceba1f58a77ed.png" alt="digraph G {
     graph [rankdir=TB];
 
@@ -3136,16 +3344,16 @@ and how the GPU <strong>executes</strong> the corresponding <strong>texture inst
     tbl2:t2c0 -&gt; tbl3:u2c0 [label=&quot;Driver lookup the table and \nset the value of the symbol '.tex_a' to k \nin the executable binary file&quot;];
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 53 </span><span class="caption-text">Binding Sampler Variables to Texture Instructions</span><a class="headerlink" href="#id88" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 54 </span><span class="caption-text">Binding Sampler Variables to Texture Instructions</span><a class="headerlink" href="#id91" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>Explaining the detailed steps for the figure above:</p>
 <ol class="arabic simple">
 <li><p>To enable the GPU driver to bind the <em>texture unit</em>, the frontend compiler
 must pass metadata for each <em>sampler uniform variable</em>
-(e.g., <cite>sampler_2d_var</cite> in this example) <a class="footnote-reference brackets" href="#samplervar" id="id49" role="doc-noteref"><span class="fn-bracket">[</span>36<span class="fn-bracket">]</span></a> to the backend.
+(e.g., <cite>sampler_2d_var</cite> in this example) <a class="footnote-reference brackets" href="#samplervar" id="id51" role="doc-noteref"><span class="fn-bracket">[</span>37<span class="fn-bracket">]</span></a> to the backend.
 The backend then allocates and embeds this metadata in the compiled binary
-file <a class="footnote-reference brackets" href="#metadata" id="id50" role="doc-noteref"><span class="fn-bracket">[</span>37<span class="fn-bracket">]</span></a>.</p></li>
+file <a class="footnote-reference brackets" href="#metadata" id="id52" role="doc-noteref"><span class="fn-bracket">[</span>38<span class="fn-bracket">]</span></a>.</p></li>
 <li><p>During the link stage of on-line compilation of the GLSL shader, the GPU
 driver reads this metadata from the compiled binary file.
 It constructs an internal
@@ -3199,7 +3407,7 @@ and access the texture object during shader execution.</p>
 corresponding ‘Texture Unit 1’ on gpu will being executed through texture
 descriptor in gpu’s memory because .tex_a: {xLoc, 1}. Driver may set
 texture descriptor in gpu’s texture desciptors if gpu provides specific
-texture descriptors in architecture <a class="footnote-reference brackets" href="#descriptorreg" id="id51" role="doc-noteref"><span class="fn-bracket">[</span>38<span class="fn-bracket">]</span></a>.</p>
+texture descriptors in architecture <a class="footnote-reference brackets" href="#descriptorreg" id="id53" role="doc-noteref"><span class="fn-bracket">[</span>39<span class="fn-bracket">]</span></a>.</p>
 <p>For instance, Nvidia texture instruction as follow,</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">// the content of tex_a bound to texture unit as step 5 above</span>
 <span class="go">tex.3d.v4.s32.s32  {r1,r2,r3,r4}, [tex_a, {f1,f2,f3,f4}];</span>
@@ -3213,7 +3421,7 @@ The f4 is skipped for 3D texture.</p>
 <p>Above tex.3d texture instruction load the calculated color of pixel (x,y,z) from
 texture image into GPRs (r1,r2,r3,r4)=(R,G,B,A).
 And fragment shader can re-calculate the color of this pixel with the color of
-this pixel at texture image <a class="footnote-reference brackets" href="#ptxtex" id="id52" role="doc-noteref"><span class="fn-bracket">[</span>39<span class="fn-bracket">]</span></a>.</p>
+this pixel at texture image <a class="footnote-reference brackets" href="#ptxtex" id="id54" role="doc-noteref"><span class="fn-bracket">[</span>40<span class="fn-bracket">]</span></a>.</p>
 <p>If it is 1d texture instruction, the tex.1d as follows,</p>
 <ol class="arabic simple" start="5">
 <li><p>GPU Execution of Texture Instruction</p></li>
@@ -3233,7 +3441,7 @@ because of the earlier API call:</p>
 </pre></div>
 </div>
 <p>If the GPU hardware provides dedicated <strong>texture descriptor registers</strong> or memory structures,
-the driver maps <cite>.tex_a</cite> to those structures <a class="footnote-reference brackets" href="#descriptorreg" id="id53" role="doc-noteref"><span class="fn-bracket">[</span>38<span class="fn-bracket">]</span></a>.</p>
+the driver maps <cite>.tex_a</cite> to those structures <a class="footnote-reference brackets" href="#descriptorreg" id="id55" role="doc-noteref"><span class="fn-bracket">[</span>39<span class="fn-bracket">]</span></a>.</p>
 <p><strong>Example (NVIDIA PTX texture instruction):</strong></p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">// The content of tex_a is bound to a texture unit, as in step 4</span>
 <span class="go">tex.3d.v4.s32.s32 {r1,r2,r3,r4}, [tex_a, {f1,f2,f3,f4}];</span>
@@ -3253,7 +3461,7 @@ the resulting color values into general-purpose registers:</p>
 <li><p><cite>r4</cite>: Alpha</p></li>
 </ul>
 <p>The <strong>fragment shader</strong> can then use or modify this color value based on further calculations
-or blending logic <a class="footnote-reference brackets" href="#ptxtex" id="id54" role="doc-noteref"><span class="fn-bracket">[</span>39<span class="fn-bracket">]</span></a>.</p>
+or blending logic <a class="footnote-reference brackets" href="#ptxtex" id="id56" role="doc-noteref"><span class="fn-bracket">[</span>40<span class="fn-bracket">]</span></a>.</p>
 <p>If a 1D texture is used instead, the texture instruction would look like:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">// For compatibility with prior versions of PTX, the square brackets are not</span>
 <span class="go">// required and .v4 coordinate vectors are allowed for any geometry, with</span>
@@ -3265,9 +3473,9 @@ or blending logic <a class="footnote-reference brackets" href="#ptxtex" id="id54
 provides APIs that allow user programs to bind ‘Texture Units’ to ‘Sampler
 Variables’. As a result, user programs can balance the use of ‘Texture Units’
 efficiently through OpenGL APIs without recompiling GLSL. Fast texture sampling
-is one of the key requirements for good GPU performance <a class="footnote-reference brackets" href="#tpu" id="id55" role="doc-noteref"><span class="fn-bracket">[</span>35<span class="fn-bracket">]</span></a>.</p>
+is one of the key requirements for good GPU performance <a class="footnote-reference brackets" href="#tpu" id="id57" role="doc-noteref"><span class="fn-bracket">[</span>36<span class="fn-bracket">]</span></a>.</p>
 <p>In addition to the API for binding textures, OpenGL provides the
-<code class="docutils literal notranslate"><span class="pre">glTexParameteri</span></code> API for texture wrapping <a class="footnote-reference brackets" href="#texturewrapper" id="id56" role="doc-noteref"><span class="fn-bracket">[</span>40<span class="fn-bracket">]</span></a>. Furthermore, the
+<code class="docutils literal notranslate"><span class="pre">glTexParameteri</span></code> API for texture wrapping <a class="footnote-reference brackets" href="#texturewrapper" id="id58" role="doc-noteref"><span class="fn-bracket">[</span>41<span class="fn-bracket">]</span></a>. Furthermore, the
 texture instruction for some GPUs may include S# and T# values in the operands.
 Similar to associating ‘Sampler Variables’ to ‘Texture Units’, S# and T# are
 memory locations associated with texture wrapping descriptor registers. This
@@ -3280,11 +3488,11 @@ somewhat more complex than the CPU backend.</p>
 Clang, or toolchains like the linker and GDB/LLDB, the overall difficulty of
 building a CPU compiler is not necessarily less than that of a GPU compiler.)</p>
 <p>Here is the software stack of the 3D graphics system for OpenGL on Linux
-<a class="footnote-reference brackets" href="#mesawiki" id="id57" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a>. The Mesa open source project website is here <a class="footnote-reference brackets" href="#mesa" id="id58" role="doc-noteref"><span class="fn-bracket">[</span>41<span class="fn-bracket">]</span></a>.</p>
+<a class="footnote-reference brackets" href="#mesawiki" id="id59" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a>. The Mesa open source project website is here <a class="footnote-reference brackets" href="#mesa" id="id60" role="doc-noteref"><span class="fn-bracket">[</span>42<span class="fn-bracket">]</span></a>.</p>
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="redbook" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
-<span class="backrefs">(<a role="doc-backlink" href="#id2">1</a>,<a role="doc-backlink" href="#id18">2</a>,<a role="doc-backlink" href="#id19">3</a>,<a role="doc-backlink" href="#id21">4</a>,<a role="doc-backlink" href="#id25">5</a>,<a role="doc-backlink" href="#id27">6</a>,<a role="doc-backlink" href="#id59">7</a>,<a role="doc-backlink" href="#id60">8</a>)</span>
+<span class="backrefs">(<a role="doc-backlink" href="#id2">1</a>,<a role="doc-backlink" href="#id18">2</a>,<a role="doc-backlink" href="#id19">3</a>,<a role="doc-backlink" href="#id21">4</a>,<a role="doc-backlink" href="#id25">5</a>,<a role="doc-backlink" href="#id27">6</a>,<a role="doc-backlink" href="#id61">7</a>,<a role="doc-backlink" href="#id62">8</a>)</span>
 <p><a class="reference external" href="http://www.opengl-redbook.com">http://www.opengl-redbook.com</a></p>
 </aside>
 <aside class="footnote brackets" id="redbook-examples" role="doc-footnote">
@@ -3296,11 +3504,11 @@ building a CPU compiler is not necessarily less than that of a GPU compiler.)</p
 <p><a class="reference external" href="https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_BasicsTheory.html">https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_BasicsTheory.html</a></p>
 </aside>
 <aside class="footnote brackets" id="shading" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id34">4</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id36">4</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://en.wikipedia.org/wiki/Shading">https://en.wikipedia.org/wiki/Shading</a></p>
 </aside>
 <aside class="footnote brackets" id="mesawiki" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id57">5</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id59">5</a><span class="fn-bracket">]</span></span>
 <p>&lt;<a class="reference external" href="https://en.wikipedia.org/wiki/Mesa_(computer_graphics)">https://en.wikipedia.org/wiki/Mesa_(computer_graphics)</a>&gt;</p>
 </aside>
 <aside class="footnote brackets" id="vao-vbo-binding" role="doc-footnote">
@@ -3317,7 +3525,7 @@ building a CPU compiler is not necessarily less than that of a GPU compiler.)</p
 </aside>
 <aside class="footnote brackets" id="redbook-colorbuffer" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id7">9</a><span class="fn-bracket">]</span></span>
-<p>Section of Color Buffer, page 222-223 of book “OpenGL Programming Guide 9th Edition” <a class="footnote-reference brackets" href="#redbook" id="id59" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
+<p>Section of Color Buffer, page 222-223 of book “OpenGL Programming Guide 9th Edition” <a class="footnote-reference brackets" href="#redbook" id="id61" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
 </aside>
 <aside class="footnote brackets" id="ogl-qualifier" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id8">10</a><span class="fn-bracket">]</span></span>
@@ -3354,7 +3562,7 @@ building a CPU compiler is not necessarily less than that of a GPU compiler.)</p
 </aside>
 <aside class="footnote brackets" id="redbook-p36" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id23">18</a><span class="fn-bracket">]</span></span>
-<p>Page 36 of book “OpenGL Programming Guide 9th Edition” <a class="footnote-reference brackets" href="#redbook" id="id60" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
+<p>Page 36 of book “OpenGL Programming Guide 9th Edition” <a class="footnote-reference brackets" href="#redbook" id="id62" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
 </aside>
 <aside class="footnote brackets" id="ts-tu30" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id24">19</a><span class="fn-bracket">]</span></span>
@@ -3375,83 +3583,88 @@ building a CPU compiler is not necessarily less than that of a GPU compiler.)</p
 <a class="reference external" href="https://www.imgtec.com/blog/why-powervr-does-not-support-geometry-shaders/">https://www.imgtec.com/blog/why-powervr-does-not-support-geometry-shaders/</a></p>
 </aside>
 <aside class="footnote brackets" id="fragmentshader-reason" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id30">23</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id32">23</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://community.khronos.org/t/pixel-vs-fragment-shader/52838">https://community.khronos.org/t/pixel-vs-fragment-shader/52838</a></p>
 </aside>
 <aside class="footnote brackets" id="shaderswiki" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id31">24</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id33">24</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://en.m.wikipedia.org/wiki/OpenGL_Shading_Language">https://en.m.wikipedia.org/wiki/OpenGL_Shading_Language</a></p>
 </aside>
 <aside class="footnote brackets" id="shadersex" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id32">25</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id34">25</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://learnopengl.com/Getting-started/Shaders">https://learnopengl.com/Getting-started/Shaders</a></p>
 </aside>
 <aside class="footnote brackets" id="glsleffect" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id33">26</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id35">26</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://www.youtube.com/watch?v=LyoSSoYyfVU">https://www.youtube.com/watch?v=LyoSSoYyfVU</a> at 5:25 from beginning: combine different textures.</p>
 </aside>
 <aside class="footnote brackets" id="smoothshadingex" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id35">27</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id37">27</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://github.com/ruange/Gouraud-Shading-and-Phong-Shading">https://github.com/ruange/Gouraud-Shading-and-Phong-Shading</a></p>
 </aside>
 <aside class="footnote brackets" id="on-line" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id36">28</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id38">28</a><span class="fn-bracket">]</span></span>
 <p>Compiler and interpreter: (<a class="reference external" href="https://www.guru99.com/difference-compiler-vs-interpreter.html">https://www.guru99.com/difference-compiler-vs-interpreter.html</a>). AOT compiler: compiles before running; JIT compiler: compiles while running; interpreter: runs (reference <a class="reference external" href="https://softwareengineering.stackexchange.com/questions/246094/understanding-the-differences-traditional-interpreter-jit-compiler-jit-interp">https://softwareengineering.stackexchange.com/questions/246094/understanding-the-differences-traditional-interpreter-jit-compiler-jit-interp</a>). Both online and offline compiler are AOT compiler. User call OpenGL api to run their program and the driver call call online compiler to compile user’s shaders without user compiling their shader before running their program. When user run a CPU program of C language, he must compile C program before running the program. This is offline compiler.</p>
 </aside>
+<aside class="footnote brackets" id="raytracewiki" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>29<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id30">1</a>,<a role="doc-backlink" href="#id31">2</a>)</span>
+<p>&lt;<a class="reference external" href="https://en.wikipedia.org/wiki/Ray_tracing_(graphics)">https://en.wikipedia.org/wiki/Ray_tracing_(graphics)</a>&gt;</p>
+</aside>
 <aside class="footnote brackets" id="onlinecompile" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id37">29</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id39">30</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://community.khronos.org/t/offline-glsl-compilation/61784">https://community.khronos.org/t/offline-glsl-compilation/61784</a></p>
 </aside>
 <aside class="footnote brackets" id="openglspec" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id39">30</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id41">31</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://www.khronos.org/registry/OpenGL-Refpages/">https://www.khronos.org/registry/OpenGL-Refpages/</a></p>
 </aside>
 <aside class="footnote brackets" id="opengleswiki" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id40">31</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id42">32</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://en.wikipedia.org/wiki/OpenGL_ES">https://en.wikipedia.org/wiki/OpenGL_ES</a></p>
 </aside>
 <aside class="footnote brackets" id="textureapi" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id41">32</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id43">33</a><span class="fn-bracket">]</span></span>
 <p>All the api listed in section 8.9 of <a class="reference external" href="https://www.khronos.org/registry/OpenGL/specs/es/3.2/GLSL_ES_Specification_3.20.html#texture-functions">https://www.khronos.org/registry/OpenGL/specs/es/3.2/GLSL_ES_Specification_3.20.html#texture-functions</a></p>
 </aside>
 <aside class="footnote brackets" id="intrinsiccpu0" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id42">33</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id44">34</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="http://jonathan2251.github.io/lbd/funccall.html#add-specific-backend-intrinsic-function">http://jonathan2251.github.io/lbd/funccall.html#add-specific-backend-intrinsic-function</a></p>
 </aside>
 <aside class="footnote brackets" id="textureobject" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span>34<span class="fn-bracket">]</span></span>
-<span class="backrefs">(<a role="doc-backlink" href="#id43">1</a>,<a role="doc-backlink" href="#id44">2</a>,<a role="doc-backlink" href="#id45">3</a>,<a role="doc-backlink" href="#id46">4</a>)</span>
+<span class="label"><span class="fn-bracket">[</span>35<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id45">1</a>,<a role="doc-backlink" href="#id46">2</a>,<a role="doc-backlink" href="#id47">3</a>,<a role="doc-backlink" href="#id48">4</a>)</span>
 <p><a class="reference external" href="http://ogldev.atspace.co.uk/www/tutorial16/tutorial16.html">http://ogldev.atspace.co.uk/www/tutorial16/tutorial16.html</a></p>
 </aside>
 <aside class="footnote brackets" id="tpu" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span>35<span class="fn-bracket">]</span></span>
-<span class="backrefs">(<a role="doc-backlink" href="#id47">1</a>,<a role="doc-backlink" href="#id48">2</a>,<a role="doc-backlink" href="#id55">3</a>)</span>
+<span class="label"><span class="fn-bracket">[</span>36<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id49">1</a>,<a role="doc-backlink" href="#id50">2</a>,<a role="doc-backlink" href="#id57">3</a>)</span>
 <p><a class="reference external" href="http://math.hws.edu/graphicsbook/c6/s4.html">http://math.hws.edu/graphicsbook/c6/s4.html</a></p>
 </aside>
 <aside class="footnote brackets" id="samplervar" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id49">36</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id51">37</a><span class="fn-bracket">]</span></span>
 <p>The type of ‘sampler uniform variable’ called “sampler variables”. <a class="reference external" href="http://math.hws.edu/graphicsbook/c6/s4.html">http://math.hws.edu/graphicsbook/c6/s4.html</a></p>
 </aside>
 <aside class="footnote brackets" id="metadata" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id50">37</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id52">38</a><span class="fn-bracket">]</span></span>
 <p>This can be done by llvm metadata. <a class="reference external" href="http://llvm.org/docs/LangRef.html#namedmetadatastructure">http://llvm.org/docs/LangRef.html#namedmetadatastructure</a> <a class="reference external" href="http://llvm.org/docs/LangRef.html#metadata">http://llvm.org/docs/LangRef.html#metadata</a></p>
 </aside>
 <aside class="footnote brackets" id="descriptorreg" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span>38<span class="fn-bracket">]</span></span>
-<span class="backrefs">(<a role="doc-backlink" href="#id51">1</a>,<a role="doc-backlink" href="#id53">2</a>)</span>
+<span class="label"><span class="fn-bracket">[</span>39<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id53">1</a>,<a role="doc-backlink" href="#id55">2</a>)</span>
 <p>When performing a texture fetch, the addresses to read pixel data from are computed by reading the GPRs that hold the texture descriptor and the GPRs that hold the texture coordinates. It’s mostly just general purpose memory fetching. <a class="reference external" href="https://www.gamedev.net/forums/topic/681503-texture-units/">https://www.gamedev.net/forums/topic/681503-texture-units/</a></p>
 </aside>
 <aside class="footnote brackets" id="ptxtex" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span>39<span class="fn-bracket">]</span></span>
-<span class="backrefs">(<a role="doc-backlink" href="#id52">1</a>,<a role="doc-backlink" href="#id54">2</a>)</span>
+<span class="label"><span class="fn-bracket">[</span>40<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id54">1</a>,<a role="doc-backlink" href="#id56">2</a>)</span>
 <p>page 84: tex instruction, p24: texture memory <a class="reference external" href="https://www.nvidia.com/content/CUDA-ptx_isa_1.4.pdf">https://www.nvidia.com/content/CUDA-ptx_isa_1.4.pdf</a></p>
 </aside>
 <aside class="footnote brackets" id="texturewrapper" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id56">40</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id58">41</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://learnopengl.com/Getting-started/Textures">https://learnopengl.com/Getting-started/Textures</a></p>
 </aside>
 <aside class="footnote brackets" id="mesa" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id58">41</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id60">42</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://www.mesa3d.org/">https://www.mesa3d.org/</a></p>
 </aside>
 </aside>
