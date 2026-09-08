@@ -25,6 +25,10 @@ Revision history
 Version 0.4, not released yet.
 
   opengl.rst: Add section 'Ray Tracing Pipeline'.
+  opengl.rst: refine Meshlets.
+  hw.rst: add dgpu.gv and igpu.gv.
+  hw-sw-stack.rst: refine VSync.
+  Correct typing.
 
 Version 0.3, Released March 14, 2026.
 
