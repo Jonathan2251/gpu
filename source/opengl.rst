@@ -333,28 +333,22 @@ As illustred in :ref:`cross-product` section,
 ✔️  Each mesh (triangle or primitive) has a fixed “outer” and “inner” side,
 determined by CCW ordering in object space.
 
-✔️  By reading these CCW-ordered vertices sequentially, the shape and surface 
-orientation of the 3D model can be constructed.
+✔️  By reading these CCW-ordered vertices in a triangle sequentially, the shape 
+and surface orientation of the 3D model can be constructed.
 
 ✔️  There is no need to wait for the entire mesh to be received; once three 
-CCW-ordered vertices are available, each triangle can be processed correctly.
+CCW-ordered vertices in a triangle are available, each triangle can be 
+processed correctly.
 
 ✔️  When the camera moves to the inside an object: CCW ↔ CW flips.
 
 This means:
 
 ✔️  Vertex Shader and Tessellation: **may processing each vertex independently**
-as long as the vertex order is preserved.
+as long as the vertex order in a triangle is preserved.
 
 ✔️  Once **three CCW-ordered vertices are available**, Primitive Assembly can 
 convert them into a triangle and pass it to the next pipeline stage.
-
-   - For example: once v0,v1,v2,v3 are available, Primitive Assembly outputs:
-
-     Triangle A (v0,v1,v2)
-
-     Triangle B (v2,v3,v0)
-
 
 After vertices are assembled into
 primitives (such as triangles), the front-facing and back-facing surfaces can 
@@ -722,6 +716,240 @@ For 2D animation, the model is created by 2D only (1 face only), so it only can 
 viewed from the same face of model. If you want to display different faces of model,
 multiple 2D models need to be created and switch these 2D models from face(flame) to 
 face(flame) from time to time [#2danimation]_.
+
+
+Mesh Construction
+*****************
+
+As described in section :ref:`three-d-rendering-pipeline`:
+
+✔️  By reading these CCW-ordered vertices in a triangle sequentially, the shape
+and surface orientation of the 3D model can be constructed.
+
+Because a mesh contains many vertices shared across triangles, this section 
+explains how OpenGL and GPUs avoid reprocessing those redundant vertices.”
+
+**OpenGL Triangles**
+
+OpenGL has:
+
+- GL_TRIANGLES — every 3 vertices form an independent triangle
+- GL_TRIANGLE_STRIP — consecutive vertices share edges
+- GL_TRIANGLE_FAN — all triangles share the first vertex
+
+For example:
+
+.. code-block:: text
+
+   glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
+
+   With vertices:
+
+   v0 ───── v2 ───── v4
+   │     ╱  │     ╱  │
+   │   ╱    │   ╱    │
+   │ ╱      │ ╱      │
+   v1 ───── v3 ───── v5
+
+   vertices:
+   v0, v1, v2, v3, v4, v5
+
+   Triangle list for GL_TRIANGLE:
+
+   indices:
+
+   (0,1,2)
+   (2,1,3)
+   (2,3,4)
+   (4,3,5)
+
+   Triangle strip for GL_TRIANGLE_STRIP:
+
+   indices:
+
+   0,1,2,3,4,5
+
+The triangles are generated as:
+
+.. code-block:: text
+
+   Triangle 0: v0, v1, v2
+   Triangle 1: v2, v1, v3
+   Triangle 2: v2, v3, v4
+   Triangle 3: v4, v3, v5
+
+So after the first 3 vertices, each additional vertex creates one new 
+triangle.
+
+For a GPU compiler, triangle strip is important because the primitive assembly 
+stage has to keep track of the previous vertices and **alternates triangle 
+winding order** for successive triangles.
+
+For the first triangle:
+
+v0 → v1 → v2
+
+For the second triangle, the shared edge is v1-v2. To maintain the same winding 
+direction, OpenGL uses:
+
+v2 → v1 → v3
+
+rather than:
+
+v1 → v2 → v3
+
+That causes the second triangle's winding to be opposite.
+
+3D models may create meshes with ndividual triangles or triangle strips. 
+However, real 3D meshes are usually not one continuous strip. A model has:
+
+- branches
+- holes
+- disconnected surfaces
+- different materials
+- hard edges
+- UV seams
+- normal seams
+
+These make a single efficient triangle strip difficult.
+Modern GPUs also have **post-transform vertex caches**, so well-organized 
+triangle lists can reuse vertex shader results efficiently.
+
+The mesh itself is a collection of triangles. GL_TRIANGLES and GL_TRIANGLE_STRIP 
+are primarily different primitive assembly methods for interpreting the 
+index/vertex stream.
+Also, modern APIs such as Vulkan and Direct3D still support triangle strips, 
+but triangle lists are the dominant representation for general-purpose 3D 
+meshes.
+
+**Post-Transform Vertex Cache**
+
+A modern GPU usually has a small **post-transform vertex cache** that stores
+the results of vertex shader execution.
+
+This cache allows the GPU to avoid executing the vertex shader multiple times
+for the same vertex when that vertex is referenced by several triangles.
+
+For example, consider the following indexed triangle list::
+
+    Triangle 0: 0, 1, 2
+    Triangle 1: 2, 1, 3
+    Triangle 2: 2, 3, 4
+
+The vertices ``1`` and ``2`` are shared by the first two triangles. The GPU
+can process the first triangle as follows::
+
+    Index       Cache       Action
+    ------------------------------------
+      0         miss        Run vertex shader
+      1         miss        Run vertex shader
+      2         miss        Run vertex shader
+
+When processing the second triangle::
+
+    Index       Cache       Action
+    ------------------------------------
+      2         hit         Reuse vertex shader result
+      1         hit         Reuse vertex shader result
+      3         miss        Run vertex shader
+
+Therefore, although vertex ``1`` and vertex ``2`` appear multiple times in the
+index buffer, their vertex shaders do not need to be executed again as long as
+their transformed results are still in the cache.
+
+The cache is called a *post-transform* cache because it stores the results
+*after* vertex transformation, rather than merely caching the original
+vertex attributes.
+
+A simplified GPU pipeline is::
+
+    Index Buffer
+         |
+         v
+    Vertex Fetch
+         |
+         v
+    Vertex Shader
+         |
+         v
+    Post-Transform Vertex Cache
+         |
+         v
+    Primitive Assembly
+         |
+         v
+    Rasterization
+
+Triangle Order Matters
+
+The cache has limited capacity. If a vertex is referenced again after it has
+been evicted from the cache, the vertex shader must execute again.
+
+For example, consider a small cache::
+
+    T0: 0, 1, 2
+    T1: 3, 4, 5
+    T2: 0, 1, 2
+
+After processing ``T0``, vertices ``0``, ``1``, and ``2`` may be in the
+cache. Processing ``T1`` replaces them with ``3``, ``4``, and ``5``. When
+``T2`` is processed, vertices ``0``, ``1``, and ``2`` are no longer in the
+cache, so their vertex shaders must execute again.
+
+A different triangle order can keep shared vertices in the cache for longer::
+
+    T0: 0, 1, 2
+    T1: 2, 1, 3
+    T2: 2, 3, 4
+    T3: 3, 4, 5
+
+This ordering has good locality because neighboring triangles share recently
+processed vertices.
+
+**Mesh Optimization**
+
+A **mesh optimizer** can reorder the triangles, and therefore the indices,
+to improve vertex-cache locality.
+
+The mesh optimizer does not remove duplicated vertex processing by itself.
+Instead, it arranges the triangle order so that the GPU's post-transform
+vertex cache can reuse more previously computed vertex shader results.
+
+The relationship is::
+
+    Mesh Optimizer
+          |
+          | Reorders triangles / indices
+          v
+    Better Vertex Locality
+          |
+          v
+    Post-Transform Vertex Cache
+          |
+          | More cache hits
+          v
+    Fewer Vertex Shader Executions
+
+This is one reason that a well-organized **triangle list** can achieve
+substantial vertex reuse on modern GPUs, even without using a triangle strip.
+
+Triangle strips provide vertex reuse through their primitive-assembly rules,
+whereas an optimized triangle list relies on the post-transform cache to
+reuse previously computed vertex shader results.
+
+The two mechanisms are therefore different::
+
+    Triangle Strip
+        |
+        +-- Implicit vertex reuse in primitive assembly
+
+    Optimized Triangle List
+        |
+        +-- Explicit indices
+        |
+        +-- Good triangle ordering
+        |
+        +-- Post-transform cache reuse
 
 
 .. _tessellation-ex:
@@ -2339,8 +2567,9 @@ The :numref:`shaders-pipeline-in-out` is the summary of GLSL Qualifiers below.
   all shaders in the pipeline.
   This means that uniform data represents global parameters for 3D GPU rendering.
 - flat: Disables interpolation; uses provoking vertex
-- smooth: Enables perspective-correct interpolation (default)
-- noperspective: Linear interpolation in screen space
+- **smooth:** Enables perspective-correct interpolation (default);
+  **noperspective:** Use Linear interpolation in screen space instead of "smooth" 
+  option.
 - centroid: Samples within primitive area (for multisampling)
 - sample: Per-sample interpolation (GLSL 4.0+)
 - discard: Terminates fragment processing early

@@ -17,12 +17,14 @@ digraph gpu_memory {
   subgraph cluster_dedicated {
     label = "Dedicated Memory (Discrete GPU)";
     CPU2 [label="CPU\n(Caches)"];
+    CMC [label="CPU Memory Controller"];
     SYS_RAM [label="System RAM"];
     GPU2 [label="dGPU\n(Caches, DMA)"];
+    GMC [label="dGPU Memory Controller"];
     VRAM [label="VRAM\n(GDDR/HBM)"];
 
-    CPU2 -> SYS_RAM;
-    GPU2 -> VRAM;
+    CPU2 -> CMC -> SYS_RAM;
+    GPU2 -> GMC -> VRAM;
   }
 
   edge [style=invis];

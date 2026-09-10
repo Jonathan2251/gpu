@@ -578,12 +578,13 @@ Based on these description of this section, this means:
 ✔️  Each mesh (triangle or primitive) has a fixed “outer” and “inner” side,
 determined by CCW ordering in object space.
 
-✔️  By reading these CCW-ordered vertices sequentially, the shape and surface 
-orientation of the 3D model can be constructed.
+✔️  By reading these CCW-ordered vertices in a triangle sequentially, the shape 
+and surface orientation of the 3D model can be constructed.
 
 ✔️  There is no need to wait for the entire mesh to be received; once three 
-CCW-ordered vertices are available, each triangle can be processed correctly
-as shown in :numref:`construct-triangle` from the camera position :math:`p_0`.
+CCW-ordered vertices in a triangle are available, each triangle can be 
+processed correctly as shown in :numref:`construct-triangle` from the camera 
+position :math:`p_0`.
 
 .. _construct-triangle: 
 .. figure:: ../Fig/geo-math/construct-triangle.png
@@ -611,8 +612,8 @@ As mentioned in :numref:`trans_steps` of section :ref:`transformation`,
 the Cooridinates Transform Pipeline maps geometry from Camera Space to 
 Clipping Space (Clipping Volume). 
 This tranformation significantly simplifies the calculation required
-for discarding and clipping triangles, as will be desribed in the next
-section :ref:`projection`.
+for discarding and clipping triangles, as will be desribed in the
+section :ref:`projection` later.
 
 
 How does OpenGL render (draw) the inner face of a triangle?

@@ -1049,6 +1049,9 @@ VRAM dGPU
 .. graphviz:: ../Fig/hw/mem.gv
   :caption: iGPU versus dGPU
 
+DMA = Direct Memory Access, meaning a hardware unit can read/write memory 
+without CPU involvement.
+
 .. graphviz:: ../Fig/hw/dgpu.gv
    :caption: CPU send Uniform Updates Data to dGPU for rendering
  
@@ -1057,10 +1060,19 @@ VRAM dGPU
  
 **Reason:**
 
-**1. Since CPU and GPU have different requirements, a shared memory design cannot 
+1. Even though the **uniform updates are “zero‑copy” in Integrated GPUs**, the 
+GPU must fetch **all rendering data** (textures, vertex buffers, render targets) 
+from system RAM, which is:
+
+- 4–10× lower bandwidth than VRAM
+- shared with the CPU
+- higher latency
+- less optimized for parallel GPU access
+
+**2. Since CPU and GPU have different requirements, a shared memory design cannot 
 match the performance of dedicated GPU memory.**
 
-**2. In systems with shared memory (like integrated GPUs), both the CPU and GPU 
+**3. In systems with shared memory (like integrated GPUs), both the CPU and GPU 
 access the same physical memory (DRAM). This leads to several forms of 
 contention:**
 
