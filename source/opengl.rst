@@ -316,6 +316,27 @@ Primitive Assembly (fixed-function) and Primitive Setup (fixed-function).
 
           OpenGL pipeline in blue book
 
+In :numref:`rp:left`, the "Primitive Assembly" is the "Output Primitive 
+Assembly". A more accurate ordering is:
+
+.. code-block:: text
+
+  Vertex Shader
+      ↓
+  Patch assembly / Input Primitive Assembly
+      ↓
+  Tessellation
+      ├── Tessellation Control Shader
+      ├── Primitive Generation
+      └── Tessellation Evaluation Shader
+      ↓
+  Geometry Shader
+      ↓
+  Output Primitive Assembly
+      ↓
+  Rasterization
+
+
 .. _gpu-pipeline: 
 .. graphviz:: ../Fig/opengl/gpu-pipeline.gv
   :caption: Modern GPU Pipeline

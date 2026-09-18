@@ -4,50 +4,68 @@ digraph GPU_Pipeline {
 
     VB [label="Vertex Buffer"];
     VS [label="Vertex Shader", style=filled, fillcolor=orange];
+
     subgraph cluster_ts {
         label="Tessellation";
         style=rounded;
 
-        TCS [label="Tessellation\nControl Shader\n(optional)", style=filled, fillcolor=orange];
+        PA  [label="Patch Assembly\n(GL_PATCHES)"];
+        TCS [label="Tessellation\nControl Shader\n(optional)",
+             style=filled, fillcolor=orange];
         TS  [label="Tessellator\n(fixed-function)"];
-        TES [label="Tessellation\nEvaluation Shader\n(optional)", style=filled, fillcolor=orange];
+        TES [label="Tessellation\nEvaluation Shader\n(required when\n tessellation is enabled)",
+             style=filled, fillcolor=orange];
 
-        { rank = same;  TCS; TS; TES }
+        { rank = same; PA; TCS; TS; TES }
     }
+
     subgraph cluster_pp {
         label="Primitive Processing";
         style=rounded;
 
-        PA  [label="Primitive Assembly\n(topology formation)"];
-        GS  [label="Geometry Shader\n(optional)", style=filled, fillcolor=orange];
-        Cull  [label="Culling"];
-        Clip  [label="Clipping"];
-        PS  [label="Primitive Setup\n(rasterization\n prep)"];
+        IPA  [label="Input Primitive Assembly\n(for Geometry Shader)"];
+        GS   [label="Geometry Shader\n(optional)",
+              style=filled, fillcolor=orange];
+        OPA  [label="Geometry Shader Output\nPrimitive Formation"];
+        Clip [label="Clipping"];
+        Cull [label="Face Culling"];
+        PS   [label="Primitive Setup\n(rasterization prep)"];
 
-        { rank = same;  PA; GS; Cull; Clip; PS }
+        { rank = same; IPA; GS; OPA; Clip; Cull; PS }
     }
+
     RAST [label="Rasterizer"];
-    FS [label="Fragment Shader", style=filled, fillcolor=orange];
-    FB [label="Framebuffer"];
+    FS   [label="Fragment Shader", style=filled, fillcolor=orange];
+    FB   [label="Per-Fragment Operations\n& Framebuffer"];
 
     VB -> VS;
 
-    VS -> TCS;
+    // Tessellation path: VS outputs are grouped into patches first.
+    VS -> PA [label="GL_PATCHES"];
+    PA -> TCS [label="input patch"];
     TCS -> TS;
-    TS  -> TES;
+    PA -> TS [label="no TCS", style=dashed];
+    TS -> TES;
 
-    // Bypass tessellation path
-    VS -> PA [label="(no tessellation)", style=dashed];
+    // The TES produces the tessellated primitive stream.
+    TES -> IPA [label="tessellated primitives"];
 
-    TES -> PA;
+    // Non-tessellation path.
+    VS -> IPA [label="no tessellation", style=dashed];
 
-    PA -> GS [label = "Primitives\n(triangles/lines)"];
-    GS -> Cull;
-    Cull -> Clip;
-    Clip -> PS;
+    // A Geometry Shader receives already assembled input primitives.
+    IPA -> GS [label="assembled primitives"];
+    GS -> OPA;
+    IPA -> Clip [label="no Geometry Shader", style=dashed];
+
+    // GS output is interpreted according to its declared output topology.
+    OPA -> Clip;
+    Clip -> Cull;
+    Cull -> PS;
     PS -> RAST;
     RAST -> FS;
     FS -> FB;
 
-    { rank = same; FS; FB }
+    { rank = same; VB; VS }
+    { rank = same; RAST; FS; FB }
 }
