@@ -6,8 +6,8 @@ digraph SM_Geometry_Assembly {
   /* Graph-level title (left-aligned, bold) */
   label=<
     <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" ALIGN="LEFT">
-      <TR><TD><FONT POINT-SIZE="14" COLOR="#003366"><B>SM → Geometry Unit: PTX-like Assembly Flow</B></FONT></TD></TR>
-      <TR><TD><FONT POINT-SIZE="10" COLOR="#003366">Example sequence showing loads/moves and {@code call emit}/{@code call cut} dispatching primitives</FONT></TD></TR>
+      <TR><TD><FONT POINT-SIZE="14" COLOR="#003366"><B>Geometry Shader: Triangle In → Triangle Out</B></FONT></TD></TR>
+      <TR><TD><FONT POINT-SIZE="10" COLOR="#003366">One input triangle ({@code gl_in[0..2]}) is forwarded as one output triangle</FONT></TD></TR>
     </TABLE>
   >;
   labelloc=top;
@@ -16,7 +16,8 @@ digraph SM_Geometry_Assembly {
   SMThread [fillcolor="#FFF2CC" label=<
     <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" ALIGN="LEFT">
       <TR><TD><B>Thread running in SM</B></TD></TR>
-      <TR><TD>• Executes geometry shader program</TD></TR>
+      <TR><TD>• Receives one input triangle: {@code gl_in[0..2]}</TD></TR>
+      <TR><TD>• Executes the geometry shader once per input primitive</TD></TR>
       <TR><TD>• Issues compiled PTX-style microcode</TD></TR>
     </TABLE>
   >];
@@ -34,17 +35,25 @@ digraph SM_Geometry_Assembly {
   AsmSeq [fillcolor="#FFFFFF" penwidth="1" label=<
     <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" ALIGN="LEFT">
       <TR><TD><B>Compiled (PTX-like) Instruction Sequence</B></TD></TR>
-      <TR><TD><FONT FACE="monospace">ld.global.v4.f32 {r0, r1, r2, r3}, [in_attr0];</FONT></TD></TR>
+      <TR><TD><FONT FACE="monospace">// layout(triangles) in;</FONT></TD></TR>
+      <TR><TD><FONT FACE="monospace">// layout(triangle_strip, max_vertices = 3) out;</FONT></TD></TR>
+      <TR><TD><FONT FACE="monospace">ld.input.v4.f32 {r0, r1, r2, r3}, [gl_in[0].gl_Position];</FONT></TD></TR>
       <TR><TD><FONT FACE="monospace">mov.f32 o0, r0;</FONT></TD></TR>
       <TR><TD><FONT FACE="monospace">mov.f32 o1, r1;</FONT></TD></TR>
       <TR><TD><FONT FACE="monospace">mov.f32 o2, r2;</FONT></TD></TR>
       <TR><TD><FONT FACE="monospace">mov.f32 o3, r3;</FONT></TD></TR>
       <TR><TD><FONT FACE="monospace"><B>call emit;</B></FONT></TD></TR>
-      <TR><TD><FONT FACE="monospace">ld.global.v4.f32 {r4, r5, r6, r7}, [in_attr1];</FONT></TD></TR>
+      <TR><TD><FONT FACE="monospace">ld.input.v4.f32 {r4, r5, r6, r7}, [gl_in[1].gl_Position];</FONT></TD></TR>
       <TR><TD><FONT FACE="monospace">mov.f32 o0, r4;</FONT></TD></TR>
       <TR><TD><FONT FACE="monospace">mov.f32 o1, r5;</FONT></TD></TR>
       <TR><TD><FONT FACE="monospace">mov.f32 o2, r6;</FONT></TD></TR>
       <TR><TD><FONT FACE="monospace">mov.f32 o3, r7;</FONT></TD></TR>
+      <TR><TD><FONT FACE="monospace"><B>call emit;</B></FONT></TD></TR>
+      <TR><TD><FONT FACE="monospace">ld.input.v4.f32 {r8, r9, r10, r11}, [gl_in[2].gl_Position];</FONT></TD></TR>
+      <TR><TD><FONT FACE="monospace">mov.f32 o0, r8;</FONT></TD></TR>
+      <TR><TD><FONT FACE="monospace">mov.f32 o1, r9;</FONT></TD></TR>
+      <TR><TD><FONT FACE="monospace">mov.f32 o2, r10;</FONT></TD></TR>
+      <TR><TD><FONT FACE="monospace">mov.f32 o3, r11;</FONT></TD></TR>
       <TR><TD><FONT FACE="monospace"><B>call emit;</B></FONT></TD></TR>
       <TR><TD><FONT FACE="monospace"><B>call cut;</B></FONT></TD></TR>
     </TABLE>
@@ -54,8 +63,9 @@ digraph SM_Geometry_Assembly {
   OutRegs [shape=note, fillcolor="#FFFFE0", label=<
     <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" ALIGN="LEFT">
       <TR><TD><B>Output Registers / Emit Buffer</B></TD></TR>
-      <TR><TD>• o0..oN hold per-vertex outputs (position, attrs)</TD></TR>
-      <TR><TD>• Emit buffer queues vertices for Geometry Unit</TD></TR>
+      <TR><TD>• o0..oN hold one emitted vertex (position, attrs)</TD></TR>
+      <TR><TD>• Three {@code emit} calls queue a triangle strip</TD></TR>
+      <TR><TD>• {@code cut} ends the primitive (GLSL {@code EndPrimitive})</TD></TR>
     </TABLE>
   >];
 
@@ -63,8 +73,8 @@ digraph SM_Geometry_Assembly {
   GeoUnit [fillcolor="#D9E8FF" label=<
     <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" ALIGN="LEFT">
       <TR><TD><B>Geometry Unit (hardware)</B></TD></TR>
-      <TR><TD>• Accepts emitted vertices from SM output regs</TD></TR>
-      <TR><TD>• Primitive Assembly / Tessellation / GS handling</TD></TR>
+      <TR><TD>• Accepts three emitted vertices from the SM</TD></TR>
+      <TR><TD>• Assembles one triangle from the triangle strip</TD></TR>
       <TR><TD>• Culling, Clipping, Viewport transform</TD></TR>
       <TR><TD>• Primitive Setup → send to Rasterizer</TD></TR>
     </TABLE>
@@ -82,11 +92,11 @@ digraph SM_Geometry_Assembly {
   SMThread -> InstFetch [label=" compiled microcode / instruction pointer" fontsize=10];
   InstFetch -> AsmSeq [label=" decode -> micro-ops" fontsize=10];
   AsmSeq -> OutRegs [label=" write outputs (o0..oN)" fontsize=10];
-  OutRegs -> GeoUnit [label=" Emit vertex(s) (emit/cut triggers)" fontsize=10];
+  OutRegs -> GeoUnit [label=" 3 emitted vertices + EndPrimitive" fontsize=10];
   GeoUnit -> Rasterizer [label=" prepared primitives" fontsize=10];
 
   /* Control arrows (illustrate call emit/cut semantics) */
-  AsmSeq -> GeoUnit [label=" call emit / call cut (control msgs)", style=dashed, color="#3333CC"];
+  AsmSeq -> GeoUnit [label=" emit / EndPrimitive control", style=dashed, color="#3333CC"];
 
   /* layout hints */
   { rank = same; SMThread; InstFetch; AsmSeq }

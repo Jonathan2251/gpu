@@ -1311,19 +1311,21 @@ Suppose the GLSL geometry shader looks like this:
 .. rubric:: An example of GLSL geometry shader
 .. code-block:: c++
 
-  #version 450
-  layout(triangles) in;
-  layout(line_strip, max_vertices = 2) out;
+   #version 330 core
 
-  void main() {
-    gl_Position = gl_in[0].gl_Position;
-    EmitVertex();
+   layout(triangles) in;
+   layout(triangle_strip, max_vertices = 3) out;
 
-    gl_Position = gl_in[1].gl_Position;
-    EmitVertex();
+   void main()
+   {
+       // Forward the input triangle unchanged.
+       for (int i = 0; i < 3; ++i) {
+           gl_Position = gl_in[i].gl_Position;
+           EmitVertex();
+       }
 
-    EndPrimitive();
-  }
+       EndPrimitive();
+   }
 
 The corresponding PTX instructions and pipeline flow as :numref:`sm-geometry`.
 
