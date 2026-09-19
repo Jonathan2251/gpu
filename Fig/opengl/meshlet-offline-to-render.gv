@@ -6,7 +6,7 @@ digraph Meshlet_Offline_To_Render {
         label="Offline / Build Time";
         style=rounded;
 
-        BigMesh [label="Big Mesh\n(High-Poly Model)"];
+        BigMesh [label="Source Mesh\n(High-Polygon Model)"];
         MeshletGen [label="CPU Meshlet Generator Tool\n(Cluster Vertices & Triangles,\nBuild Meshlets, Culling Data)",
                     style=filled, fillcolor=orange];
         Meshlets [label="Small Clusters\n(Meshlets)\n(Precomputed)"];
@@ -16,7 +16,7 @@ digraph Meshlet_Offline_To_Render {
         label="Runtime / Load Time";
         style=rounded;
 
-        Loader [label="Meshlets Loader\n(Load Meshlet Buffers,\nBuild GPU-Ready Data)"];
+        Loader [label="Meshlet Loader\n(Loads Meshlet Buffers,\nBuilds GPU-Ready Data)"];
     }
 
     subgraph cluster_render {

@@ -3,15 +3,15 @@ digraph G {
 
   // Data Nodes
   node [shape=record, style=filled, fillcolor=white];
-  glsl [label="glsl"];
+  glsl [label="GLSL"];
   openclc [label="OpenCL C"];
-  spirv [label="spirv"];
-  llvm [label="llvm-ir"];
+  spirv [label="SPIR-V"];
+  llvm [label="LLVM IR"];
 
   // Tools Nodes
   node [shape=oval, style=filled, fillcolor=lightgreen];
   glslang [label="glslangValidator"];
-  spirv_cross [label="spirv-cross"];
+  spirv_cross [label="SPIRV-Cross"];
   clspv [label="clspv"];
   llvm_spirv [label="llvm-spirv"];
 

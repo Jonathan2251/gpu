@@ -20,7 +20,7 @@ digraph OpenGL_Pipeline_Part1 {
 
             TES  [label="Tessellation Evaluation Shader\n(TES)"];
 
-            TCS -> TS      [label="CP + Tessellation level"];
+            TCS -> TS      [label="Control Points +\nTessellation Levels"];
             TS  -> TES     [label="Tessellated domain\ncoordinates"];
 
             { rank = same;  TCS; TS; TES }
@@ -33,8 +33,8 @@ digraph OpenGL_Pipeline_Part1 {
     PS  [label="Primitive Setup"];
 
     App -> VS      [label="Vertex Arrays"];
-    VS  -> TCS     [label="Transformed Vertices +\nControl Points(CP)"];
-    TES -> PA      [label="Tessellated Vertices\n(more vertices)"];
+    VS  -> TCS     [label="Transformed Vertices +\nControl Points (CPs)"];
+    TES -> PA      [label="Tessellated Vertices\n(Increased Vertex Count)"];
     PA  -> GS;
     GS  -> PS      [label="Modified Primitives"];
 

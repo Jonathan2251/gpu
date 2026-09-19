@@ -7,7 +7,7 @@ digraph CPU_GPU_MobilePipeline {
         style=rounded;
 
         CPU_Vertex   [label="Load 3D Model\n(Vertex Data)\nVBOs, VAOs, Indices"];
-        CPU_Anim     [label="Update Animation Parameters\n(Bone Matrices, Morph Weights,\nTime, Material Params)"];
+        CPU_Anim     [label="Update Animation Parameters\n(Bone Matrices, Morph Weights,\nTime, Material Parameters)"];
     }
 
     subgraph cluster_gpu {

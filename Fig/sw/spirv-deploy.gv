@@ -23,9 +23,9 @@ digraph SPIRV_Deployment {
         spirv_loader [label="clCreateProgramWithIL()", fillcolor=orange];
         spirv_glsl -> spirv_loader;
         spirv_opencl -> spirv_loader;
-        spirv_loader -> device_driver [label="Load\n SPIR-V\n into driver"];
+        spirv_loader -> device_driver [label="Load SPIR-V\ninto the driver"];
         device_driver [label="OpenCL Driver\n(SPIR-V → Device IR → Machine Code)", fillcolor=plum];
-        device_driver -> execution [label="Compiled &\n Run on device"];
+        device_driver -> execution [label="Compile and run\non the device"];
         execution [label="Execute on\n OpenCL Device", fillcolor=lightyellow];
     }
 

@@ -7,7 +7,7 @@ digraph CPU_GPU_Pipeline {
         style=rounded;
         CPU_Vertex   [label="Load 3D Model\n(Vertex Data)\nVBOs, VAOs, Indices"];
         MeshletGen   [label="Meshlet Generator Tool\n(Cluster Vertices & Triangles,\nBuild Meshlets, Culling Data)", style=filled, fillcolor=orange];
-        CPU_Anim     [label="Update Animation Parameters\n(Bone Matrices, Morph Weights,\nTime, Material Params)"];
+        CPU_Anim     [label="Update Animation Parameters\n(Bone Matrices, Morph Weights,\nTime, Material Parameters)"];
     }
 
     subgraph cluster_gpu {
@@ -15,7 +15,7 @@ digraph CPU_GPU_Pipeline {
         style=rounded;
 
         TaskS   [label="Task Shader (Optional)\n(Work Distribution,\nMeshlet Dispatch)", style=filled, fillcolor=orange];
-        MeshS   [label="Mesh Shader\n(Expand Meshlets,\nCulling, LOD,\nEmit Triangles\nskinning)", style=filled, fillcolor=orange];
+        MeshS   [label="Mesh Shader\n(Expands Meshlets,\nCulling, LOD,\nTriangle Emission,\nSkinning)", style=filled, fillcolor=orange];
 
         Raster  [label="Rasterizer\n(Consumes Mesh Shader Output,\nClipping, Interpolation)", style=filled, fillcolor=yellow];
 

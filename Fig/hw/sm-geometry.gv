@@ -7,7 +7,7 @@ digraph SM_Geometry_Assembly {
   label=<
     <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" ALIGN="LEFT">
       <TR><TD><FONT POINT-SIZE="14" COLOR="#003366"><B>Geometry Shader: Triangle In → Triangle Out</B></FONT></TD></TR>
-      <TR><TD><FONT POINT-SIZE="10" COLOR="#003366">One input triangle ({@code gl_in[0..2]}) is forwarded as one output triangle</FONT></TD></TR>
+      <TR><TD><FONT POINT-SIZE="10" COLOR="#003366">One input triangle (gl_in[0..2]) is forwarded as one output triangle</FONT></TD></TR>
     </TABLE>
   >;
   labelloc=top;
@@ -16,7 +16,7 @@ digraph SM_Geometry_Assembly {
   SMThread [fillcolor="#FFF2CC" label=<
     <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" ALIGN="LEFT">
       <TR><TD><B>Thread running in SM</B></TD></TR>
-      <TR><TD>• Receives one input triangle: {@code gl_in[0..2]}</TD></TR>
+      <TR><TD>• Receives one input triangle: gl_in[0..2]</TD></TR>
       <TR><TD>• Executes the geometry shader once per input primitive</TD></TR>
       <TR><TD>• Issues compiled PTX-style microcode</TD></TR>
     </TABLE>
@@ -63,9 +63,9 @@ digraph SM_Geometry_Assembly {
   OutRegs [shape=note, fillcolor="#FFFFE0", label=<
     <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" ALIGN="LEFT">
       <TR><TD><B>Output Registers / Emit Buffer</B></TD></TR>
-      <TR><TD>• o0..oN hold one emitted vertex (position, attrs)</TD></TR>
-      <TR><TD>• Three {@code emit} calls queue a triangle strip</TD></TR>
-      <TR><TD>• {@code cut} ends the primitive (GLSL {@code EndPrimitive})</TD></TR>
+      <TR><TD>• o0..oN hold one emitted vertex (position, attributes)</TD></TR>
+      <TR><TD>• Three emit calls queue a triangle strip</TD></TR>
+      <TR><TD>• cut ends the primitive (GLSL EndPrimitive())</TD></TR>
     </TABLE>
   >];
 
@@ -76,7 +76,7 @@ digraph SM_Geometry_Assembly {
       <TR><TD>• Accepts three emitted vertices from the SM</TD></TR>
       <TR><TD>• Assembles one triangle from the triangle strip</TD></TR>
       <TR><TD>• Culling, Clipping, Viewport transform</TD></TR>
-      <TR><TD>• Primitive Setup → send to Rasterizer</TD></TR>
+      <TR><TD>• Primitive setup → rasterizer</TD></TR>
     </TABLE>
   >];
 

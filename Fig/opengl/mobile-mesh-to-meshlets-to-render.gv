@@ -6,7 +6,7 @@ digraph Meshlet_Convert_To_Render_Mobile {
         label="Input Mesh Data";
         style=rounded;
 
-        BigMesh [label="Big Mesh\n(Vertex + Index Buffers)"];
+        BigMesh [label="Source Mesh\n(Vertex and Index Buffers)"];
     }
 
     subgraph cluster_runtime {
@@ -23,7 +23,7 @@ digraph Meshlet_Convert_To_Render_Mobile {
         label="Mobile Meshlet Rendering Flow\n(Compute + VS Pipeline)";
         style=rounded;
 
-        VS [label="Mobile Rendering Pipeline\n(VS Pipeline"];
+        VS [label="Mobile Rendering Pipeline\n(Vertex-Shader Pipeline)"];
     }
 
     BigMesh -> CS_Convert;

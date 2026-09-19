@@ -145,7 +145,7 @@ An OpenGL program is made of two shaders [#monstar-lab-opengl]_
 
 Since we have 6 vertices in our buffer, this shader will be executed 6 times by 
 the GPU (once per vertex)! We can also expect all 6 instances of the shader to 
-be executed in parallel, since a GPU have so many cores.
+be executed in parallel, since a GPU has many cores.
 
 .. _rendering3d:
 
@@ -343,13 +343,12 @@ Assembly". A more accurate ordering is:
 
 As shown in :numref:`gpu-pipeline`:
 
-- Vertex Shader and Tessellation: processing and transform for **vertices** 
-  data.
-- Primitive Processing: processing and transform for **primitives** data.
-- Rasterizer: **Primitives → Fragment**.
-- Fragment Shader: **Fragment → Colored Fragment**.
+- Vertex Shader and Tessellation: process and transform **vertex** data.
+- Primitive Processing: processes and transforms **primitive** data.
+- Rasterizer: **Primitives → Fragments**.
+- Fragment Shader: **Fragments → Colored Fragments**.
 
-As illustred in :ref:`cross-product` section, 
+As illustrated in the :ref:`cross-product` section,
 
 ✔️  Each mesh (triangle or primitive) has a fixed “outer” and “inner” side,
 determined by CCW ordering in object space.
@@ -365,7 +364,7 @@ processed correctly.
 
 This means:
 
-✔️  Vertex Shader and Tessellation: **may processing each vertex independently**
+✔️  Vertex Shader and Tessellation: **may process each vertex independently**
 as long as the vertex order in a triangle is preserved.
 
 ✔️  Once **three CCW-ordered vertices are available**, Primitive Assembly can 
@@ -509,7 +508,7 @@ broad enough to cover animation.
        “Compute Shaders” [#redbook-p36]_.
 
 
-**Tessllation**
+**Tessellation**
 
 - Tessellation Shading: 
   The core problem that Tessellation deals with is the static nature of 3D models
@@ -530,17 +529,17 @@ broad enough to cover animation.
   is called **Tessellation Control Shader (TCS)**, the **fixed function** stage 
   is called the **Primitive Generator (PG)**, and the second shader stage is 
   called **Tessellation Evaluation Shader (TES)**. 
-  Some GPU havn't this fixed function stage implemented in HW and even havn't
-  provide these TCS, TES and Gemoetry Shader. User can write 
-  **Compute Shaders** instead for this on-fly detail display.
+  Some GPUs do not implement this fixed-function stage in hardware and do not
+  provide TCS, TES, or geometry shaders. A user can write **compute shaders**
+  instead to generate detail on the fly.
   This surface is usually defined by some **polynomial formula** and the idea 
   is that moving a **CP** has an effect on the entire surface. ...
   The group of CPs is usually called a **Patch** [#ts-tu30]_.
-  The data flow in Tessllation Stage between TCS, Fixed-Function Tessellator 
+  The data flow in the Tessellation Stage between the TCS, Fixed-Function Tessellator,
   and TES is illustrated in :numref:`imr-rendering-pipeline-1`.
   Chapter 9 of Red Book [#redbook]_ has details. 
   The next section :ref:`tessellation-ex` describes the details for the 
-  Tessallation with an example.
+  tessellation with an example.
 
 - Tessellation **cannot** decrease the resolution of vertices from the VS.
   The Geometry Shader can **reduce geometry** (by discarding primitives), but it
@@ -549,7 +548,7 @@ broad enough to cover animation.
 
 **Data Flow**
 
-Sumarize the OpenGL Rendering Pipeline as shown in the 
+The following diagrams summarize the OpenGL rendering pipeline:
 :numref:`imr-rendering-pipeline-1` and 
 :numref:`imr-rendering-pipeline-2`.
 
@@ -565,8 +564,8 @@ Sumarize the OpenGL Rendering Pipeline as shown in the
 
    \clearpage
 
-The data flow through the OpenGL Shader and the details flow
-in TCS, Fixed-Function Tessellator and TES are described in below.
+The data flow through the OpenGL shader pipeline and the details of the TCS,
+Fixed-Function Tessellator, and TES are described below.
 
 .. list-table:: Data Flow Through the OpenGL Shader Pipeline
    :widths: 20 35 35 45
@@ -618,7 +617,7 @@ in TCS, Fixed-Function Tessellator and TES are described in below.
        - Winding order
      - - **Tessellated coordinates (u,v,w)**: gl_TessCoord
        - Bypass modified Control Points
-     - - **Fixed‑Function Tessellator (TS)**, also name as **Primitive Generator (PG)**:
+     - - **Fixed‑Function Tessellator (TS)**, also known as **Primitive Generator (PG)**:
 
          - Generates tessellated domain coordinates (u,v,w) to TES
 
@@ -733,10 +732,9 @@ triangle**.
        must be interpolated so each fragment knows its own world position
 
 
-For 2D animation, the model is created by 2D only (1 face only), so it only can be 
-viewed from the same face of model. If you want to display different faces of model,
-multiple 2D models need to be created and switch these 2D models from face(flame) to 
-face(flame) from time to time [#2danimation]_.
+In 2D animation, a model is a single flat view and can be viewed only from that
+side. To display different views, multiple 2D models must be created and
+switched from frame to frame [#2danimation]_.
 
 
 Mesh Construction
@@ -1038,14 +1036,14 @@ Only CPs 5, 6, 9, and 10 are elevated to create curvature.
        }
    }
 
-**Fixed-Function Tessellator (TS)**, also name as **Primitive Generator 
+**Fixed-Function Tessellator (TS)**, also known as the **Primitive Generator
 (PG)**: output:
 
 - **Tessellated coordinates (u,v,w)**: gl_TessCoord
 
-The PG takes the TLs and based on their values generates a **set of points** 
-inside the triangle. Each point is defined by its own barycentric coordinate.
-The set of points named **Tessellated coordinates**.
+The PG uses the tessellation levels to generate a **set of points** inside the
+triangle. Each point has its own barycentric coordinates. This set is called
+the **tessellated coordinates**.
 
 The grid size depends on tessellation levels:
 
@@ -1214,8 +1212,8 @@ Evaluated surface points P(u,v) are also vec4.
 
           Geometry Shader (GS) can expand a 5×5 tessellated grid into a 6×6 mesh
 
-The following TCS glsl from the Red Book can patch high or low resolution of 
-CPs at runtime according the distance of the squre vertices.
+The following TCS GLSL code from the Red Book adjusts the resolution of control
+points at runtime according to the distance of the square's vertices.
 
 Specifying Tessellation Level Factors Using Perimeter Edge Centers.
 
@@ -1404,9 +1402,8 @@ For each tile:
 
 → Write final tile to DRAM once
 
-★ As you can see, tile is a small part of rendering frame. 
-In Phase 2 — Tile Rendering, GPU rendering each tile and
-keep the rendering result of each **tile in SRAM**.
+★ A tile is a small portion of the rendered frame. In Phase 2—tile rendering—
+the GPU renders each tile and keeps its intermediate result in **SRAM**.
 
 
 TBDR Rendering
@@ -1672,11 +1669,11 @@ Meshlets align naturally with GPU hardware for several reasons:
   workgroups to run in parallel across GPU SMs.
 
 
-Both Mobile GPU and Mesh-Shader GPU convert big mesh to small meshlets and
-render them efficiently using GPU SIMT executation and memory hierarchy. 
-The comparsion is shown in the following table.
+Both mobile GPUs and mesh-shader GPUs convert a source mesh into smaller
+meshlets and render them efficiently using GPU SIMT execution and the memory
+hierarchy. The comparison is shown in the following table.
 
-**Comparsion: Mobile GPU (Compute-Shader Based) vs Desktop Mesh-Shader GPU**
+**Comparison: Mobile GPU (Compute-Shader Based) vs. Desktop Mesh-Shader GPU**
 
 The **Mesh Shader** is similar to the previous section of **Mobile 
 Compute Shader** based Meshlets as the following table:
@@ -2266,9 +2263,9 @@ The GameCube GPU had a fixed‑function transform unit that supported:
 
 Again, no shaders — but hardware skinning existed.
 
-The previous :ref:`section Role and Purpose of Shaders <role-shaders>` also 
-explained different visual effects can be achieved by **switching shaders** to 
-shapplying different materials across frames. 
+The previous :ref:`section Role and Purpose of Shaders <role-shaders>` also
+explained how different visual effects can be achieved by **switching shaders**
+and applying different materials across frames.
 
 ❌ However **the fixed‑function pipeline (OpenGL 1.x / early 2.x without 
 shaders)** has:
@@ -2280,7 +2277,7 @@ shaders)** has:
 -  no ability to read custom vertex attributes
 -  no ability to modify vertex positions except via the model‑view matrix
 
-❌ As result the shader-less (fixed-function) pipeline in early OpenGL did not 
+❌ As a result, the shader-less (fixed-function) pipeline in early OpenGL did not
 support GPU-based skinning.
 Skinning had to be implemented on the CPU, which imposed limitations on both 
 **animation capability and performance**, as described below:
@@ -2758,7 +2755,7 @@ workflow is illustrated as follows:
   load $1, tex_a;
   sample2d_inst $1, $2, $3 // $1: tex_a, $2: %uv_2d, $3: %bias
 
-  .tex_a // Driver set the index of gpu descriptor regsters here
+  .tex_a // The driver sets the GPU descriptor-register index here
 
 As shown at the end of the code above, the `.tex_a` memory address contains the Texture 
 Object, which is bound by the driver during online compilation and linking. By binding 
@@ -2906,15 +2903,15 @@ and access the texture object during shader execution.
   load $1, tex_a;
   sample2d_inst $1, $2, $3 // $1: tex_a, $2: %uv_2d, $3: %bias
 
-  .tex_a // Driver set the index of gpu descriptor regsters here at step 4
+  .tex_a // The driver sets the GPU descriptor-register index here at step 4
       
-When executing the texture instructions from glsl binary file on gpu, the 
-corresponding 'Texture Unit 1' on gpu will being executed through texture 
-descriptor in gpu's memory because .tex_a: {xLoc, 1}. Driver may set
-texture descriptor in gpu's texture desciptors if gpu provides specific
-texture descriptors in architecture [#descriptorreg]_.
+When the GPU executes texture instructions from a GLSL binary, the corresponding
+texture unit is selected through a texture descriptor in GPU memory. In this
+example, ``.tex_a`` refers to ``{xLoc, 1}``. If the architecture provides
+dedicated texture descriptors, the driver writes the descriptor into the
+descriptor table [#descriptorreg]_.
 
-For instance, Nvidia texture instruction as follow,
+For example, an NVIDIA texture instruction is as follows:
 
 .. code-block:: console
 
@@ -3104,4 +3101,3 @@ Here is the software stack of the 3D graphics system for OpenGL on Linux
 .. [#texturewrapper] https://learnopengl.com/Getting-started/Textures
 
 .. [#mesa] https://www.mesa3d.org/
-

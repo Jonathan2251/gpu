@@ -7,7 +7,7 @@ digraph CPU_GPU_Pipeline {
         style=rounded;
 
         CPU_Vertex [label="Load 3D Model\n(Per-Vertex Attributes)\nVBOs, VAOs, Indices"];
-        CPU_Anim   [label="Uniform Updates\n(Animation Parameters,\nMatrices, Lighting,\nMaterial Params)"];
+        CPU_Anim   [label="Uniform Updates\n(Animation Parameters,\nMatrices, Lighting,\nMaterial Parameters)"];
     }
 
     subgraph cluster_gpu {
@@ -22,7 +22,7 @@ digraph CPU_GPU_Pipeline {
 
         FB      [label="Framebuffer\n(Final Rendered Image)"];
 
-        CS      [label="Compute Shader\n(Workgroups, SSBOs,\nImages, Shared Memory)\nIndependent of VS→FS Pipeline"];
+        CS      [label="Compute Shader\n(Workgroups, SSBOs,\nImages, Shared Memory)\nIndependent of the VS→FS Pipeline"];
     }
 
     # Main graphics pipeline

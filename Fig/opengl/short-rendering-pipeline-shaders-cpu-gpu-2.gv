@@ -6,14 +6,14 @@ digraph CPU_GPU_Pipeline {
         label="CPU";
         style=rounded;
         CPU_Vertex [label="Load 3D Model\n(Vertex Data)\nVBOs, VAOs, Indices"];
-        CPU_Anim   [label="Update Animation Parameters\n(Bone Matrices, Morph Weights,\nTime, Material Params)"];
+        CPU_Anim   [label="Update Animation Parameters\n(Bone Matrices, Morph Weights,\nTime, Material Parameters)"];
     }
 
     subgraph cluster_gpu {
         label="GPU";
         style=rounded;
 
-        VS   [label="Vertex Shader\n(Skinning, Morphing,\nModel/View/Proj Transform)",
+        VS   [label="Vertex Shader\n(Skinning, Morphing,\nModel/View/Projection Transform)",
               style=filled, fillcolor=orange];
 
         subgraph cluster_optional {
@@ -52,14 +52,13 @@ digraph CPU_GPU_Pipeline {
         FB   [label="Final Rendered Image\n(Framebuffer Output)"];
     }
 
-    CPU_Vertex -> VS [label=<<b><font color="red">Big Mesh</font></b>>];
+    CPU_Vertex -> VS [label=<<b><font color="red">Source Mesh</font></b>>];
     CPU_Anim   -> VS;
 
-    VS  -> TCS [label="Transformed Vertices +\nControl Points(CP)"];
-    TES -> GS [label="Tessellated Vertices\n(more vertices)"];
+    VS  -> TCS [label="Transformed Vertices +\nControl Points (CPs)"];
+    TES -> GS [label="Tessellated Vertices\n(Increased Vertex Count)"];
     GS  -> Raster;
 
     Raster -> FS;
     FS -> FB;
 }
-

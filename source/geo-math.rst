@@ -9,11 +9,11 @@ Basic geometry in computer graphics
 
 This section introduces the fundamental geometry mathematics used in computer 
 graphics.  
-As discussed in the previous sections, 3D animation primarily based on 
-geometric representations such as meshes (vertices) and surface discriptions
+As discussed in the previous sections, 3D animation is primarily based on
+geometric representations such as meshes (vertices) and surface descriptions
 including textures, materials, shaders, and lighting models created in 3D 
 content creation tools.
-Consequently, vertex tranformations and lighting-based color computations form 
+Consequently, vertex transformations and lighting-based color computations form
 the mathematical foundation of modern computer graphics and animation.
 
 The complete concept can be found in the book *Computer Graphics: Principles  
@@ -58,8 +58,8 @@ Transformation
 
 Overview
 
-The tranformation matrices have been taught in high school and college.
-However this mathematical details are not always retained clearly in memory.
+Transformation matrices are taught in high school and college. However, these
+mathematical details are not always retained clearly in memory.
 The following section reviews the parts relevant to graphics rendering.
 
 In both 2D and 3D graphics, every object transformation is performed by
@@ -103,11 +103,11 @@ This is the core of the OpenGL rendering pipeline, as shown in
   :align: center
   :scale: 50 %
 
-  Cooridinates Transform Pipeline [#cg_basictheory]_
+  Coordinate Transformation Pipeline [#cg_basictheory]_
 
-- Model space: The is the vertices position mentioned under :ref:`Root bone in 
-  Animation flow <movement>`. All vertex coordinates are calcuated relative to the
-  root bone.
+- Model space: This is the vertex-position space described in :ref:`Root bone in
+  Animation flow <movement>`. All vertex coordinates are calculated relative to
+  the root bone.
 - Model Transform: ``M`` = Model matrix (object → world). This represents the 
   vertex positions mentioned under :ref:`Transform Animation in Animation flow 
   <movement>`.
@@ -402,13 +402,13 @@ may be demonstrated as follows:
 
 ✅ Determine the area in a plane:
 
-As described earlier of in this section, three vertices form a parallelogram or
-triangle and the area in the plane can be determined since the angle between
-:math:`v_1 - v_0` and :math:`v_2 - v_1` satisfied :math:`0 < \Theta < 180^\circ` 
+As described earlier in this section, three vertices form a parallelogram or
+triangle. Its area can be determined because the angle between
+:math:`v_1 - v_0` and :math:`v_2 - v_1` satisfies :math:`0 < \Theta < 180^\circ`
 under CCW orientation.
 In fact **one single vector** :math:`v_1 - v_0` **is sufficient** to determine 
 the area.
-We describle this below.
+This is described below.
 
 In 2D, any two points :math:`\text{from } P_i \text{ to } P_{i+1}` can form a  
 vector and determine the inner or outer side.  
@@ -546,18 +546,16 @@ inner surface [#ogl-point-outwards]_.
 
   3D polygon with directions on each plane
 
-Reposition each triangle in front of camera and construct it using triangle 
-with CCW ordering, as shown in :numref:`convex:left`.
-By building every triangle with CCW ordering, we can defined a consistent outer 
-surface (front face).
-The :numref:`in-3d-polygon` shows an example of a 3D polygon created from 2D  
-triangles. The direction of the plane (triangle) is given by the line  
-perpendicular to the plane.
+Position each triangle in front of the camera and construct it with
+counter-clockwise (CCW) ordering, as shown in :numref:`convex:left`. Building
+every triangle with CCW ordering defines a consistent outer surface (front
+face). :numref:`in-3d-polygon` shows a 3D polygon created from 2D triangles.
+The direction of a triangle's plane is given by the line perpendicular to it.
 
 Cast a ray from the 3D point along the X-axis and count how many intersections  
 with the outer object occur. Depending on the number of intersections along  
-each axis (even or odd), you can understan if **the point (or the camara) is i
-nside or outside** [#point-in-3d-object]_.
+each axis (even or odd), you can determine whether **the point (or camera) is
+inside or outside** [#point-in-3d-object]_.
 
 An odd number means inside, and an even number means outside. As shown in  
 :numref:`in-3d-object`, points on the line passing through the object satisfy  
@@ -597,7 +595,7 @@ position :math:`p_0`.
 ✔️  When the camera moves to the :math:`p_1` inside an object: CCW ↔ CW 
 flips as shown in :numref:`construct-triangle`.
 
-✔️  As shown in :ref:`Trangle Area Calculation <triangle-area>` when
+✔️  As shown in :ref:`Triangle Area Calculation <triangle-area>`, when
 :math:`0 < \Theta < 180^\circ` under CCW orientation, the area of a triangle 
 area is given by:
 
@@ -609,10 +607,10 @@ area is given by:
 ✔️  Though each triangle can be correctly identified and processed using its
 CCW ordering.
 As mentioned in :numref:`trans_steps` of section :ref:`transformation`,
-the Cooridinates Transform Pipeline maps geometry from Camera Space to 
+the Coordinate Transformation Pipeline maps geometry from camera space to
 Clipping Space (Clipping Volume). 
-This tranformation significantly simplifies the calculation required
-for discarding and clipping triangles, as will be desribed in the
+This transformation significantly simplifies the calculations required
+to discard and clip triangles, as described in the
 section :ref:`projection` later.
 
 
@@ -792,7 +790,7 @@ more **difficult**.
   :align: center
   :scale: 50 %
 
-  Cooridinates Transform Pipeline [#cg_basictheory]_
+  Coordinate Transformation Pipeline [#cg_basictheory]_
 
 ✅ Projection Area:
 
@@ -1210,7 +1208,7 @@ Therefore, the visible region lies inside the **canonical cube**:
    \mathbf{[-1,1]^3}
 
 
-✅ Comparsion for clipping and discarding in World Space and Clipping Space
+✅ Comparison of clipping and discarding in world space and clip space
 
 When a triangle intersects the view frustum, it must be clipped so that only the
 portion inside the frustum is rasterized. Although the clipping procedure is
@@ -1347,7 +1345,7 @@ Each case reduces to a single scalar equation for :math:`t`.
 Compare :math:`t = \frac{x_0 - w_0}{(x_0 - w_0) - (x_1 - w_1)}` and the 
 equation from world space :math:`t = \frac{- (\mathbf{n} \cdot \mathbf{p}_0 
 + d)}{\mathbf{n} \cdot (\mathbf{p}_1 - \mathbf{p}_0)}`, it saves **85%** for 
-reducing two dot operations and more opertions.
+reducing two dot products and additional operations.
 
 Triangle reconstruction
 
@@ -1388,7 +1386,7 @@ Edition* provides a concise yet useful 40-page overview of transformation
 concepts and is good material for gaining a deeper understanding of transformations.
 description of transformation.
 
-2. Chapter 7 of Red book covers the tranformations and projections.
+2. Chapter 7 of the Red Book covers transformations and projections.
 
 3. https://en.wikipedia.org/wiki/3D_projection
 

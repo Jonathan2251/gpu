@@ -3,7 +3,7 @@ digraph GPU_Memory {
     node [shape=box, style=rounded, fontsize=12];
 
     subgraph cluster_gather {
-        label="Gather-Scatter (Sparse Matrix Access): \nIndirect index of LD/ST";
+        label="Gather–Scatter (Sparse-Matrix Access):\nIndirectly Indexed Loads/Stores";
         color=green;
 
         Idx [label="Index Array A[]:\nA[0]=200\nA[1]=400\nA[2]=1200\nA[3]=320", shape=note, style=filled, fillcolor=lightyellow];
@@ -20,7 +20,7 @@ digraph GPU_Memory {
     }
 
     subgraph cluster_coalescing {
-        label="Address Coalescing: \nMerge memory transcations into a contiguous memory access";
+        label="Address Coalescing:\nMerges memory transactions into a contiguous access";
         color=blue;
 
         T1 [label="Thread 1\nAddr 100"];

@@ -6,13 +6,13 @@ digraph CPU_GPU_Pipeline {
         label="CPU";
         style=rounded;
         CPU_Vertex [label="Load 3D Model\n(Vertex Data)\nVBOs, VAOs, Indices"];
-        CPU_Anim   [label="Update Animation Parameters\n(Bone Matrices, Morph Weights,\nTime, Material Params)"];
+        CPU_Anim   [label="Update Animation Parameters\n(Bone Matrices, Morph Weights,\nTime, Material Parameters)"];
     }
 
     subgraph cluster_gpu {
         label="GPU";
         style=rounded;
-        VS      [label="Vertex Shader\n(Skinning, Morphing,\nModel/View/Proj Transform)"];
+        VS      [label="Vertex Shader\n(Skinning, Morphing,\nModel/View/Projection Transform)"];
         Raster  [label="Rasterizer\n(Primitive Assembly,\nClipping, Interpolation)"];
         FS      [label="Fragment Shader\n(Lighting, Texturing,\nShading, Materials)"];
         FB      [label="Final Rendered Image\n(Framebuffer Output)"];

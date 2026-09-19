@@ -39,7 +39,7 @@ digraph Mobile_GPU_Comparison {
     CPU [shape=box, style=rounded, label="CPU\n• glDispatchCompute\n• glDraw*"];
 
     // Shared compute flow
-    CPU -> Compute [label="optional"];
+    CPU -> Compute [label="optional dispatch"];
     Compute -> Mali_VS [label=<<b><font color="blue">Small Meshlets<br/>in SSBO/buffers</font></b>>];
     Compute -> PV_VS   [label=<<b><font color="blue">Small Meshlets<br/>in SSBO/buffers</font></b>>];
     CPU -> Mali_VS     [label="draw call"];

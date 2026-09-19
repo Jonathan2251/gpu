@@ -8,12 +8,12 @@ digraph Geometry_Unit {
     <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" ALIGN="LEFT">
       <TR>
         <TD>
-          <FONT POINT-SIZE="18" COLOR="#003366"><B>GPU Geometry Unit - internal stages &amp; dataflow</B></FONT>
+          <FONT POINT-SIZE="18" COLOR="#003366"><B>GPU Geometry Unit — Internal Stages &amp; Dataflow</B></FONT>
         </TD>
       </TR>
       <TR>
         <TD>
-          <FONT POINT-SIZE="14" COLOR="#003366">Flow: Vertex output - Primitive Assembly - (Tessellation) - Geometry Shader - Clipping - Viewport Transform - Primitive Setup - Rasterizer</FONT>
+          <FONT POINT-SIZE="14" COLOR="#003366">Flow: Vertex Output → Primitive Assembly → (Tessellation) → Geometry Shader → Clipping → Viewport Transform → Primitive Setup → Rasterizer</FONT>
         </TD>
       </TR>
     </TABLE>
@@ -41,8 +41,8 @@ digraph Geometry_Unit {
   Assembly [fillcolor="#D9E8FF" label=<
     <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" ALIGN="LEFT">
       <TR><TD><B>Primitive Assembly / Input Assembler</B></TD></TR>
-      <TR><TD>• Group vertices into primitives \n(triangles, lines, patches)</TD></TR>
-      <TR><TD>• Fetch index buffers, vertex attributes</TD></TR>
+      <TR><TD>• Groups vertices into primitives \n(triangles, lines, patches)</TD></TR>
+      <TR><TD>• Fetches index buffers and vertex attributes</TD></TR>
     </TABLE>
   >];
 
@@ -50,15 +50,15 @@ digraph Geometry_Unit {
     <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" ALIGN="LEFT">
       <TR><TD><B>Tessellation (optional)</B></TD></TR>
       <TR><TD>• Tessellation Control + Primitive Gen + Eval</TD></TR>
-      <TR><TD>• Patch subdivision, generate new vertices/primitives</TD></TR>
+      <TR><TD>• Subdivides patches and generates new vertices/primitives</TD></TR>
     </TABLE>
   >];
 
   GeoShader [fillcolor="#D9E8FF" label=<
     <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" ALIGN="LEFT">
       <TR><TD><B>Geometry Shader / Stream Output (optional)</B></TD></TR>
-      <TR><TD>• Programmable stage: modify or emit primitives</TD></TR>
-      <TR><TD>• Can amplify primitives (performance cost)</TD></TR>
+      <TR><TD>• Programmable stage: modifies or emits primitives</TD></TR>
+      <TR><TD>• Can amplify primitives (with a performance cost)</TD></TR>
     </TABLE>
   >];
 
@@ -74,22 +74,22 @@ digraph Geometry_Unit {
     <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" ALIGN="LEFT">
       <TR><TD><B>Viewport / Screen Transform</B></TD></TR>
       <TR><TD>• NDC → screen coordinates (viewport scale + offset)</TD></TR>
-      <TR><TD>• Apply depth range mapping</TD></TR>
+      <TR><TD>• Applies depth-range mapping</TD></TR>
     </TABLE>
   >];
 
   Setup [fillcolor="#FFF4D9" label=<
     <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" ALIGN="LEFT">
       <TR><TD><B>Primitive Setup / Scan-conversion Prep</B></TD></TR>
-      <TR><TD>• Compute edge equations, slopes, barycentrics</TD></TR>
-      <TR><TD>• Prepare interpolants (dx/dy) for attributes</TD></TR>
+      <TR><TD>• Computes edge equations, slopes, and barycentric coordinates</TD></TR>
+      <TR><TD>• Prepares attribute interpolants (dx/dy)</TD></TR>
     </TABLE>
   >];
 
   /* Resource boxes / notes */
   Resources [shape=note, fillcolor="#FFFFE0", label=<
     <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" ALIGN="LEFT">
-      <TR><TD><B>Resources / HW considerations</B></TD></TR>
+      <TR><TD><B>Resources / Hardware Considerations</B></TD></TR>
       <TR><TD>• Shared scheduling with vertex units</TD></TR>
       <TR><TD>• Dedicated small caches / FIFOs for index/vertex fetch</TD></TR>
       <TR><TD>• Fixed-function blocks for edge setup (for performance)</TD></TR>

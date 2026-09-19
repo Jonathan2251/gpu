@@ -5,17 +5,17 @@ digraph G {
   node [shape=record];
   subgraph cluster_cpu {
     label = "CPU (Client)";
-    CPU_SW [label=" 3D Model | Game Engine | { OpenGL API | Shaders \n (buitin-functions)} | <f1> Driver"];
+    CPU_SW [label=" 3D Model | Game Engine | { OpenGL API | Shaders \n (built-in functions)} | <f1> Driver"];
   }
   subgraph cluster_gpu {
-    label = "GPU HW (Server)";
+    label = "GPU Hardware";
     subgraph cluster_gpu_sw {
-      label = "3D Rendering pipeline \ndescribed in the later section";
+      label = "3D Rendering Pipeline \ndescribed in a later section";
       ModelData        [label="3D Model Information\n(VAO, VBO, textures,\nindex buffers, materials)"];
-      UniformUpdates   [label="Uniform Updates\n(bone matrices, morph weights,\nmaterial params, time, etc.\nsee Note below)", style=filled, fillcolor=lightgreen, color="black"];
+      UniformUpdates   [label="Uniform Updates\n(bone matrices, morph weights,\nmaterial parameters, time, etc.\nsee note below)", style=filled, fillcolor=lightgreen, color="black"];
     }
   }
-  CPU_SW:f1 -> UniformUpdates [label="2. Animation: \nDraw command and Uniform Updates\nfor each frame rendering"];
+  CPU_SW:f1 -> UniformUpdates [label="2. Animation:\nIssue draw commands and update uniforms\nfor each rendered frame"];
     
 //  label = "Graphic SW Stack";
 }

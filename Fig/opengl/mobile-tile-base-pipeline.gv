@@ -4,7 +4,7 @@ digraph TBDR_GS_Comparison {
 
     // Clean TBDR pipeline
     subgraph cluster_clean {
-        label="A. Clean TBDR Pipeline (Mobile GPUs: Mali / PowerVR / Apple)";
+        label="A. Conventional TBDR Pipeline (Mobile GPUs: Mali / PowerVR / Apple)";
         style=rounded;
 
         C_VS   [label="Vertex Shader\n• Transform\n• Skinning\n• Varyings"];
@@ -19,7 +19,7 @@ digraph TBDR_GS_Comparison {
 
     // GS/Tessellation amplified pipeline
     subgraph cluster_gs {
-        label="B. TBDR with GS/Tessellation (Hypothetical — Why It Breaks)";
+        label="B. TBDR with Geometry Shaders/Tessellation (Hypothetical — Why It Breaks)";
         style=rounded;
 
         G_VS   [label="Vertex Shader"];

@@ -6,7 +6,7 @@ digraph AnimationLayers {
     High2 [label="2. Animation State Machine / Animation Graph\n(User-designed transitions & blends)"];
     Mid  [label="3. Animation Clip Playback\n(Engine-controlled timing & blending)"];
     Low1 [label="4. Skeleton Animation System\n(Bone transforms, keyframe interpolation)"];
-    Low2 [label="5. GPU Skinning\n(Vertex shader applies bone matrices)"];
+    Low2 [label="5. GPU Skinning\n(The vertex shader applies bone matrices)"];
 
     High1 -> High2 [label="animation intent\n(e.g., walk, run, jump)"];
     High2 -> Mid   [label="selected clip + blend parameters"];

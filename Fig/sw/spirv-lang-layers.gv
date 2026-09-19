@@ -3,5 +3,5 @@ digraph G {
 
   compound=true;
   node [shape=record];
-  SW_LAYER [label="{ GLSL | OpenCL } | SPIR-V | GPU machine code"];
+  SW_LAYER [label="{ GLSL | OpenCL } | SPIR-V | GPU Machine Code"];
 }

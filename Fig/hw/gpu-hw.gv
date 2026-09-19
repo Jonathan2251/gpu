@@ -43,10 +43,10 @@ digraph GPU {
       color = "#fcbba1";
 
       Geo [label="Geometry Units\n(primitive assembly,\ntessellation, clipping)"];
-      Raster [label="Rasterization Units\n(triangle -> fragments,\nattribute interpolation)"];
+      Raster [label="Rasterization Units\n(triangles → fragments,\nattribute interpolation)"];
       TMU  [label="Texture Mapping Units (TMUs)\n(sampling & filtering)"];
       ROP  [label="Render Output Units (ROPs)\n(blend, depth, stencil,\nframebuffer write)"];
-      Tensor [label="Tensor / Matrix Cores\n(AI accel)"];
+      Tensor [label="Tensor / Matrix Cores\n(AI Acceleration)"];
       RT     [label="Ray-Tracing Cores\n(BVH traversal, intersections)"];
       Video  [label="Video Encode / Decode Engines\n(NVENC / VCN / VPU)"];
       Display [label="Display Controller\n(HDMI / DP)"];
@@ -64,7 +64,7 @@ digraph GPU {
       VRAM[label="VRAM (GDDR / HBM)\n(high bandwidth)"];
       Interconnect [label="Memory Controller / Interconnect"];
 
-      Coalescing [label="Memory Coalescing\n(merge warp memory requests)"];
+      Coalescing [label="Memory Coalescing\n(merges warp memory requests)"];
       GatherScatter [label="Gather–Scatter\n(irregular memory access)"];
     }
 
@@ -77,7 +77,7 @@ digraph GPU {
     SMs -> Tensor [label=" matrix ops"];
     SMs -> RT [label=" ray queries", style=dashed];
 
-    Raster -> ROP [label=" fragments -> tests + blend"];
+    Raster -> ROP [label=" fragments → tests + blending"];
     SMs -> ROP [label=" shaded fragments"];
     ROP  -> VRAM [label=" final framebuffer write"];
 
@@ -85,7 +85,7 @@ digraph GPU {
     SMs -> L1 [label=" fast access"];
     TMU  -> L2 [label=" texture reads"];
     SMs -> L2 [label=" global loads/stores"];
-    L2   -> VRAM [label=" miss -> VRAM"];
+    L2   -> VRAM [label=" cache miss → VRAM"];
     Interconnect -> VRAM [label=" memory transactions"];
 
     /* Memory behavior connections */
