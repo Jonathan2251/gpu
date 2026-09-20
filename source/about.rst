@@ -22,7 +22,15 @@ https://github.com/Jonathan2251/sa/blob/master/README.md
 Revision history
 ----------------
 
-Version 0.4, not released yet.
+Version 0.6, not released yet.
+
+Version 0.5, Released September 20, 2026.
+
+  opengl.rst: add section 'Mesh Construction'. refine section '3D Rendering'.
+  hw.rst: refine section 'Geometry Units'.
+  Refine English.
+
+Version 0.4, Released September 7, 2026.
 
   opengl.rst: Add section 'Ray Tracing Pipeline'.
   opengl.rst: Refine the meshlet section.
