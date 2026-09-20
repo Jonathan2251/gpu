@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/haiku.css?v=fce32b03" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
-    <script src="_static/documentation_options.js?v=7f00635f"></script>
+    <script src="_static/documentation_options.js?v=db78e746"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="author" title="About these documents" href="about.html" />
@@ -88,11 +88,10 @@ In vector processors, VM acts as a form of conditional execution mechanism.</p>
 <span class="w">  </span><span class="n">Y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Y</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
 </pre></div>
 </div>
-<p>As above code, the value of n is not known at compile time.</p>
+<p>In the preceding code, the value of <code class="docutils literal notranslate"><span class="pre">n</span></code> is not known at compile time.</p>
 <p>Solution:</p>
-<p>Compiler converts loop into multiple iterations of loops, where each iteration
-processes up to the maximum vector length
-maximum vector length (MVL) as shown as below.
+<p>The compiler converts the loop into multiple iterations, each of which
+processes up to the maximum vector length (MVL), as shown below.
 For VMIPS, the MVL is 64.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">low</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 <span class="n">VL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">MVL</span><span class="p">);</span><span class="w"> </span><span class="cm">/*find odd-size piece using modulo op % */</span>
@@ -130,11 +129,11 @@ Vector Length Register (VLR) as shown below.</p>
 </section>
 <section id="general-purpose-gpu">
 <h2><a class="toc-backref" href="#id60" role="doc-backlink">General purpose GPU</a><a class="headerlink" href="#general-purpose-gpu" title="Link to this heading">¶</a></h2>
-<p>Since GLSL shaders provide a general way for writing C code in them, if applying
-a software frame work instead of OpenGL API, then the system can run some data
-parallel computation on GPU for speeding up and even get CPU and GPU executing
-simultaneously. Furthmore, any language that allows the code running on the CPU to poll
-a GPU shader for return values, can create a GPGPU framework <a class="footnote-reference brackets" href="#gpgpuwiki" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
+<p>Because GLSL shaders provide a C-like programming model, a software framework
+can use GPU shaders for data-parallel computation instead of only graphics
+rendering. This can accelerate work and allow CPU and GPU execution to overlap.
+Furthermore, any language that lets CPU code retrieve results from a GPU shader
+can support a GPGPU framework <a class="footnote-reference brackets" href="#gpgpuwiki" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
 <section id="mapping-data-in-gpu">
 <span id="id3"></span><h3><a class="toc-backref" href="#id61" role="doc-backlink">Mapping data in GPU</a><a class="headerlink" href="#mapping-data-in-gpu" title="Link to this heading">¶</a></h3>
 <p>As described in the previous section on GPUs, the subset of the array
@@ -498,12 +497,12 @@ deeper cache hierarchies.</p>
 <section id="opencl-vulkan-and-spir-v">
 <h2><a class="toc-backref" href="#id63" role="doc-backlink">OpenCL, Vulkan and Spir-v</a><a class="headerlink" href="#opencl-vulkan-and-spir-v" title="Link to this heading">¶</a></h2>
 <figure class="align-default" id="id44">
-<span id="spirv"></span><div class="graphviz"><img src="_images/graphviz-c42a5ed7790b6d5dae30ec52a8187bba16ef990f.png" alt="digraph G {
+<span id="spirv"></span><div class="graphviz"><img src="_images/graphviz-678a5386e53109164da6c2108f4c0cb8c8bc3794.png" alt="digraph G {
   rankdir=LR;
 
   compound=true;
   node [shape=record];
-  SW_LAYER [label=&quot;{ GLSL | OpenCL } | SPIR-V | GPU machine code&quot;];
+  SW_LAYER [label=&quot;{ GLSL | OpenCL } | SPIR-V | GPU Machine Code&quot;];
 }" class="graphviz" /></div>
 <figcaption>
 <p><span class="caption-number">Fig. 89 </span><span class="caption-text">OpenCL and GLSL(OpenGL)</span><a class="headerlink" href="#id44" title="Link to this image">¶</a></p>
@@ -540,23 +539,24 @@ deeper cache hierarchies.</p>
 </figcaption>
 </figure>
 <ul class="simple">
-<li><p>clang: Compile OpenCL to spirv for runtime+driver. Or compile OpenCL to llvm, then
-“SPIR-V LLVM Translator” translate llvm to spirv for runtime+driver.</p></li>
-<li><p>clspv: Compile OpenCL to spirv directly.</p></li>
+<li><p>clang: Compiles OpenCL to SPIR-V for the runtime and driver. Alternatively,
+it compiles OpenCL to LLVM, after which the SPIR-V–LLVM translator converts
+LLVM to SPIR-V.</p></li>
+<li><p>clspv: Compiles OpenCL to SPIR-V directly.</p></li>
 </ul>
 <figure class="align-default" id="id47">
-<span id="gpu-compiler-toolchain"></span><div class="graphviz"><img src="_images/graphviz-99121eaae6a2eb9d1b723e16bb6a49af2b8965c5.png" alt="digraph ShaderToLLVMIR {
+<span id="gpu-compiler-toolchain"></span><div class="graphviz"><img src="_images/graphviz-2007be8ad431932103c722afc2e03f6f6beb028b.png" alt="digraph ShaderToLLVMIR {
     rankdir=LR;
     node [shape=record, style=filled, color=black];
 
     // Source Languages
-    GLSL [label=&quot;GLSL ES (OpenGL)&quot;, fillcolor=white];
+    GLSL [label=&quot;GLSL ES (OpenGL ES)&quot;, fillcolor=white];
     OpenCL_C [label=&quot;OpenCL C&quot;, fillcolor=white];
 
     // Intermediate Representation
     SPIRV [label=&quot;SPIR-V&quot;, fillcolor=orange];
 
-    GPU_ISA [label=&quot;GPU ISA in Assembly and Binary&quot;, fillcolor=grey];
+    GPU_ISA [label=&quot;GPU ISA (Assembly and Binary)&quot;, fillcolor=grey];
 
     // LLVM IR
     LLVM_IR [label=&quot;LLVM IR&quot;, fillcolor=orange];
@@ -564,11 +564,11 @@ deeper cache hierarchies.</p>
     // Tools with oval shapes
     node [shape=oval, style=filled, fillcolor=lightgreen];
     Glslang [label=&quot;glslangValidator&quot;, fillcolor=lightblue];
-    CL_SPIRV [label=&quot;OpenCL-SPIRV Translator&quot;];
+    CL_SPIRV [label=&quot;OpenCL-to-SPIR-V Translator&quot;];
 
     // Tools with oval shapes
     node [shape=oval, style=filled, fillcolor=yellow];
-    SPIRV_LLVM [label=&quot;SPIRV-LLVM Translator&quot;];
+    SPIRV_LLVM [label=&quot;SPIR-V-to-LLVM Translator&quot;];
     LLVMCompiler [label=&quot;Backend Compiler&quot;];
 
     // Edges
@@ -591,7 +591,7 @@ fields in the SPIR-V, as illustrated in <a class="reference internal" href="#spi
 following figures, which describe offline compilation from GLSL/OpenCL to
 SPIR-V and online execution using the generated SPIR-V files.</p>
 <figure class="align-default" id="id48">
-<span id="spirv-deploy"></span><div class="graphviz"><img src="_images/graphviz-5e30390ffbe8fd980ce6af8d87379682f0acd8e5.png" alt="digraph SPIRV_Deployment {
+<span id="spirv-deploy"></span><div class="graphviz"><img src="_images/graphviz-4328f830a3d0ede003db7fc48b209d7e62b5430f.png" alt="digraph SPIRV_Deployment {
     rankdir=LR;
     node [shape=box, style=filled, fillcolor=lightgray, fontname=&quot;Helvetica&quot;];
 
@@ -616,9 +616,9 @@ SPIR-V and online execution using the generated SPIR-V files.</p>
         spirv_loader [label=&quot;clCreateProgramWithIL()&quot;, fillcolor=orange];
         spirv_glsl -&gt; spirv_loader;
         spirv_opencl -&gt; spirv_loader;
-        spirv_loader -&gt; device_driver [label=&quot;Load\n SPIR-V\n into driver&quot;];
+        spirv_loader -&gt; device_driver [label=&quot;Load SPIR-V\ninto the driver&quot;];
         device_driver [label=&quot;OpenCL Driver\n(SPIR-V → Device IR → Machine Code)&quot;, fillcolor=plum];
-        device_driver -&gt; execution [label=&quot;Compiled &amp;\n Run on device&quot;];
+        device_driver -&gt; execution [label=&quot;Compile and run\non the device&quot;];
         execution [label=&quot;Execute on\n OpenCL Device&quot;, fillcolor=lightyellow];
     }
 
@@ -634,20 +634,20 @@ tools for transferring these data format, as illustrated in
 <a class="reference internal" href="#glsl-spirv"><span class="std std-numref">Fig. 93</span></a>.
 The corresponding LLVM IR and SPIR-V formats are listed below.</p>
 <figure class="align-default" id="id49">
-<span id="glsl-spirv"></span><div class="graphviz"><img src="_images/graphviz-02980713d6332c30de8d5bd43cf8f5344f5198e8.png" alt="digraph G {
+<span id="glsl-spirv"></span><div class="graphviz"><img src="_images/graphviz-b5055f1cd12243a254b827d6188f30882ca57e37.png" alt="digraph G {
   rankdir=LR;
 
   // Data Nodes
   node [shape=record, style=filled, fillcolor=white];
-  glsl [label=&quot;glsl&quot;];
+  glsl [label=&quot;GLSL&quot;];
   openclc [label=&quot;OpenCL C&quot;];
-  spirv [label=&quot;spirv&quot;];
-  llvm [label=&quot;llvm-ir&quot;];
+  spirv [label=&quot;SPIR-V&quot;];
+  llvm [label=&quot;LLVM IR&quot;];
 
   // Tools Nodes
   node [shape=oval, style=filled, fillcolor=lightgreen];
   glslang [label=&quot;glslangValidator&quot;];
-  spirv_cross [label=&quot;spirv-cross&quot;];
+  spirv_cross [label=&quot;SPIRV-Cross&quot;];
   clspv [label=&quot;clspv&quot;];
   llvm_spirv [label=&quot;llvm-spirv&quot;];
 
@@ -877,16 +877,16 @@ OpEntryPoint Kernel %foo &quot;foo&quot;
 </tbody>
 </table>
 <ul>
-<li><p>Comparsion for OpenCL and OpenGL’s compute shader.</p>
+<li><p>Comparison of OpenCL and OpenGL compute shaders.</p>
 <ul>
 <li><p>Same:</p>
-<p>Both are for General Computing of GPU.</p>
+<p>Both support general-purpose GPU computing.</p>
 </li>
 <li><p>Difference:</p>
-<p>OpenCL include GPU and other accelerate device/processor.
-OpenCL is C language on Device and C++ on Host based on OpenCL runtime.
-Compute shader is GLSL shader language run on OpenGL graphic enviroment and
-integrate and access data of OpenGL API easily <a class="footnote-reference brackets" href="#diff-compute-shader-opencl" id="id16" role="doc-noteref"><span class="fn-bracket">[</span>10<span class="fn-bracket">]</span></a>.</p>
+<p>OpenCL supports GPUs and other accelerator devices/processors. OpenCL C runs
+on the device, while host code uses the OpenCL runtime. A compute shader is
+written in GLSL and runs in the OpenGL graphics environment, where it can
+readily access OpenGL API data <a class="footnote-reference brackets" href="#diff-compute-shader-opencl" id="id16" role="doc-noteref"><span class="fn-bracket">[</span>10<span class="fn-bracket">]</span></a>.</p>
 </li>
 </ul>
 </li>
@@ -980,7 +980,7 @@ e.g. subgroupExclusiveAdd.</p></li>
 </li>
 </ul>
 <p>The following is a code example.</p>
-<p class="rubric">An example of subgroup operations in glsl for vulkan</p>
+<p class="rubric">An Example of Subgroup Operations in GLSL for Vulkan</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">vec4</span><span class="w"> </span><span class="n">sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vec4</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
 <span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">gl_SubgroupInvocationID</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">16u</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="n">sum</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">subgroupAdd</span><span class="p">(</span><span class="n">in</span><span class="p">[</span><span class="n">gl_SubgroupInvocationID</span><span class="p">]);</span>
@@ -992,12 +992,12 @@ e.g. subgroupExclusiveAdd.</p></li>
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>Nvidia’s GPU provides __syncWarp() for subgroupMemoryBarrier() or compiler to
-sync for the Lanes in the same Warp.</p></li>
+<li><p>NVIDIA GPUs provide <code class="docutils literal notranslate"><span class="pre">__syncwarp()</span></code> for synchronization within a warp; the
+compiler can also synchronize lanes in the same warp.</p></li>
 </ul>
-<p>In order to let Lanes in the same SIMD processor work efficently, data unifomity
-analysis will provide many optimization opporturnities in register allocation,
-transformation and code generation <a class="footnote-reference brackets" href="#llvm-uniformity" id="id27" role="doc-noteref"><span class="fn-bracket">[</span>22<span class="fn-bracket">]</span></a>.</p>
+<p>To help lanes in the same SIMD processor work efficiently, data-uniformity
+analysis provides optimization opportunities in register allocation,
+transformation, and code generation <a class="footnote-reference brackets" href="#llvm-uniformity" id="id27" role="doc-noteref"><span class="fn-bracket">[</span>22<span class="fn-bracket">]</span></a>.</p>
 <p>LLVM IR expansion from CPU to GPU is becoming increasingly influential.
 In fact, LLVM IR has been expanding steadily from version 3.1 until now,
 as I have observed.</p>
@@ -1202,8 +1202,8 @@ or graphics APIs for the reasons below:</p>
 NVIDIA, AMD, and ARM in machine learning and GPU compilation pipelines.
 It includes both inference engines and compiler toolchains.</p>
 <p class="rubric">✅ Each node in the graph is color-coded to indicate its category
-or role within the structure. In AI, usually use runtime
-instead of driver for graphics.</p>
+or role within the structure. In AI, the term <em>runtime</em> is usually
+used instead of <em>driver</em>.</p>
 <div class="graphviz"><img src="_images/graphviz-777da4c0cbbcd474cc6209d9f8a4028348dddbe6.png" alt="digraph G {
     node [shape=box, style=filled];
     PUIR [label=&quot;Public standard of IRs&quot;, fillcolor=lightyellow];
@@ -1495,7 +1495,7 @@ handles:</p>
 <span id="opengl-ml-graph"></span><a class="reference internal image-reference" href="_images/opencl_ml_graph.png"><img alt="_images/opencl_ml_graph.png" height="325" src="_images/opencl_ml_graph.png" width="918" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 99 </span><span class="caption-text">Implement ML graph scheduler both on compiler and runtime</span><a class="headerlink" href="#id57" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 99 </span><span class="caption-text">ML graph scheduling in both the compiler and runtime</span><a class="headerlink" href="#id57" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>As shown in <a class="reference internal" href="#opengl-ml-graph"><span class="std std-numref">Fig. 99</span></a>, the Device, such as a GPU or a CPU+NPU,
@@ -1505,16 +1505,15 @@ on the Host side. This introduces communication overhead between the Host
 and the Device.</p>
 <p>Similar to OpenGL shaders, the “kernel” function may be compiled either
 on-line or off-line and then sent to the GPU as a programmable function.</p>
-<p>In order to run ML (Machine Learning) efficiently, all platforms for ML on
-GPU/NPU implement scheduling SW both on graph compiler and runtime.
-<strong>If OpenCL can extend to support ML graph, then graph compiler such as TVM or
-Runtime from Open Source have chance to leverage the effort of scheduling SW from
-programmers</strong> <a class="footnote-reference brackets" href="#paper-graph-on-opencl" id="id31" role="doc-noteref"><span class="fn-bracket">[</span>26<span class="fn-bracket">]</span></a>. Cuda graph is an idea  like this
-<a class="footnote-reference brackets" href="#cuda-graph-blog" id="id32" role="doc-noteref"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#cuda-graph-pytorch" id="id33" role="doc-noteref"><span class="fn-bracket">[</span>28<span class="fn-bracket">]</span></a> .</p>
+<p>To run machine-learning (ML) workloads efficiently, GPU/NPU platforms implement
+scheduling software in both the graph compiler and runtime. If OpenCL were
+extended to support ML graphs, graph compilers such as TVM and open-source
+runtimes could reuse scheduling work <a class="footnote-reference brackets" href="#paper-graph-on-opencl" id="id31" role="doc-noteref"><span class="fn-bracket">[</span>26<span class="fn-bracket">]</span></a>. CUDA Graphs
+follow a similar idea <a class="footnote-reference brackets" href="#cuda-graph-blog" id="id32" role="doc-noteref"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#cuda-graph-pytorch" id="id33" role="doc-noteref"><span class="fn-bracket">[</span>28<span class="fn-bracket">]</span></a>.</p>
 <ul class="simple">
-<li><p>SYCL: Using C++ templates to optimize and genertate code for OpenCL and Cuda.
-Provides a consistent language, APIs, and ecosystem in which to write and tune
-code for different accelerator architecture, CPUs, GPUs, and FPGAs <a class="footnote-reference brackets" href="#sycl" id="id34" role="doc-noteref"><span class="fn-bracket">[</span>29<span class="fn-bracket">]</span></a>.</p>
+<li><p>SYCL uses C++ templates to optimize and generate code for OpenCL and CUDA. It
+provides a consistent language, APIs, and ecosystem for writing and tuning
+code for different accelerator architectures, CPUs, GPUs, and FPGAs <a class="footnote-reference brackets" href="#sycl" id="id34" role="doc-noteref"><span class="fn-bracket">[</span>29<span class="fn-bracket">]</span></a>.</p>
 <ul>
 <li><p>SYCL uses generic programming with templates and generic lambda functions to
 enable higher-level application software to be cleanly coded with optimized

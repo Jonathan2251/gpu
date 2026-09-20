@@ -254,13 +254,13 @@ own independent Memory, but no PU in the array has a Program counter**
 
 Summary:
 
-- Each Control Unit has a Program Counter (PC) and  has tens of Processor Unit 
-  (PU).
+- Each Control Unit has a program counter (PC) and controls tens of processing
+  units (PUs).
 
-- Each Processor Unit (PU) has it's General Purpose Register Set (GPR) and stack
-  memory.
+- Each processing unit (PU) has its own general-purpose register set (GPR) and
+  stack memory.
 
-- The PU is a pipleline execution unit compared to CPU architecture.
+- A PU is a pipeline execution unit, analogous to a CPU execution unit.
 
 
 SM Hardware
@@ -278,7 +278,8 @@ This represents a SIMT pipeline with a scoreboard.
   Simplified block diagram of a Multithreaded SIMD Processor. (figure from book 
   [#Quantitative-threads-lanes]_)
 
-.. note:: A SIMD Thread executed by SIMD Processor, a.k.a. SM, has 16 Lanes.
+.. note:: A SIMD thread executed by a SIMD processor (also known as an SM) has
+   16 lanes.
 
 .. raw:: latex
 
@@ -420,8 +421,8 @@ SM Scheduling
 
     .. _l1-warp-sched:
 
-    When an SM executes a Thread Block, all the threads within the block are  
-    are executed at the same time. If any thread in a Warp is not ready due to 
+    When an SM executes a Thread Block, the threads within the block execute
+    together. If any thread in a Warp is not ready because of
     operand data dependencies, the scheduler switches context between Warps.  
     During a context switch, all the data of the current Warp remains in the  
     register file so it can resume quickly once its operands are ready  
@@ -562,7 +563,7 @@ I(1–10), while core-2 executes I(31–35).
 **For GPU, however, within an SM, it is not possible to schedule thread-1 to 
 execute I(1–10) while thread-2 executes I(31–35)**.
 
-As result,
+As a result,
 **there is no mainstream GPU that is truly hardware-SPMD** (where each thread 
 has its own independent pipeline).
 All modern GPUs (NVIDIA, AMD, Intel) implement SPMD as a programming model, but 
@@ -633,7 +634,7 @@ details in Lanes masked.
   - CPUs use a ROB to support out-of-order issue and retirement.
 
 
-**Comparsion of Volta and Pascal**
+**Comparison of Volta and Pascal**
 
 In a lock-step GPU without divergence support, the scoreboard entries include 
 only {Warp-ID, PC (Instruction Address), …}. With divergence support (as in 
@@ -1049,6 +1050,9 @@ VRAM dGPU
 .. graphviz:: ../Fig/hw/mem.gv
   :caption: iGPU versus dGPU
 
+DMA = Direct Memory Access, meaning a hardware unit can read/write memory 
+without CPU involvement.
+
 .. graphviz:: ../Fig/hw/dgpu.gv
    :caption: CPU send Uniform Updates Data to dGPU for rendering
  
@@ -1057,10 +1061,19 @@ VRAM dGPU
  
 **Reason:**
 
-**1. Since CPU and GPU have different requirements, a shared memory design cannot 
+1. Even though the **uniform updates are “zero‑copy” in Integrated GPUs**, the 
+GPU must fetch **all rendering data** (textures, vertex buffers, render targets) 
+from system RAM, which is:
+
+- 4–10× lower bandwidth than VRAM
+- shared with the CPU
+- higher latency
+- less optimized for parallel GPU access
+
+**2. Since CPU and GPU have different requirements, a shared memory design cannot 
 match the performance of dedicated GPU memory.**
 
-**2. In systems with shared memory (like integrated GPUs), both the CPU and GPU 
+**3. In systems with shared memory (like integrated GPUs), both the CPU and GPU 
 access the same physical memory (DRAM). This leads to several forms of 
 contention:**
 
@@ -1299,19 +1312,21 @@ Suppose the GLSL geometry shader looks like this:
 .. rubric:: An example of GLSL geometry shader
 .. code-block:: c++
 
-  #version 450
-  layout(triangles) in;
-  layout(line_strip, max_vertices = 2) out;
+   #version 330 core
 
-  void main() {
-    gl_Position = gl_in[0].gl_Position;
-    EmitVertex();
+   layout(triangles) in;
+   layout(triangle_strip, max_vertices = 3) out;
 
-    gl_Position = gl_in[1].gl_Position;
-    EmitVertex();
+   void main()
+   {
+       // Forward the input triangle unchanged.
+       for (int i = 0; i < 3; ++i) {
+           gl_Position = gl_in[i].gl_Position;
+           EmitVertex();
+       }
 
-    EndPrimitive();
-  }
+       EndPrimitive();
+   }
 
 The corresponding PTX instructions and pipeline flow as :numref:`sm-geometry`.
 
@@ -1620,8 +1635,7 @@ Key Responsibilities
        resolution on a large object (texture is therefore scaled upwards and 
        individual texels are noticeable). The GL_NEAREST and GL_LINEAR as the 
        following :numref:`texture-filter`. 
-       As result, GL_LINEAR produces a more blurred color and smooth edge's 
-       output.
+       As a result, GL_LINEAR produces a blurrier image with smoother edges.
 
        .. _texture-filter: 
        .. figure:: ../Fig/hw/texture-filter.png
@@ -1954,7 +1968,7 @@ Buffers to speedup OpenGL pipeline rendering [#buffers-redbook]_.
 
 .. [#chatgpt-pumh] chatgpt: Give me a memory hierarchy for L1, L2, local memory,
        shared memory for these processing units of hierarchy in reST and 
-       seperate dot graph.
+       separate DOT graph.
 
 .. [#Quantitative-gpu-mem] Book Figure 4.17 of Computer Architecture: A Quantitative Approach 5th edition (The
        Morgan Kaufmann Series in Computer Architecture and Design)

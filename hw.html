@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/haiku.css?v=fce32b03" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
-    <script src="_static/documentation_options.js?v=7f00635f"></script>
+    <script src="_static/documentation_options.js?v=db78e746"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="author" title="About these documents" href="about.html" />
@@ -90,7 +90,7 @@ inside shown as <a class="reference internal" href="#gpu-block-diagram-2"><span 
 </figure>
 <p>From compiler’s view, GPU is shown as <a class="reference internal" href="#gpu-hw"><span class="std std-numref">Fig. 57</span></a>.</p>
 <figure class="align-default" id="id51">
-<span id="gpu-hw"></span><div class="graphviz"><img src="_images/graphviz-ed153f27179a02053c73ab818e39fa56bd74a284.png" alt="digraph GPU {
+<span id="gpu-hw"></span><div class="graphviz"><img src="_images/graphviz-f8fb21f143fdc178c00ad34d5b4a7ba2b22175f8.png" alt="digraph GPU {
   rankdir=LR;
   bgcolor=&quot;white&quot;;
   node [shape=box, fontname=&quot;Helvetica&quot;, fontsize=10];
@@ -135,10 +135,10 @@ inside shown as <a class="reference internal" href="#gpu-block-diagram-2"><span 
       color = &quot;#fcbba1&quot;;
 
       Geo [label=&quot;Geometry Units\n(primitive assembly,\ntessellation, clipping)&quot;];
-      Raster [label=&quot;Rasterization Units\n(triangle -&gt; fragments,\nattribute interpolation)&quot;];
+      Raster [label=&quot;Rasterization Units\n(triangles → fragments,\nattribute interpolation)&quot;];
       TMU  [label=&quot;Texture Mapping Units (TMUs)\n(sampling &amp; filtering)&quot;];
       ROP  [label=&quot;Render Output Units (ROPs)\n(blend, depth, stencil,\nframebuffer write)&quot;];
-      Tensor [label=&quot;Tensor / Matrix Cores\n(AI accel)&quot;];
+      Tensor [label=&quot;Tensor / Matrix Cores\n(AI Acceleration)&quot;];
       RT     [label=&quot;Ray-Tracing Cores\n(BVH traversal, intersections)&quot;];
       Video  [label=&quot;Video Encode / Decode Engines\n(NVENC / VCN / VPU)&quot;];
       Display [label=&quot;Display Controller\n(HDMI / DP)&quot;];
@@ -156,7 +156,7 @@ inside shown as <a class="reference internal" href="#gpu-block-diagram-2"><span 
       VRAM[label=&quot;VRAM (GDDR / HBM)\n(high bandwidth)&quot;];
       Interconnect [label=&quot;Memory Controller / Interconnect&quot;];
 
-      Coalescing [label=&quot;Memory Coalescing\n(merge warp memory requests)&quot;];
+      Coalescing [label=&quot;Memory Coalescing\n(merges warp memory requests)&quot;];
       GatherScatter [label=&quot;Gather–Scatter\n(irregular memory access)&quot;];
     }
 
@@ -169,7 +169,7 @@ inside shown as <a class="reference internal" href="#gpu-block-diagram-2"><span 
     SMs -&gt; Tensor [label=&quot; matrix ops&quot;];
     SMs -&gt; RT [label=&quot; ray queries&quot;, style=dashed];
 
-    Raster -&gt; ROP [label=&quot; fragments -&gt; tests + blend&quot;];
+    Raster -&gt; ROP [label=&quot; fragments → tests + blending&quot;];
     SMs -&gt; ROP [label=&quot; shaded fragments&quot;];
     ROP  -&gt; VRAM [label=&quot; final framebuffer write&quot;];
 
@@ -177,7 +177,7 @@ inside shown as <a class="reference internal" href="#gpu-block-diagram-2"><span 
     SMs -&gt; L1 [label=&quot; fast access&quot;];
     TMU  -&gt; L2 [label=&quot; texture reads&quot;];
     SMs -&gt; L2 [label=&quot; global loads/stores&quot;];
-    L2   -&gt; VRAM [label=&quot; miss -&gt; VRAM&quot;];
+    L2   -&gt; VRAM [label=&quot; cache miss → VRAM&quot;];
     Interconnect -&gt; VRAM [label=&quot; memory transactions&quot;];
 
     /* Memory behavior connections */
@@ -486,11 +486,11 @@ own independent Memory, but no PU in the array has a Program counter</strong>
 <a class="footnote-reference brackets" href="#simt-wiki" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a>.</p>
 <p>Summary:</p>
 <ul class="simple">
-<li><p>Each Control Unit has a Program Counter (PC) and  has tens of Processor Unit
-(PU).</p></li>
-<li><p>Each Processor Unit (PU) has it’s General Purpose Register Set (GPR) and stack
-memory.</p></li>
-<li><p>The PU is a pipleline execution unit compared to CPU architecture.</p></li>
+<li><p>Each Control Unit has a program counter (PC) and controls tens of processing
+units (PUs).</p></li>
+<li><p>Each processing unit (PU) has its own general-purpose register set (GPR) and
+stack memory.</p></li>
+<li><p>A PU is a pipeline execution unit, analogous to a CPU execution unit.</p></li>
 </ul>
 <section id="sm-hardware">
 <h3><a class="toc-backref" href="#id90" role="doc-backlink">SM Hardware</a><a class="headerlink" href="#sm-hardware" title="Link to this heading">¶</a></h3>
@@ -507,7 +507,8 @@ This represents a SIMT pipeline with a scoreboard.</p>
 </figure>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>A SIMD Thread executed by SIMD Processor, a.k.a. SM, has 16 Lanes.</p>
+<p>A SIMD thread executed by a SIMD processor (also known as an SM) has
+16 lanes.</p>
 </div>
 <table class="docutils align-center">
 <colgroup>
@@ -659,8 +660,8 @@ Each Streaming Multiprocessor SM includes 32 Lanes in Fermi GPU, as shown
 in <a class="reference internal" href="#threadblock"><span class="std std-numref">Fig. 62</span></a>, the Thread Block includes a Warp (32 threads).
 According <a class="reference internal" href="#threadblocks-map"><span class="std std-numref">Fig. 63</span></a>, more than one block can be assigned
 and run on a same SM.</p>
-<p id="l1-warp-sched">When an SM executes a Thread Block, all the threads within the block are
-are executed at the same time. If any thread in a Warp is not ready due to
+<p id="l1-warp-sched">When an SM executes a Thread Block, the threads within the block execute
+together. If any thread in a Warp is not ready because of
 operand data dependencies, the scheduler switches context between Warps.
 During a context switch, all the data of the current Warp remains in the
 register file so it can resume quickly once its operands are ready
@@ -793,7 +794,7 @@ instructions at any program counter (PC)</strong>. For example, core-1 may execu
 I(1–10), while core-2 executes I(31–35).
 <strong>For GPU, however, within an SM, it is not possible to schedule thread-1 to
 execute I(1–10) while thread-2 executes I(31–35)</strong>.</p>
-<p>As result,
+<p>As a result,
 <strong>there is no mainstream GPU that is truly hardware-SPMD</strong> (where each thread
 has its own independent pipeline).
 All modern GPUs (NVIDIA, AMD, Intel) implement SPMD as a programming model, but
@@ -860,7 +861,7 @@ details in Lanes masked.</p>
 <li><p>CPU reorder buffer (ROB) = out-of-order issue + completion, but retire in-order
 - CPUs use a ROB to support out-of-order issue and retirement.</p></li>
 </ul>
-<p><strong>Comparsion of Volta and Pascal</strong></p>
+<p><strong>Comparison of Volta and Pascal</strong></p>
 <p>In a lock-step GPU without divergence support, the scoreboard entries include
 only {Warp-ID, PC (Instruction Address), …}. With divergence support (as in
 real-world GPUs), the scoreboard entries expand to {Warp-ID, PC, mask, …}.</p>
@@ -1254,12 +1255,12 @@ load/store” for “fadd and load C[i]” in this example).</p></td>
 <h3><a class="toc-backref" href="#id95" role="doc-backlink">Address Coalescing and Gather-scatter</a><a class="headerlink" href="#address-coalescing-and-gather-scatter" title="Link to this heading">¶</a></h3>
 <p>Brief description is shown in <a class="reference internal" href="#coalescing-gather"><span class="std std-numref">Fig. 70</span></a>.</p>
 <figure class="align-default" id="id66">
-<span id="coalescing-gather"></span><div class="graphviz"><img src="_images/graphviz-d9fea9549f1cbe50dc6738ecc80dd695b5dfcce8.png" alt="digraph GPU_Memory {
+<span id="coalescing-gather"></span><div class="graphviz"><img src="_images/graphviz-5f78c9d140ebbf8112f5041b8fc111bac6481b56.png" alt="digraph GPU_Memory {
     rankdir=LR;
     node [shape=box, style=rounded, fontsize=12];
 
     subgraph cluster_gather {
-        label=&quot;Gather-Scatter (Sparse Matrix Access): \nIndirect index of LD/ST&quot;;
+        label=&quot;Gather–Scatter (Sparse-Matrix Access):\nIndirectly Indexed Loads/Stores&quot;;
         color=green;
 
         Idx [label=&quot;Index Array A[]:\nA[0]=200\nA[1]=400\nA[2]=1200\nA[3]=320&quot;, shape=note, style=filled, fillcolor=lightyellow];
@@ -1276,7 +1277,7 @@ load/store” for “fadd and load C[i]” in this example).</p></td>
     }
 
     subgraph cluster_coalescing {
-        label=&quot;Address Coalescing: \nMerge memory transcations into a contiguous memory access&quot;;
+        label=&quot;Address Coalescing:\nMerges memory transactions into a contiguous access&quot;;
         color=blue;
 
         T1 [label=&quot;Thread 1\nAddr 100&quot;];
@@ -1402,7 +1403,7 @@ data to improve coalescing often provides significant performance gains.</p></li
 <section id="vram-dgpu">
 <h3><a class="toc-backref" href="#id96" role="doc-backlink">VRAM dGPU</a><a class="headerlink" href="#vram-dgpu" title="Link to this heading">¶</a></h3>
 <figure class="align-default" id="id67">
-<span id="mem"></span><div class="graphviz"><img src="_images/graphviz-b15d10ede9aed5eda2be8f259ad29270b1cced99.png" alt="digraph gpu_memory {
+<span id="mem"></span><div class="graphviz"><img src="_images/graphviz-def3089462cb6c83668b248c7286dd0295d2799d.png" alt="digraph gpu_memory {
   rankdir=LR;
   node [shape=box style=rounded fontsize=10];
 
@@ -1421,12 +1422,14 @@ data to improve coalescing often provides significant performance gains.</p></li
   subgraph cluster_dedicated {
     label = &quot;Dedicated Memory (Discrete GPU)&quot;;
     CPU2 [label=&quot;CPU\n(Caches)&quot;];
+    CMC [label=&quot;CPU Memory Controller&quot;];
     SYS_RAM [label=&quot;System RAM&quot;];
     GPU2 [label=&quot;dGPU\n(Caches, DMA)&quot;];
+    GMC [label=&quot;dGPU Memory Controller&quot;];
     VRAM [label=&quot;VRAM\n(GDDR/HBM)&quot;];
 
-    CPU2 -&gt; SYS_RAM;
-    GPU2 -&gt; VRAM;
+    CPU2 -&gt; CMC -&gt; SYS_RAM;
+    GPU2 -&gt; GMC -&gt; VRAM;
   }
 
   edge [style=invis];
@@ -1436,6 +1439,8 @@ data to improve coalescing often provides significant performance gains.</p></li
 <p><span class="caption-number">Fig. 71 </span><span class="caption-text">iGPU versus dGPU</span><a class="headerlink" href="#id67" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
+<p>DMA = Direct Memory Access, meaning a hardware unit can read/write memory
+without CPU involvement.</p>
 <figure class="align-default" id="id68">
 <div class="graphviz"><img src="_images/graphviz-7926236941adcb78df9744dc87d3181f45a3cdbd.png" alt="digraph DiscreteGPUUniformUpdate {
     rankdir=LR;
@@ -1479,9 +1484,18 @@ data to improve coalescing often provides significant performance gains.</p></li
 </figcaption>
 </figure>
 <p><strong>Reason:</strong></p>
-<p><strong>1. Since CPU and GPU have different requirements, a shared memory design cannot
+<p>1. Even though the <strong>uniform updates are “zero‑copy” in Integrated GPUs</strong>, the
+GPU must fetch <strong>all rendering data</strong> (textures, vertex buffers, render targets)
+from system RAM, which is:</p>
+<ul class="simple">
+<li><p>4–10× lower bandwidth than VRAM</p></li>
+<li><p>shared with the CPU</p></li>
+<li><p>higher latency</p></li>
+<li><p>less optimized for parallel GPU access</p></li>
+</ul>
+<p><strong>2. Since CPU and GPU have different requirements, a shared memory design cannot
 match the performance of dedicated GPU memory.</strong></p>
-<p><strong>2. In systems with shared memory (like integrated GPUs), both the CPU and GPU
+<p><strong>3. In systems with shared memory (like integrated GPUs), both the CPU and GPU
 access the same physical memory (DRAM). This leads to several forms of
 contention:</strong></p>
 <ol class="loweralpha simple">
@@ -1887,24 +1901,26 @@ section <a class="reference internal" href="opengl.html#rendering3d"><span class
 </div>
 <p>Suppose the GLSL geometry shader looks like this:</p>
 <p class="rubric">An example of GLSL geometry shader</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#version 450</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#version 330 core</span>
+
 <span class="n">layout</span><span class="p">(</span><span class="n">triangles</span><span class="p">)</span><span class="w"> </span><span class="n">in</span><span class="p">;</span>
-<span class="n">layout</span><span class="p">(</span><span class="n">line_strip</span><span class="p">,</span><span class="w"> </span><span class="n">max_vertices</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="n">out</span><span class="p">;</span>
+<span class="n">layout</span><span class="p">(</span><span class="n">triangle_strip</span><span class="p">,</span><span class="w"> </span><span class="n">max_vertices</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="n">out</span><span class="p">;</span>
 
-<span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">gl_Position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gl_in</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">gl_Position</span><span class="p">;</span>
-<span class="w">  </span><span class="n">EmitVertex</span><span class="p">();</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// Forward the input triangle unchanged.</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">gl_Position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gl_in</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">gl_Position</span><span class="p">;</span>
+<span class="w">        </span><span class="n">EmitVertex</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
 
-<span class="w">  </span><span class="n">gl_Position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gl_in</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">gl_Position</span><span class="p">;</span>
-<span class="w">  </span><span class="n">EmitVertex</span><span class="p">();</span>
-
-<span class="w">  </span><span class="n">EndPrimitive</span><span class="p">();</span>
+<span class="w">    </span><span class="n">EndPrimitive</span><span class="p">();</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>The corresponding PTX instructions and pipeline flow as <a class="reference internal" href="#sm-geometry"><span class="std std-numref">Fig. 78</span></a>.</p>
 <figure class="align-default" id="id74">
-<span id="sm-geometry"></span><div class="graphviz"><img src="_images/graphviz-3520d4c71614f02e3751f7366f08dc83bbc2df60.png" alt="digraph SM_Geometry_Assembly {
+<span id="sm-geometry"></span><div class="graphviz"><img src="_images/graphviz-91a55001418e393068930cc860d5d2859a3e4729.png" alt="digraph SM_Geometry_Assembly {
   rankdir=LR;
   bgcolor=&quot;white&quot;;
   node [shape=box, style=&quot;rounded,filled&quot;, fontname=&quot;Arial&quot;, fontsize=11];
@@ -1912,8 +1928,8 @@ section <a class="reference internal" href="opengl.html#rendering3d"><span class
   /* Graph-level title (left-aligned, bold) */
   label=&lt;
     &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
-      &lt;TR&gt;&lt;TD&gt;&lt;FONT POINT-SIZE=&quot;14&quot; COLOR=&quot;#003366&quot;&gt;&lt;B&gt;SM → Geometry Unit: PTX-like Assembly Flow&lt;/B&gt;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
-      &lt;TR&gt;&lt;TD&gt;&lt;FONT POINT-SIZE=&quot;10&quot; COLOR=&quot;#003366&quot;&gt;Example sequence showing loads/moves and {&#64;code call emit}/{&#64;code call cut} dispatching primitives&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT POINT-SIZE=&quot;14&quot; COLOR=&quot;#003366&quot;&gt;&lt;B&gt;Geometry Shader: Triangle In → Triangle Out&lt;/B&gt;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT POINT-SIZE=&quot;10&quot; COLOR=&quot;#003366&quot;&gt;One input triangle (gl_in[0..2]) is forwarded as one output triangle&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
     &lt;/TABLE&gt;
   &gt;;
   labelloc=top;
@@ -1922,7 +1938,8 @@ section <a class="reference internal" href="opengl.html#rendering3d"><span class
   SMThread [fillcolor=&quot;#FFF2CC&quot; label=&lt;
     &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
       &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Thread running in SM&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
-      &lt;TR&gt;&lt;TD&gt;• Executes geometry shader program&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Receives one input triangle: gl_in[0..2]&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Executes the geometry shader once per input primitive&lt;/TD&gt;&lt;/TR&gt;
       &lt;TR&gt;&lt;TD&gt;• Issues compiled PTX-style microcode&lt;/TD&gt;&lt;/TR&gt;
     &lt;/TABLE&gt;
   &gt;];
@@ -1940,17 +1957,25 @@ section <a class="reference internal" href="opengl.html#rendering3d"><span class
   AsmSeq [fillcolor=&quot;#FFFFFF&quot; penwidth=&quot;1&quot; label=&lt;
     &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
       &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Compiled (PTX-like) Instruction Sequence&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
-      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;ld.global.v4.f32 {r0, r1, r2, r3}, [in_attr0];&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;// layout(triangles) in;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;// layout(triangle_strip, max_vertices = 3) out;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;ld.input.v4.f32 {r0, r1, r2, r3}, [gl_in[0].gl_Position];&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
       &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;mov.f32 o0, r0;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
       &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;mov.f32 o1, r1;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
       &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;mov.f32 o2, r2;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
       &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;mov.f32 o3, r3;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
       &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;&lt;B&gt;call emit;&lt;/B&gt;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
-      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;ld.global.v4.f32 {r4, r5, r6, r7}, [in_attr1];&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;ld.input.v4.f32 {r4, r5, r6, r7}, [gl_in[1].gl_Position];&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
       &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;mov.f32 o0, r4;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
       &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;mov.f32 o1, r5;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
       &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;mov.f32 o2, r6;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
       &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;mov.f32 o3, r7;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;&lt;B&gt;call emit;&lt;/B&gt;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;ld.input.v4.f32 {r8, r9, r10, r11}, [gl_in[2].gl_Position];&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;mov.f32 o0, r8;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;mov.f32 o1, r9;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;mov.f32 o2, r10;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;mov.f32 o3, r11;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
       &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;&lt;B&gt;call emit;&lt;/B&gt;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
       &lt;TR&gt;&lt;TD&gt;&lt;FONT FACE=&quot;monospace&quot;&gt;&lt;B&gt;call cut;&lt;/B&gt;&lt;/FONT&gt;&lt;/TD&gt;&lt;/TR&gt;
     &lt;/TABLE&gt;
@@ -1960,8 +1985,9 @@ section <a class="reference internal" href="opengl.html#rendering3d"><span class
   OutRegs [shape=note, fillcolor=&quot;#FFFFE0&quot;, label=&lt;
     &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
       &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Output Registers / Emit Buffer&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
-      &lt;TR&gt;&lt;TD&gt;• o0..oN hold per-vertex outputs (position, attrs)&lt;/TD&gt;&lt;/TR&gt;
-      &lt;TR&gt;&lt;TD&gt;• Emit buffer queues vertices for Geometry Unit&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• o0..oN hold one emitted vertex (position, attributes)&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Three emit calls queue a triangle strip&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• cut ends the primitive (GLSL EndPrimitive())&lt;/TD&gt;&lt;/TR&gt;
     &lt;/TABLE&gt;
   &gt;];
 
@@ -1969,10 +1995,10 @@ section <a class="reference internal" href="opengl.html#rendering3d"><span class
   GeoUnit [fillcolor=&quot;#D9E8FF&quot; label=&lt;
     &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
       &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Geometry Unit (hardware)&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
-      &lt;TR&gt;&lt;TD&gt;• Accepts emitted vertices from SM output regs&lt;/TD&gt;&lt;/TR&gt;
-      &lt;TR&gt;&lt;TD&gt;• Primitive Assembly / Tessellation / GS handling&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Accepts three emitted vertices from the SM&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Assembles one triangle from the triangle strip&lt;/TD&gt;&lt;/TR&gt;
       &lt;TR&gt;&lt;TD&gt;• Culling, Clipping, Viewport transform&lt;/TD&gt;&lt;/TR&gt;
-      &lt;TR&gt;&lt;TD&gt;• Primitive Setup → send to Rasterizer&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Primitive setup → rasterizer&lt;/TD&gt;&lt;/TR&gt;
     &lt;/TABLE&gt;
   &gt;];
 
@@ -1988,11 +2014,11 @@ section <a class="reference internal" href="opengl.html#rendering3d"><span class
   SMThread -&gt; InstFetch [label=&quot; compiled microcode / instruction pointer&quot; fontsize=10];
   InstFetch -&gt; AsmSeq [label=&quot; decode -&gt; micro-ops&quot; fontsize=10];
   AsmSeq -&gt; OutRegs [label=&quot; write outputs (o0..oN)&quot; fontsize=10];
-  OutRegs -&gt; GeoUnit [label=&quot; Emit vertex(s) (emit/cut triggers)&quot; fontsize=10];
+  OutRegs -&gt; GeoUnit [label=&quot; 3 emitted vertices + EndPrimitive&quot; fontsize=10];
   GeoUnit -&gt; Rasterizer [label=&quot; prepared primitives&quot; fontsize=10];
 
   /* Control arrows (illustrate call emit/cut semantics) */
-  AsmSeq -&gt; GeoUnit [label=&quot; call emit / call cut (control msgs)&quot;, style=dashed, color=&quot;#3333CC&quot;];
+  AsmSeq -&gt; GeoUnit [label=&quot; emit / EndPrimitive control&quot;, style=dashed, color=&quot;#3333CC&quot;];
 
   /* layout hints */
   { rank = same; SMThread; InstFetch; AsmSeq }
@@ -2079,7 +2105,7 @@ Units instead of the SMs.</p>
 <p>Geometry Unit bridges the <strong>vertex shading</strong> stage and the <strong>rasterization</strong>
 stage as shown in <a class="reference internal" href="#geometry-unit"><span class="std std-numref">Fig. 80</span></a>.</p>
 <figure class="align-default" id="id76">
-<span id="geometry-unit"></span><div class="graphviz"><img src="_images/graphviz-13c3d7422428bc9890e18baa9b965b70ae1a63b2.png" alt="digraph Geometry_Unit {
+<span id="geometry-unit"></span><div class="graphviz"><img src="_images/graphviz-826ba00e3a9c288ec58f1df2547adf2aee7d543a.png" alt="digraph Geometry_Unit {
   rankdir=TB;
   bgcolor=&quot;white&quot;;
   node [shape=box, style=&quot;rounded,filled&quot;, fontname=&quot;Arial&quot;, fontsize=14];
@@ -2089,12 +2115,12 @@ stage as shown in <a class="reference internal" href="#geometry-unit"><span clas
     &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
       &lt;TR&gt;
         &lt;TD&gt;
-          &lt;FONT POINT-SIZE=&quot;18&quot; COLOR=&quot;#003366&quot;&gt;&lt;B&gt;GPU Geometry Unit - internal stages &amp;amp; dataflow&lt;/B&gt;&lt;/FONT&gt;
+          &lt;FONT POINT-SIZE=&quot;18&quot; COLOR=&quot;#003366&quot;&gt;&lt;B&gt;GPU Geometry Unit — Internal Stages &amp;amp; Dataflow&lt;/B&gt;&lt;/FONT&gt;
         &lt;/TD&gt;
       &lt;/TR&gt;
       &lt;TR&gt;
         &lt;TD&gt;
-          &lt;FONT POINT-SIZE=&quot;14&quot; COLOR=&quot;#003366&quot;&gt;Flow: Vertex output - Primitive Assembly - (Tessellation) - Geometry Shader - Clipping - Viewport Transform - Primitive Setup - Rasterizer&lt;/FONT&gt;
+          &lt;FONT POINT-SIZE=&quot;14&quot; COLOR=&quot;#003366&quot;&gt;Flow: Vertex Output → Primitive Assembly → (Tessellation) → Geometry Shader → Clipping → Viewport Transform → Primitive Setup → Rasterizer&lt;/FONT&gt;
         &lt;/TD&gt;
       &lt;/TR&gt;
     &lt;/TABLE&gt;
@@ -2122,8 +2148,8 @@ stage as shown in <a class="reference internal" href="#geometry-unit"><span clas
   Assembly [fillcolor=&quot;#D9E8FF&quot; label=&lt;
     &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
       &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Primitive Assembly / Input Assembler&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
-      &lt;TR&gt;&lt;TD&gt;• Group vertices into primitives \n(triangles, lines, patches)&lt;/TD&gt;&lt;/TR&gt;
-      &lt;TR&gt;&lt;TD&gt;• Fetch index buffers, vertex attributes&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Groups vertices into primitives \n(triangles, lines, patches)&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Fetches index buffers and vertex attributes&lt;/TD&gt;&lt;/TR&gt;
     &lt;/TABLE&gt;
   &gt;];
 
@@ -2131,15 +2157,15 @@ stage as shown in <a class="reference internal" href="#geometry-unit"><span clas
     &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
       &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Tessellation (optional)&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
       &lt;TR&gt;&lt;TD&gt;• Tessellation Control + Primitive Gen + Eval&lt;/TD&gt;&lt;/TR&gt;
-      &lt;TR&gt;&lt;TD&gt;• Patch subdivision, generate new vertices/primitives&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Subdivides patches and generates new vertices/primitives&lt;/TD&gt;&lt;/TR&gt;
     &lt;/TABLE&gt;
   &gt;];
 
   GeoShader [fillcolor=&quot;#D9E8FF&quot; label=&lt;
     &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
       &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Geometry Shader / Stream Output (optional)&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
-      &lt;TR&gt;&lt;TD&gt;• Programmable stage: modify or emit primitives&lt;/TD&gt;&lt;/TR&gt;
-      &lt;TR&gt;&lt;TD&gt;• Can amplify primitives (performance cost)&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Programmable stage: modifies or emits primitives&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Can amplify primitives (with a performance cost)&lt;/TD&gt;&lt;/TR&gt;
     &lt;/TABLE&gt;
   &gt;];
 
@@ -2155,22 +2181,22 @@ stage as shown in <a class="reference internal" href="#geometry-unit"><span clas
     &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
       &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Viewport / Screen Transform&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
       &lt;TR&gt;&lt;TD&gt;• NDC → screen coordinates (viewport scale + offset)&lt;/TD&gt;&lt;/TR&gt;
-      &lt;TR&gt;&lt;TD&gt;• Apply depth range mapping&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Applies depth-range mapping&lt;/TD&gt;&lt;/TR&gt;
     &lt;/TABLE&gt;
   &gt;];
 
   Setup [fillcolor=&quot;#FFF4D9&quot; label=&lt;
     &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
       &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Primitive Setup / Scan-conversion Prep&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
-      &lt;TR&gt;&lt;TD&gt;• Compute edge equations, slopes, barycentrics&lt;/TD&gt;&lt;/TR&gt;
-      &lt;TR&gt;&lt;TD&gt;• Prepare interpolants (dx/dy) for attributes&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Computes edge equations, slopes, and barycentric coordinates&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;• Prepares attribute interpolants (dx/dy)&lt;/TD&gt;&lt;/TR&gt;
     &lt;/TABLE&gt;
   &gt;];
 
   /* Resource boxes / notes */
   Resources [shape=note, fillcolor=&quot;#FFFFE0&quot;, label=&lt;
     &lt;TABLE BORDER=&quot;0&quot; CELLBORDER=&quot;0&quot; CELLSPACING=&quot;0&quot; ALIGN=&quot;LEFT&quot;&gt;
-      &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Resources / HW considerations&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
+      &lt;TR&gt;&lt;TD&gt;&lt;B&gt;Resources / Hardware Considerations&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
       &lt;TR&gt;&lt;TD&gt;• Shared scheduling with vertex units&lt;/TD&gt;&lt;/TR&gt;
       &lt;TR&gt;&lt;TD&gt;• Dedicated small caches / FIFOs for index/vertex fetch&lt;/TD&gt;&lt;/TR&gt;
       &lt;TR&gt;&lt;TD&gt;• Fixed-function blocks for edge setup (for performance)&lt;/TD&gt;&lt;/TR&gt;
@@ -2375,25 +2401,25 @@ They provide high-performance, specialized texture access operations that
 would be too slow or costly to emulate in general-purpose ALUs is shown as
 <a class="reference internal" href="#texture-fetch"><span class="std std-numref">Fig. 82</span></a>.</p>
 <figure class="align-default" id="id78">
-<span id="texture-fetch"></span><div class="graphviz"><img src="_images/graphviz-1bc38c98eb64118abe67a5585e6045ed178dc3d4.png" alt="digraph TextureFetch {
+<span id="texture-fetch"></span><div class="graphviz"><img src="_images/graphviz-f5f9ed5445f1795b37cacdd4ce21c7320d9f72e1.png" alt="digraph TextureFetch {
   rankdir=TB;
   node [shape=box, fontname=&quot;Helvetica&quot;, fontsize=10, style=rounded];
 
-  Thread [label=&quot;Thread in SM\n(executes texture() instr)&quot;];
-  Instr [label=&quot;Decoded Texture Instruction\n(coords + sampler state)&quot;];
+  Thread [label=&quot;Thread in an SM\n(executes a texture() instruction)&quot;];
+  Instr [label=&quot;Decoded Texture Instruction\n(coordinates + sampler state)&quot;];
   TMU [label=&quot;Texture Mapping Unit (TMU)\n- Addressing\n- Filtering\n- LOD calc&quot;];
   TCache [label=&quot;Texture Cache (L1/L2)&quot;];
   VRAM [label=&quot;Texture Memory (VRAM)\n(GDDR/HBM)&quot;];
-  Result [label=&quot;Sampled Texel(s)\n(return to SM thread)&quot;];
+  Result [label=&quot;Sampled Texel(s)\n(returned to the SM thread)&quot;];
 
   Thread -&gt; Instr [label=&quot;1. issue\n texture()&quot;];
-  Instr -&gt; TMU [label=&quot;2. send coords\n + state&quot;];
+  Instr -&gt; TMU [label=&quot;2. send coordinates\n + state&quot;];
   TMU -&gt; TCache [label=&quot;3. fetch\n texels&quot;];
   TCache -&gt; VRAM [label=&quot;4. on\n cache miss&quot;];
   VRAM -&gt; TCache [label=&quot;5. load\n texels&quot;];
   TCache -&gt; TMU [label=&quot;6. return\n texels&quot;];
-  TMU -&gt; Result [label=&quot;7. filtered\n texel&quot;];
-  Result -&gt; Thread [label=&quot;8. write back result&quot;];
+  TMU -&gt; Result [label=&quot;7. filtered\n texel(s)&quot;];
+  Result -&gt; Thread [label=&quot;8. write back\n result&quot;];
 
   { rank = same; Thread; Instr; TMU }
   { rank = same; TCache; Result }
@@ -2518,8 +2544,7 @@ example in <a class="reference internal" href="#linear"><span class="std std-num
 resolution on a large object (texture is therefore scaled upwards and
 individual texels are noticeable). The GL_NEAREST and GL_LINEAR as the
 following <a class="reference internal" href="#texture-filter"><span class="std std-numref">Fig. 87</span></a>.
-As result, GL_LINEAR produces a more blurred color and smooth edge’s
-output.</p>
+As a result, GL_LINEAR produces a blurrier image with smoother edges.</p>
 <figure class="align-center" id="id83">
 <span id="texture-filter"></span><a class="reference internal image-reference" href="_images/texture-filter.png"><img alt="_images/texture-filter.png" height="534" src="_images/texture-filter.png" width="1080" />
 </a>
@@ -2939,7 +2964,7 @@ Morgan Kaufmann Series in Computer Architecture and Design)</p>
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id18">15</a><span class="fn-bracket">]</span></span>
 <p>chatgpt: Give me a memory hierarchy for L1, L2, local memory,
 shared memory for these processing units of hierarchy in reST and
-seperate dot graph.</p>
+separate DOT graph.</p>
 </aside>
 <aside class="footnote brackets" id="quantitative-gpu-mem" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id19">16</a><span class="fn-bracket">]</span></span>

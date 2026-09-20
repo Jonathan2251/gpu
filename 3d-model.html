@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/haiku.css?v=fce32b03" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
-    <script src="_static/documentation_options.js?v=7f00635f"></script>
+    <script src="_static/documentation_options.js?v=db78e746"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="author" title="About these documents" href="about.html" />
@@ -208,7 +208,7 @@ Level 1 and Level 2:</p>
 <p>✔ Level 2 — State Machine</p>
 <p>He configures transitions and parameters.</p>
 <figure class="align-default" id="id16">
-<span id="animation-levels"></span><div class="graphviz"><img src="_images/graphviz-a225b560ceff9938339eb3adeb9d630c05991999.png" alt="digraph AnimationLayers {
+<span id="animation-levels"></span><div class="graphviz"><img src="_images/graphviz-59bca9c9e907179de4bdbb7bcd76c4a9de77a48d.png" alt="digraph AnimationLayers {
     rankdir=TB;
     node [shape=box, style=rounded, fontsize=12];
 
@@ -216,7 +216,7 @@ Level 1 and Level 2:</p>
     High2 [label=&quot;2. Animation State Machine / Animation Graph\n(User-designed transitions &amp; blends)&quot;];
     Mid  [label=&quot;3. Animation Clip Playback\n(Engine-controlled timing &amp; blending)&quot;];
     Low1 [label=&quot;4. Skeleton Animation System\n(Bone transforms, keyframe interpolation)&quot;];
-    Low2 [label=&quot;5. GPU Skinning\n(Vertex shader applies bone matrices)&quot;];
+    Low2 [label=&quot;5. GPU Skinning\n(The vertex shader applies bone matrices)&quot;];
 
     High1 -&gt; High2 [label=&quot;animation intent\n(e.g., walk, run, jump)&quot;];
     High2 -&gt; Mid   [label=&quot;selected clip + blend parameters&quot;];

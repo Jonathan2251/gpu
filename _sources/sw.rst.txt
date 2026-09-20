@@ -31,13 +31,12 @@ In vector processors, VM acts as a form of conditional execution mechanism.
   for (i=0; i <n; i=i+1)
     Y[i] = a * X[i] + Y[i];
 
-As above code, the value of n is not known at compile time.
+In the preceding code, the value of ``n`` is not known at compile time.
 
 Solution:
 
-Compiler converts loop into multiple iterations of loops, where each iteration 
-processes up to the maximum vector length
-maximum vector length (MVL) as shown as below. 
+The compiler converts the loop into multiple iterations, each of which
+processes up to the maximum vector length (MVL), as shown below.
 For VMIPS, the MVL is 64.
 
 .. code:: c++
@@ -81,11 +80,11 @@ Vector Length Register (VLR) as shown below.
 General purpose GPU
 -------------------
 
-Since GLSL shaders provide a general way for writing C code in them, if applying
-a software frame work instead of OpenGL API, then the system can run some data
-parallel computation on GPU for speeding up and even get CPU and GPU executing 
-simultaneously. Furthmore, any language that allows the code running on the CPU to poll 
-a GPU shader for return values, can create a GPGPU framework [#gpgpuwiki]_.
+Because GLSL shaders provide a C-like programming model, a software framework
+can use GPU shaders for data-parallel computation instead of only graphics
+rendering. This can accelerate work and allow CPU and GPU execution to overlap.
+Furthermore, any language that lets CPU code retrieve results from a GPU shader
+can support a GPGPU framework [#gpgpuwiki]_.
 
 
 .. _mapping-data-in-gpu:
@@ -442,10 +441,11 @@ OpenCL, Vulkan and Spir-v
 
   Offline Compilation of OpenCL Kernels into SPIR-V Using Open Source Tooling [#opencl-to-spirv]_
 
-- clang: Compile OpenCL to spirv for runtime+driver. Or compile OpenCL to llvm, then
-  "SPIR-V LLVM Translator" translate llvm to spirv for runtime+driver.
+- clang: Compiles OpenCL to SPIR-V for the runtime and driver. Alternatively,
+  it compiles OpenCL to LLVM, after which the SPIR-V–LLVM translator converts
+  LLVM to SPIR-V.
 
-- clspv: Compile OpenCL to spirv directly.
+- clspv: Compiles OpenCL to SPIR-V directly.
 
 .. _gpu_compiler_toolchain: 
 .. graphviz:: ../Fig/sw/gpu-compiler-toolchain.gv
@@ -612,18 +612,18 @@ Summary
 | OpMemoryModel GLSL450    | GLSL or HLSL     |
 +--------------------------+------------------+
 
-- Comparsion for OpenCL and OpenGL's compute shader.
+- Comparison of OpenCL and OpenGL compute shaders.
 
   - Same:
 
-    Both are for General Computing of GPU.
+    Both support general-purpose GPU computing.
 
   - Difference:
 
-    OpenCL include GPU and other accelerate device/processor.
-    OpenCL is C language on Device and C++ on Host based on OpenCL runtime. 
-    Compute shader is GLSL shader language run on OpenGL graphic enviroment and
-    integrate and access data of OpenGL API easily [#diff-compute-shader-opencl]_.
+    OpenCL supports GPUs and other accelerator devices/processors. OpenCL C runs
+    on the device, while host code uses the OpenCL runtime. A compute shader is
+    written in GLSL and runs in the OpenGL graphics environment, where it can
+    readily access OpenGL API data [#diff-compute-shader-opencl]_.
 
 - OpenGL/GLSL vs Vulkan/spir-v.
 
@@ -692,7 +692,7 @@ The following table lists result of reduce, inclusive and exclusive operations.
 
 The following is a code example.
 
-.. rubric:: An example of subgroup operations in glsl for vulkan
+.. rubric:: An Example of Subgroup Operations in GLSL for Vulkan
 .. code-block:: c++
 
   vec4 sum = vec4(0, 0, 0, 0);
@@ -704,12 +704,12 @@ The following is a code example.
   }
   subgroupMemoryBarrier();
 
-- Nvidia's GPU provides __syncWarp() for subgroupMemoryBarrier() or compiler to
-  sync for the Lanes in the same Warp.
+- NVIDIA GPUs provide ``__syncwarp()`` for synchronization within a warp; the
+  compiler can also synchronize lanes in the same warp.
 
-In order to let Lanes in the same SIMD processor work efficently, data unifomity
-analysis will provide many optimization opporturnities in register allocation,
-transformation and code generation [#llvm-uniformity]_.
+To help lanes in the same SIMD processor work efficiently, data-uniformity
+analysis provides optimization opportunities in register allocation,
+transformation, and code generation [#llvm-uniformity]_.
 
 LLVM IR expansion from CPU to GPU is becoming increasingly influential. 
 In fact, LLVM IR has been expanding steadily from version 3.1 until now, 
@@ -851,9 +851,9 @@ This section outlines the intermediate representation (IR) flows used by
 NVIDIA, AMD, and ARM in machine learning and GPU compilation pipelines. 
 It includes both inference engines and compiler toolchains.
 
-.. rubric:: ✅ Each node in the graph is color-coded to indicate its category 
-            or role within the structure. In AI, usually use runtime 
-            instead of driver for graphics.
+.. rubric:: ✅ Each node in the graph is color-coded to indicate its category
+            or role within the structure. In AI, the term *runtime* is usually
+            used instead of *driver*.
 .. graphviz::
 
     digraph G {
@@ -1014,7 +1014,7 @@ Accelerate ML/DL on OpenCL/SYCL
   :align: center
   :scale: 50 %
 
-  Implement ML graph scheduler both on compiler and runtime
+  ML graph scheduling in both the compiler and runtime
 
 
 As shown in :numref:`opengl_ml_graph`, the Device, such as a GPU or a CPU+NPU, 
@@ -1026,16 +1026,15 @@ and the Device.
 Similar to OpenGL shaders, the "kernel" function may be compiled either 
 on-line or off-line and then sent to the GPU as a programmable function.
 
-In order to run ML (Machine Learning) efficiently, all platforms for ML on 
-GPU/NPU implement scheduling SW both on graph compiler and runtime. 
-**If OpenCL can extend to support ML graph, then graph compiler such as TVM or 
-Runtime from Open Source have chance to leverage the effort of scheduling SW from 
-programmers** [#paper-graph-on-opencl]_. Cuda graph is an idea  like this 
-[#cuda-graph-blog]_ [#cuda-graph-pytorch]_ .
+To run machine-learning (ML) workloads efficiently, GPU/NPU platforms implement
+scheduling software in both the graph compiler and runtime. If OpenCL were
+extended to support ML graphs, graph compilers such as TVM and open-source
+runtimes could reuse scheduling work [#paper-graph-on-opencl]_. CUDA Graphs
+follow a similar idea [#cuda-graph-blog]_ [#cuda-graph-pytorch]_.
 
-- SYCL: Using C++ templates to optimize and genertate code for OpenCL and Cuda.
-  Provides a consistent language, APIs, and ecosystem in which to write and tune 
-  code for different accelerator architecture, CPUs, GPUs, and FPGAs [#sycl]_.
+- SYCL uses C++ templates to optimize and generate code for OpenCL and CUDA. It
+  provides a consistent language, APIs, and ecosystem for writing and tuning
+  code for different accelerator architectures, CPUs, GPUs, and FPGAs [#sycl]_.
 
   - SYCL uses generic programming with templates and generic lambda functions to 
     enable higher-level application software to be cleanly coded with optimized 
@@ -1147,4 +1146,3 @@ programmers** [#paper-graph-on-opencl]_. Cuda graph is an idea  like this
 .. [#dpcpp-book] https://link.springer.com/book/10.1007/978-1-4842-5574-2
 
 .. [#dpcpp-features] Page 14 of DPC++ book.
-

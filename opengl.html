@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/haiku.css?v=fce32b03" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
-    <script src="_static/documentation_options.js?v=7f00635f"></script>
+    <script src="_static/documentation_options.js?v=db78e746"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
@@ -46,28 +46,29 @@
 <ul>
 <li><p><a class="reference internal" href="#animation-parameters" id="id94">Animation Parameters</a></p></li>
 <li><p><a class="reference internal" href="#d-rendering-pipeline" id="id95">3D Rendering Pipeline</a></p></li>
-<li><p><a class="reference internal" href="#tessellation-example" id="id96">Tessellation Example</a></p></li>
-<li><p><a class="reference internal" href="#mobile-gpu-3d-rendering" id="id97">Mobile GPU 3D Rendering</a></p>
+<li><p><a class="reference internal" href="#mesh-construction" id="id96">Mesh Construction</a></p></li>
+<li><p><a class="reference internal" href="#tessellation-example" id="id97">Tessellation Example</a></p></li>
+<li><p><a class="reference internal" href="#mobile-gpu-3d-rendering" id="id98">Mobile GPU 3D Rendering</a></p>
 <ul>
-<li><p><a class="reference internal" href="#tbdr-tilebased-deferred-rendering" id="id98">TBDR — Tile‑Based Deferred Rendering</a></p></li>
-<li><p><a class="reference internal" href="#tbdr-rendering" id="id99">TBDR Rendering</a></p></li>
+<li><p><a class="reference internal" href="#tbdr-tilebased-deferred-rendering" id="id99">TBDR — Tile‑Based Deferred Rendering</a></p></li>
+<li><p><a class="reference internal" href="#tbdr-rendering" id="id100">TBDR Rendering</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#mesh-shader-pipeline" id="id100">Mesh-Shader Pipeline</a></p></li>
-<li><p><a class="reference internal" href="#animation-example" id="id101">Animation Example</a></p></li>
-<li><p><a class="reference internal" href="#ray-tracing-pipeline" id="id102">Ray Tracing Pipeline</a></p></li>
+<li><p><a class="reference internal" href="#mesh-shader-pipeline" id="id101">Mesh-Shader Pipeline</a></p></li>
+<li><p><a class="reference internal" href="#animation-example" id="id102">Animation Example</a></p></li>
+<li><p><a class="reference internal" href="#ray-tracing-pipeline" id="id103">Ray Tracing Pipeline</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#glsl-gl-shader-language" id="id103">GLSL (GL Shader Language)</a></p>
+<li><p><a class="reference internal" href="#glsl-gl-shader-language" id="id104">GLSL (GL Shader Language)</a></p>
 <ul>
-<li><p><a class="reference internal" href="#background" id="id104">Background</a></p></li>
-<li><p><a class="reference internal" href="#examples" id="id105">Examples</a></p></li>
-<li><p><a class="reference internal" href="#goals" id="id106">Goals</a></p></li>
-<li><p><a class="reference internal" href="#glsl-vs-c-feature-overview" id="id107">GLSL vs. C: Feature Overview</a></p></li>
-<li><p><a class="reference internal" href="#glsl-qualifiers-by-shader-stage" id="id108">GLSL Qualifiers by Shader Stage</a></p></li>
+<li><p><a class="reference internal" href="#background" id="id105">Background</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id106">Examples</a></p></li>
+<li><p><a class="reference internal" href="#goals" id="id107">Goals</a></p></li>
+<li><p><a class="reference internal" href="#glsl-vs-c-feature-overview" id="id108">GLSL vs. C: Feature Overview</a></p></li>
+<li><p><a class="reference internal" href="#glsl-qualifiers-by-shader-stage" id="id109">GLSL Qualifiers by Shader Stage</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#opengl-shader-compiler" id="id109">OpenGL Shader Compiler</a></p></li>
+<li><p><a class="reference internal" href="#opengl-shader-compiler" id="id110">OpenGL Shader Compiler</a></p></li>
 </ul>
 </nav>
 <section id="example-of-opengl-program">
@@ -337,7 +338,7 @@ returns it in a variable called fColor.</p></li>
 </ul>
 <p>Since we have 6 vertices in our buffer, this shader will be executed 6 times by
 the GPU (once per vertex)! We can also expect all 6 instances of the shader to
-be executed in parallel, since a GPU have so many cores.</p>
+be executed in parallel, since a GPU has many cores.</p>
 </section>
 <section id="d-rendering">
 <span id="rendering3d"></span><h2><a class="toc-backref" href="#id93" role="doc-backlink">3D Rendering</a><a class="headerlink" href="#d-rendering" title="Link to this heading">¶</a></h2>
@@ -485,59 +486,95 @@ stages.</span><a class="headerlink" href="#id64" title="Link to this image">¶</
 </tr>
 </tbody>
 </table>
+<p>In <a class="reference internal" href="#rp-left"><span class="std std-numref">Fig. 34</span></a>, the “Primitive Assembly” is the “Output Primitive
+Assembly”. A more accurate ordering is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Vertex Shader
+    ↓
+Patch assembly / Input Primitive Assembly
+    ↓
+Tessellation
+    ├── Tessellation Control Shader
+    ├── Primitive Generation
+    └── Tessellation Evaluation Shader
+    ↓
+Geometry Shader
+    ↓
+Output Primitive Assembly
+    ↓
+Rasterization
+</pre></div>
+</div>
 <figure class="align-default" id="id66">
-<span id="gpu-pipeline"></span><div class="graphviz"><img src="_images/graphviz-0bf2423624181ecfd1a4422a4479bcc85a0dca9a.png" alt="digraph GPU_Pipeline {
+<span id="gpu-pipeline"></span><div class="graphviz"><img src="_images/graphviz-c82d817f6fcadd45c1506d24d68c543fef52d342.png" alt="digraph GPU_Pipeline {
     rankdir=LR;
     node [shape=box, style=rounded, fontsize=12];
 
     VB [label=&quot;Vertex Buffer&quot;];
     VS [label=&quot;Vertex Shader&quot;, style=filled, fillcolor=orange];
+
     subgraph cluster_ts {
         label=&quot;Tessellation&quot;;
         style=rounded;
 
-        TCS [label=&quot;Tessellation\nControl Shader\n(optional)&quot;, style=filled, fillcolor=orange];
+        PA  [label=&quot;Patch Assembly\n(GL_PATCHES)&quot;];
+        TCS [label=&quot;Tessellation\nControl Shader\n(optional)&quot;,
+             style=filled, fillcolor=orange];
         TS  [label=&quot;Tessellator\n(fixed-function)&quot;];
-        TES [label=&quot;Tessellation\nEvaluation Shader\n(optional)&quot;, style=filled, fillcolor=orange];
+        TES [label=&quot;Tessellation\nEvaluation Shader\n(required when\n tessellation is enabled)&quot;,
+             style=filled, fillcolor=orange];
 
-        { rank = same;  TCS; TS; TES }
+        { rank = same; PA; TCS; TS; TES }
     }
+
     subgraph cluster_pp {
         label=&quot;Primitive Processing&quot;;
         style=rounded;
 
-        PA  [label=&quot;Primitive Assembly\n(topology formation)&quot;];
-        GS  [label=&quot;Geometry Shader\n(optional)&quot;, style=filled, fillcolor=orange];
-        Cull  [label=&quot;Culling&quot;];
-        Clip  [label=&quot;Clipping&quot;];
-        PS  [label=&quot;Primitive Setup\n(rasterization\n prep)&quot;];
+        IPA  [label=&quot;Input Primitive Assembly\n(for Geometry Shader)&quot;];
+        GS   [label=&quot;Geometry Shader\n(optional)&quot;,
+              style=filled, fillcolor=orange];
+        OPA  [label=&quot;Geometry Shader Output\nPrimitive Formation&quot;];
+        Clip [label=&quot;Clipping&quot;];
+        Cull [label=&quot;Face Culling&quot;];
+        PS   [label=&quot;Primitive Setup\n(rasterization prep)&quot;];
 
-        { rank = same;  PA; GS; Cull; Clip; PS }
+        { rank = same; IPA; GS; OPA; Clip; Cull; PS }
     }
+
     RAST [label=&quot;Rasterizer&quot;];
-    FS [label=&quot;Fragment Shader&quot;, style=filled, fillcolor=orange];
-    FB [label=&quot;Framebuffer&quot;];
+    FS   [label=&quot;Fragment Shader&quot;, style=filled, fillcolor=orange];
+    FB   [label=&quot;Per-Fragment Operations\n&amp; Framebuffer&quot;];
 
     VB -&gt; VS;
 
-    VS -&gt; TCS;
+    // Tessellation path: VS outputs are grouped into patches first.
+    VS -&gt; PA [label=&quot;GL_PATCHES&quot;];
+    PA -&gt; TCS [label=&quot;input patch&quot;];
     TCS -&gt; TS;
-    TS  -&gt; TES;
+    PA -&gt; TS [label=&quot;no TCS&quot;, style=dashed];
+    TS -&gt; TES;
 
-    // Bypass tessellation path
-    VS -&gt; PA [label=&quot;(no tessellation)&quot;, style=dashed];
+    // The TES produces the tessellated primitive stream.
+    TES -&gt; IPA [label=&quot;tessellated primitives&quot;];
 
-    TES -&gt; PA;
+    // Non-tessellation path.
+    VS -&gt; IPA [label=&quot;no tessellation&quot;, style=dashed];
 
-    PA -&gt; GS [label = &quot;Primitives\n(triangles/lines)&quot;];
-    GS -&gt; Cull;
-    Cull -&gt; Clip;
-    Clip -&gt; PS;
+    // A Geometry Shader receives already assembled input primitives.
+    IPA -&gt; GS [label=&quot;assembled primitives&quot;];
+    GS -&gt; OPA;
+    IPA -&gt; Clip [label=&quot;no Geometry Shader&quot;, style=dashed];
+
+    // GS output is interpreted according to its declared output topology.
+    OPA -&gt; Clip;
+    Clip -&gt; Cull;
+    Cull -&gt; PS;
     PS -&gt; RAST;
     RAST -&gt; FS;
     FS -&gt; FB;
 
-    { rank = same; FS; FB }
+    { rank = same; VB; VS }
+    { rank = same; RAST; FS; FB }
 }" class="graphviz" /></div>
 <figcaption>
 <p><span class="caption-number">Fig. 36 </span><span class="caption-text">Modern GPU Pipeline</span><a class="headerlink" href="#id66" title="Link to this image">¶</a></p>
@@ -545,33 +582,25 @@ stages.</span><a class="headerlink" href="#id64" title="Link to this image">¶</
 </figure>
 <p>As shown in <a class="reference internal" href="#gpu-pipeline"><span class="std std-numref">Fig. 36</span></a>:</p>
 <ul class="simple">
-<li><p>Vertex Shader and Tessellation: processing and transform for <strong>vertices</strong>
-data.</p></li>
-<li><p>Primitive Processing: processing and transform for <strong>primitives</strong> data.</p></li>
-<li><p>Rasterizer: <strong>Primitives → Fragment</strong>.</p></li>
-<li><p>Fragment Shader: <strong>Fragment → Colored Fragment</strong>.</p></li>
+<li><p>Vertex Shader and Tessellation: process and transform <strong>vertex</strong> data.</p></li>
+<li><p>Primitive Processing: processes and transforms <strong>primitive</strong> data.</p></li>
+<li><p>Rasterizer: <strong>Primitives → Fragments</strong>.</p></li>
+<li><p>Fragment Shader: <strong>Fragments → Colored Fragments</strong>.</p></li>
 </ul>
-<p>As illustred in <a class="reference internal" href="geo-math.html#cross-product"><span class="std std-ref">Cross Product</span></a> section,</p>
+<p>As illustrated in the <a class="reference internal" href="geo-math.html#cross-product"><span class="std std-ref">Cross Product</span></a> section,</p>
 <p>✔️  Each mesh (triangle or primitive) has a fixed “outer” and “inner” side,
 determined by CCW ordering in object space.</p>
-<p>✔️  By reading these CCW-ordered vertices sequentially, the shape and surface
-orientation of the 3D model can be constructed.</p>
+<p>✔️  By reading these CCW-ordered vertices in a triangle sequentially, the shape
+and surface orientation of the 3D model can be constructed.</p>
 <p>✔️  There is no need to wait for the entire mesh to be received; once three
-CCW-ordered vertices are available, each triangle can be processed correctly.</p>
+CCW-ordered vertices in a triangle are available, each triangle can be
+processed correctly.</p>
 <p>✔️  When the camera moves to the inside an object: CCW ↔ CW flips.</p>
 <p>This means:</p>
-<p>✔️  Vertex Shader and Tessellation: <strong>may processing each vertex independently</strong>
-as long as the vertex order is preserved.</p>
+<p>✔️  Vertex Shader and Tessellation: <strong>may process each vertex independently</strong>
+as long as the vertex order in a triangle is preserved.</p>
 <p>✔️  Once <strong>three CCW-ordered vertices are available</strong>, Primitive Assembly can
 convert them into a triangle and pass it to the next pipeline stage.</p>
-<blockquote>
-<div><ul>
-<li><p>For example: once v0,v1,v2,v3 are available, Primitive Assembly outputs:</p>
-<p>Triangle A (v0,v1,v2)</p>
-<p>Triangle B (v2,v3,v0)</p>
-</li>
-</ul>
-</div></blockquote>
 <p>After vertices are assembled into
 primitives (such as triangles), the front-facing and back-facing surfaces can
 be determined, and the hidden primitives can be removed.</p>
@@ -582,7 +611,7 @@ The animation flow from CPU to GPU is shown in
 <a class="reference internal" href="#short-rendering-pipeline-shaders-cpu-gpu"><span class="std std-numref">Fig. 37</span></a>, based on
 <a class="reference internal" href="#short-rendering-pipeline"><span class="std std-numref">Fig. 33</span></a>.</p>
 <figure class="align-default" id="id67">
-<span id="short-rendering-pipeline-shaders-cpu-gpu"></span><div class="graphviz"><img src="_images/graphviz-78b8444233f6768a7fb19362c300b29ad5f807e7.png" alt="digraph CPU_GPU_Pipeline {
+<span id="short-rendering-pipeline-shaders-cpu-gpu"></span><div class="graphviz"><img src="_images/graphviz-7b19f3e3a89016e74e997b1e6a961270370d70a5.png" alt="digraph CPU_GPU_Pipeline {
     rankdir=LR;
     node [shape=box, style=rounded, fontsize=12];
 
@@ -590,13 +619,13 @@ The animation flow from CPU to GPU is shown in
         label=&quot;CPU&quot;;
         style=rounded;
         CPU_Vertex [label=&quot;Load 3D Model\n(Vertex Data)\nVBOs, VAOs, Indices&quot;];
-        CPU_Anim   [label=&quot;Update Animation Parameters\n(Bone Matrices, Morph Weights,\nTime, Material Params)&quot;];
+        CPU_Anim   [label=&quot;Update Animation Parameters\n(Bone Matrices, Morph Weights,\nTime, Material Parameters)&quot;];
     }
 
     subgraph cluster_gpu {
         label=&quot;GPU&quot;;
         style=rounded;
-        VS      [label=&quot;Vertex Shader\n(Skinning, Morphing,\nModel/View/Proj Transform)&quot;];
+        VS      [label=&quot;Vertex Shader\n(Skinning, Morphing,\nModel/View/Projection Transform)&quot;];
         Raster  [label=&quot;Rasterizer\n(Primitive Assembly,\nClipping, Interpolation)&quot;];
         FS      [label=&quot;Fragment Shader\n(Lighting, Texturing,\nShading, Materials)&quot;];
         FB      [label=&quot;Final Rendered Image\n(Framebuffer Output)&quot;];
@@ -758,7 +787,7 @@ want. Compute shaders are described in Chapter 12 of Red Book,
 </tr>
 </tbody>
 </table>
-<p><strong>Tessllation</strong></p>
+<p><strong>Tessellation</strong></p>
 <ul class="simple">
 <li><p>Tessellation Shading:
 The core problem that Tessellation deals with is the static nature of 3D models
@@ -779,28 +808,28 @@ configured to some degree but does not run a shader. The first shader stage
 is called <strong>Tessellation Control Shader (TCS)</strong>, the <strong>fixed function</strong> stage
 is called the <strong>Primitive Generator (PG)</strong>, and the second shader stage is
 called <strong>Tessellation Evaluation Shader (TES)</strong>.
-Some GPU havn’t this fixed function stage implemented in HW and even havn’t
-provide these TCS, TES and Gemoetry Shader. User can write
-<strong>Compute Shaders</strong> instead for this on-fly detail display.
+Some GPUs do not implement this fixed-function stage in hardware and do not
+provide TCS, TES, or geometry shaders. A user can write <strong>compute shaders</strong>
+instead to generate detail on the fly.
 This surface is usually defined by some <strong>polynomial formula</strong> and the idea
 is that moving a <strong>CP</strong> has an effect on the entire surface. …
 The group of CPs is usually called a <strong>Patch</strong> <a class="footnote-reference brackets" href="#ts-tu30" id="id24" role="doc-noteref"><span class="fn-bracket">[</span>19<span class="fn-bracket">]</span></a>.
-The data flow in Tessllation Stage between TCS, Fixed-Function Tessellator
+The data flow in the Tessellation Stage between the TCS, Fixed-Function Tessellator,
 and TES is illustrated in <a class="reference internal" href="#imr-rendering-pipeline-1"><span class="std std-numref">Fig. 38</span></a>.
 Chapter 9 of Red Book <a class="footnote-reference brackets" href="#redbook" id="id25" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> has details.
 The next section <a class="reference internal" href="#tessellation-ex"><span class="std std-ref">Tessellation Example</span></a> describes the details for the
-Tessallation with an example.</p></li>
+tessellation with an example.</p></li>
 <li><p>Tessellation <strong>cannot</strong> decrease the resolution of vertices from the VS.
 The Geometry Shader can <strong>reduce geometry</strong> (by discarding primitives), but it
 <strong>cannot</strong> reduce the number of input vertices coming from VS/TES.
 The rasterizer can <strong>reduce fragments</strong>, but it cannot reduce vertices.</p></li>
 </ul>
 <p><strong>Data Flow</strong></p>
-<p>Sumarize the OpenGL Rendering Pipeline as shown in the
+<p>The following diagrams summarize the OpenGL rendering pipeline:
 <a class="reference internal" href="#imr-rendering-pipeline-1"><span class="std std-numref">Fig. 38</span></a> and
 <a class="reference internal" href="#imr-rendering-pipeline-2"><span class="std std-numref">Fig. 39</span></a>.</p>
 <figure class="align-default" id="id70">
-<span id="imr-rendering-pipeline-1"></span><div class="graphviz"><img src="_images/graphviz-ba04c637ee1adaf20982232a206c5d60a453c5c6.png" alt="digraph OpenGL_Pipeline_Part1 {
+<span id="imr-rendering-pipeline-1"></span><div class="graphviz"><img src="_images/graphviz-813909b126bf57f8e788a20ede94387584df59df.png" alt="digraph OpenGL_Pipeline_Part1 {
     rankdir=LR;
     node [shape=box, style=rounded, fontsize=12];
 
@@ -822,7 +851,7 @@ The rasterizer can <strong>reduce fragments</strong>, but it cannot reduce verti
 
             TES  [label=&quot;Tessellation Evaluation Shader\n(TES)&quot;];
 
-            TCS -&gt; TS      [label=&quot;CP + Tessellation level&quot;];
+            TCS -&gt; TS      [label=&quot;Control Points +\nTessellation Levels&quot;];
             TS  -&gt; TES     [label=&quot;Tessellated domain\ncoordinates&quot;];
 
             { rank = same;  TCS; TS; TES }
@@ -835,8 +864,8 @@ The rasterizer can <strong>reduce fragments</strong>, but it cannot reduce verti
     PS  [label=&quot;Primitive Setup&quot;];
 
     App -&gt; VS      [label=&quot;Vertex Arrays&quot;];
-    VS  -&gt; TCS     [label=&quot;Transformed Vertices +\nControl Points(CP)&quot;];
-    TES -&gt; PA      [label=&quot;Tessellated Vertices\n(more vertices)&quot;];
+    VS  -&gt; TCS     [label=&quot;Transformed Vertices +\nControl Points (CPs)&quot;];
+    TES -&gt; PA      [label=&quot;Tessellated Vertices\n(Increased Vertex Count)&quot;];
     PA  -&gt; GS;
     GS  -&gt; PS      [label=&quot;Modified Primitives&quot;];
 
@@ -866,8 +895,8 @@ The rasterizer can <strong>reduce fragments</strong>, but it cannot reduce verti
 <p><span class="caption-number">Fig. 39 </span><span class="caption-text">The part 2 of GPU Rendering Pipeline Stages</span><a class="headerlink" href="#id71" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
-<p>The data flow through the OpenGL Shader and the details flow
-in TCS, Fixed-Function Tessellator and TES are described in below.</p>
+<p>The data flow through the OpenGL shader pipeline and the details of the TCS,
+Fixed-Function Tessellator, and TES are described below.</p>
 <table class="docutils align-default" id="id72">
 <caption><span class="caption-number">Table 5 </span><span class="caption-text">Data Flow Through the OpenGL Shader Pipeline</span><a class="headerlink" href="#id72" title="Link to this table">¶</a></caption>
 <colgroup>
@@ -953,7 +982,7 @@ in TCS, Fixed-Function Tessellator and TES are described in below.</p>
 </ul>
 </td>
 <td><ul class="simple">
-<li><p><strong>Fixed‑Function Tessellator (TS)</strong>, also name as <strong>Primitive Generator (PG)</strong>:</p>
+<li><p><strong>Fixed‑Function Tessellator (TS)</strong>, also known as <strong>Primitive Generator (PG)</strong>:</p>
 <ul>
 <li><p>Generates tessellated domain coordinates (u,v,w) to TES</p></li>
 </ul>
@@ -1143,13 +1172,212 @@ must be interpolated so each fragment knows its own world position</p></td>
 </tr>
 </tbody>
 </table>
-<p>For 2D animation, the model is created by 2D only (1 face only), so it only can be
-viewed from the same face of model. If you want to display different faces of model,
-multiple 2D models need to be created and switch these 2D models from face(flame) to
-face(flame) from time to time <a class="footnote-reference brackets" href="#danimation" id="id26" role="doc-noteref"><span class="fn-bracket">[</span>20<span class="fn-bracket">]</span></a>.</p>
+<p>In 2D animation, a model is a single flat view and can be viewed only from that
+side. To display different views, multiple 2D models must be created and
+switched from frame to frame <a class="footnote-reference brackets" href="#danimation" id="id26" role="doc-noteref"><span class="fn-bracket">[</span>20<span class="fn-bracket">]</span></a>.</p>
+</section>
+<section id="mesh-construction">
+<h3><a class="toc-backref" href="#id96" role="doc-backlink">Mesh Construction</a><a class="headerlink" href="#mesh-construction" title="Link to this heading">¶</a></h3>
+<p>As described in section <a class="reference internal" href="#three-d-rendering-pipeline"><span class="std std-ref">3D Rendering Pipeline</span></a>:</p>
+<p>✔️  By reading these CCW-ordered vertices in a triangle sequentially, the shape
+and surface orientation of the 3D model can be constructed.</p>
+<p>Because a mesh contains many vertices shared across triangles, this section
+explains how OpenGL and GPUs avoid reprocessing those redundant vertices.”</p>
+<p><strong>OpenGL Triangles</strong></p>
+<p>OpenGL has:</p>
+<ul class="simple">
+<li><p>GL_TRIANGLES — every 3 vertices form an independent triangle</p></li>
+<li><p>GL_TRIANGLE_STRIP — consecutive vertices share edges</p></li>
+<li><p>GL_TRIANGLE_FAN — all triangles share the first vertex</p></li>
+</ul>
+<p>For example:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
+
+With vertices:
+
+v0 ───── v2 ───── v4
+│     ╱  │     ╱  │
+│   ╱    │   ╱    │
+│ ╱      │ ╱      │
+v1 ───── v3 ───── v5
+
+vertices:
+v0, v1, v2, v3, v4, v5
+
+Triangle list for GL_TRIANGLE:
+
+indices:
+
+(0,1,2)
+(2,1,3)
+(2,3,4)
+(4,3,5)
+
+Triangle strip for GL_TRIANGLE_STRIP:
+
+indices:
+
+0,1,2,3,4,5
+</pre></div>
+</div>
+<p>The triangles are generated as:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Triangle 0: v0, v1, v2
+Triangle 1: v2, v1, v3
+Triangle 2: v2, v3, v4
+Triangle 3: v4, v3, v5
+</pre></div>
+</div>
+<p>So after the first 3 vertices, each additional vertex creates one new
+triangle.</p>
+<p>For a GPU compiler, triangle strip is important because the primitive assembly
+stage has to keep track of the previous vertices and <strong>alternates triangle
+winding order</strong> for successive triangles.</p>
+<p>For the first triangle:</p>
+<p>v0 → v1 → v2</p>
+<p>For the second triangle, the shared edge is v1-v2. To maintain the same winding
+direction, OpenGL uses:</p>
+<p>v2 → v1 → v3</p>
+<p>rather than:</p>
+<p>v1 → v2 → v3</p>
+<p>That causes the second triangle’s winding to be opposite.</p>
+<p>3D models may create meshes with ndividual triangles or triangle strips.
+However, real 3D meshes are usually not one continuous strip. A model has:</p>
+<ul class="simple">
+<li><p>branches</p></li>
+<li><p>holes</p></li>
+<li><p>disconnected surfaces</p></li>
+<li><p>different materials</p></li>
+<li><p>hard edges</p></li>
+<li><p>UV seams</p></li>
+<li><p>normal seams</p></li>
+</ul>
+<p>These make a single efficient triangle strip difficult.
+Modern GPUs also have <strong>post-transform vertex caches</strong>, so well-organized
+triangle lists can reuse vertex shader results efficiently.</p>
+<p>The mesh itself is a collection of triangles. GL_TRIANGLES and GL_TRIANGLE_STRIP
+are primarily different primitive assembly methods for interpreting the
+index/vertex stream.
+Also, modern APIs such as Vulkan and Direct3D still support triangle strips,
+but triangle lists are the dominant representation for general-purpose 3D
+meshes.</p>
+<p><strong>Post-Transform Vertex Cache</strong></p>
+<p>A modern GPU usually has a small <strong>post-transform vertex cache</strong> that stores
+the results of vertex shader execution.</p>
+<p>This cache allows the GPU to avoid executing the vertex shader multiple times
+for the same vertex when that vertex is referenced by several triangles.</p>
+<p>For example, consider the following indexed triangle list:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Triangle</span> <span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span>
+<span class="n">Triangle</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span>
+<span class="n">Triangle</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span>
+</pre></div>
+</div>
+<p>The vertices <code class="docutils literal notranslate"><span class="pre">1</span></code> and <code class="docutils literal notranslate"><span class="pre">2</span></code> are shared by the first two triangles. The GPU
+can process the first triangle as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Index</span>       <span class="n">Cache</span>       <span class="n">Action</span>
+<span class="o">------------------------------------</span>
+  <span class="mi">0</span>         <span class="n">miss</span>        <span class="n">Run</span> <span class="n">vertex</span> <span class="n">shader</span>
+  <span class="mi">1</span>         <span class="n">miss</span>        <span class="n">Run</span> <span class="n">vertex</span> <span class="n">shader</span>
+  <span class="mi">2</span>         <span class="n">miss</span>        <span class="n">Run</span> <span class="n">vertex</span> <span class="n">shader</span>
+</pre></div>
+</div>
+<p>When processing the second triangle:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Index</span>       <span class="n">Cache</span>       <span class="n">Action</span>
+<span class="o">------------------------------------</span>
+  <span class="mi">2</span>         <span class="n">hit</span>         <span class="n">Reuse</span> <span class="n">vertex</span> <span class="n">shader</span> <span class="n">result</span>
+  <span class="mi">1</span>         <span class="n">hit</span>         <span class="n">Reuse</span> <span class="n">vertex</span> <span class="n">shader</span> <span class="n">result</span>
+  <span class="mi">3</span>         <span class="n">miss</span>        <span class="n">Run</span> <span class="n">vertex</span> <span class="n">shader</span>
+</pre></div>
+</div>
+<p>Therefore, although vertex <code class="docutils literal notranslate"><span class="pre">1</span></code> and vertex <code class="docutils literal notranslate"><span class="pre">2</span></code> appear multiple times in the
+index buffer, their vertex shaders do not need to be executed again as long as
+their transformed results are still in the cache.</p>
+<p>The cache is called a <em>post-transform</em> cache because it stores the results
+<em>after</em> vertex transformation, rather than merely caching the original
+vertex attributes.</p>
+<p>A simplified GPU pipeline is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Index</span> <span class="n">Buffer</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="n">Vertex</span> <span class="n">Fetch</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="n">Vertex</span> <span class="n">Shader</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="n">Post</span><span class="o">-</span><span class="n">Transform</span> <span class="n">Vertex</span> <span class="n">Cache</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="n">Primitive</span> <span class="n">Assembly</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="n">Rasterization</span>
+</pre></div>
+</div>
+<p>Triangle Order Matters</p>
+<p>The cache has limited capacity. If a vertex is referenced again after it has
+been evicted from the cache, the vertex shader must execute again.</p>
+<p>For example, consider a small cache:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">T0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span>
+<span class="n">T1</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span>
+<span class="n">T2</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span>
+</pre></div>
+</div>
+<p>After processing <code class="docutils literal notranslate"><span class="pre">T0</span></code>, vertices <code class="docutils literal notranslate"><span class="pre">0</span></code>, <code class="docutils literal notranslate"><span class="pre">1</span></code>, and <code class="docutils literal notranslate"><span class="pre">2</span></code> may be in the
+cache. Processing <code class="docutils literal notranslate"><span class="pre">T1</span></code> replaces them with <code class="docutils literal notranslate"><span class="pre">3</span></code>, <code class="docutils literal notranslate"><span class="pre">4</span></code>, and <code class="docutils literal notranslate"><span class="pre">5</span></code>. When
+<code class="docutils literal notranslate"><span class="pre">T2</span></code> is processed, vertices <code class="docutils literal notranslate"><span class="pre">0</span></code>, <code class="docutils literal notranslate"><span class="pre">1</span></code>, and <code class="docutils literal notranslate"><span class="pre">2</span></code> are no longer in the
+cache, so their vertex shaders must execute again.</p>
+<p>A different triangle order can keep shared vertices in the cache for longer:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">T0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span>
+<span class="n">T1</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span>
+<span class="n">T2</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span>
+<span class="n">T3</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span>
+</pre></div>
+</div>
+<p>This ordering has good locality because neighboring triangles share recently
+processed vertices.</p>
+<p><strong>Mesh Optimization</strong></p>
+<p>A <strong>mesh optimizer</strong> can reorder the triangles, and therefore the indices,
+to improve vertex-cache locality.</p>
+<p>The mesh optimizer does not remove duplicated vertex processing by itself.
+Instead, it arranges the triangle order so that the GPU’s post-transform
+vertex cache can reuse more previously computed vertex shader results.</p>
+<p>The relationship is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Mesh</span> <span class="n">Optimizer</span>
+      <span class="o">|</span>
+      <span class="o">|</span> <span class="n">Reorders</span> <span class="n">triangles</span> <span class="o">/</span> <span class="n">indices</span>
+      <span class="n">v</span>
+<span class="n">Better</span> <span class="n">Vertex</span> <span class="n">Locality</span>
+      <span class="o">|</span>
+      <span class="n">v</span>
+<span class="n">Post</span><span class="o">-</span><span class="n">Transform</span> <span class="n">Vertex</span> <span class="n">Cache</span>
+      <span class="o">|</span>
+      <span class="o">|</span> <span class="n">More</span> <span class="n">cache</span> <span class="n">hits</span>
+      <span class="n">v</span>
+<span class="n">Fewer</span> <span class="n">Vertex</span> <span class="n">Shader</span> <span class="n">Executions</span>
+</pre></div>
+</div>
+<p>This is one reason that a well-organized <strong>triangle list</strong> can achieve
+substantial vertex reuse on modern GPUs, even without using a triangle strip.</p>
+<p>Triangle strips provide vertex reuse through their primitive-assembly rules,
+whereas an optimized triangle list relies on the post-transform cache to
+reuse previously computed vertex shader results.</p>
+<p>The two mechanisms are therefore different:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Triangle</span> <span class="n">Strip</span>
+    <span class="o">|</span>
+    <span class="o">+--</span> <span class="n">Implicit</span> <span class="n">vertex</span> <span class="n">reuse</span> <span class="ow">in</span> <span class="n">primitive</span> <span class="n">assembly</span>
+
+<span class="n">Optimized</span> <span class="n">Triangle</span> <span class="n">List</span>
+    <span class="o">|</span>
+    <span class="o">+--</span> <span class="n">Explicit</span> <span class="n">indices</span>
+    <span class="o">|</span>
+    <span class="o">+--</span> <span class="n">Good</span> <span class="n">triangle</span> <span class="n">ordering</span>
+    <span class="o">|</span>
+    <span class="o">+--</span> <span class="n">Post</span><span class="o">-</span><span class="n">transform</span> <span class="n">cache</span> <span class="n">reuse</span>
+</pre></div>
+</div>
 </section>
 <section id="tessellation-example">
-<span id="tessellation-ex"></span><h3><a class="toc-backref" href="#id96" role="doc-backlink">Tessellation Example</a><a class="headerlink" href="#tessellation-example" title="Link to this heading">¶</a></h3>
+<span id="tessellation-ex"></span><h3><a class="toc-backref" href="#id97" role="doc-backlink">Tessellation Example</a><a class="headerlink" href="#tessellation-example" title="Link to this heading">¶</a></h3>
 <p>In Chapter 9 (Tessellation), the Red Book <a class="footnote-reference brackets" href="#redbook" id="id27" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> focuses on:</p>
 <ul class="simple">
 <li><p>gl_TessLevelOuter[]</p></li>
@@ -1203,14 +1431,14 @@ Only CPs 5, 6, 9, and 10 are elevated to create curvature.</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p><strong>Fixed-Function Tessellator (TS)</strong>, also name as <strong>Primitive Generator
+<p><strong>Fixed-Function Tessellator (TS)</strong>, also known as the <strong>Primitive Generator
 (PG)</strong>: output:</p>
 <ul class="simple">
 <li><p><strong>Tessellated coordinates (u,v,w)</strong>: gl_TessCoord</p></li>
 </ul>
-<p>The PG takes the TLs and based on their values generates a <strong>set of points</strong>
-inside the triangle. Each point is defined by its own barycentric coordinate.
-The set of points named <strong>Tessellated coordinates</strong>.</p>
+<p>The PG uses the tessellation levels to generate a <strong>set of points</strong> inside the
+triangle. Each point has its own barycentric coordinates. This set is called
+the <strong>tessellated coordinates</strong>.</p>
 <p>The grid size depends on tessellation levels:</p>
 <ul class="simple">
 <li><p>If gl_TessLevelOuter[0..3] = 4.0 and gl_TessLevelInner[0..1] = 4.0 → you
@@ -1398,8 +1626,8 @@ Evaluated surface points P(u,v) are also vec4.</p>
 </tr>
 </tbody>
 </table>
-<p>The following TCS glsl from the Red Book can patch high or low resolution of
-CPs at runtime according the distance of the squre vertices.</p>
+<p>The following TCS GLSL code from the Red Book adjusts the resolution of control
+points at runtime according to the distance of the square’s vertices.</p>
 <p>Specifying Tessellation Level Factors Using Perimeter Edge Centers.</p>
 <div class="highlight-glsl notranslate"><div class="highlight"><pre><span></span><span class="cp">#version 450 core</span>
 
@@ -1485,7 +1713,7 @@ or anything related to surface appearance.</p>
 </div>
 </section>
 <section id="mobile-gpu-3d-rendering">
-<h3><a class="toc-backref" href="#id97" role="doc-backlink">Mobile GPU 3D Rendering</a><a class="headerlink" href="#mobile-gpu-3d-rendering" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id98" role="doc-backlink">Mobile GPU 3D Rendering</a><a class="headerlink" href="#mobile-gpu-3d-rendering" title="Link to this heading">¶</a></h3>
 <p>The traditional desktop GPUs is <strong>IMR — Immediate‑Mode Rendering</strong>:
 Cache misses dominate bandwidth.</p>
 <p><strong>TBDR — Tile‑Based Deferred Rendering</strong>:
@@ -1513,7 +1741,7 @@ In addition, desktop GPUs adopt IMR because they have the <strong>power</strong>
 geometry pipelines</strong> and massive workloads that would break TBDR’s
 tile‑based constraints.</p>
 <section id="tbdr-tilebased-deferred-rendering">
-<h4><a class="toc-backref" href="#id98" role="doc-backlink">TBDR — Tile‑Based Deferred Rendering</a><a class="headerlink" href="#tbdr-tilebased-deferred-rendering" title="Link to this heading">¶</a></h4>
+<h4><a class="toc-backref" href="#id99" role="doc-backlink">TBDR — Tile‑Based Deferred Rendering</a><a class="headerlink" href="#tbdr-tilebased-deferred-rendering" title="Link to this heading">¶</a></h4>
 <p>⚠️  For <strong>low power</strong> mobile device, mobile GPUs use <strong>tile-based</strong>
 rendering to <strong>reduce the traffice to DRAM</strong> as
 described below:</p>
@@ -1531,15 +1759,15 @@ TBDR processes it into two phases as follows:</p>
 <p><strong>Phase 1 — Binning</strong> (Full‑Frame Geometry Processing) is shown as
 <a class="reference internal" href="#tbdr-pipeline"><span class="std std-numref">Fig. 42</span></a>.</p>
 <figure class="align-default" id="id77">
-<span id="tbdr-pipeline"></span><div class="graphviz"><img src="_images/graphviz-5291ce49f44e160e6def66db390fea63123c8cc9.png" alt="digraph TBDR_Binning_Flow {
+<span id="tbdr-pipeline"></span><div class="graphviz"><img src="_images/graphviz-fbda71c498e8e3aa51c5a92dd0780ab7c9ebc737.png" alt="digraph TBDR_Binning_Flow {
     rankdir=LR;
     node [shape=box, style=rounded];
 
     CPU_DrawCall   [label=&quot;CPU Issues Draw Call&quot;];
     VS              [label=&quot;Vertex Shader\n(Transform Vertices)&quot;];
     TriangleSetup   [label=&quot;Triangle Setup\n(Bounding Box, Coverage)&quot;];
-    Binner          [label=&quot;Tile Binner\n(Determine Which Tiles Each Triangle Touches)&quot;];
-    TileLists       [label=&quot;Per-Tile Triangle Lists\n(Store Geometry, No Rendering Yet)&quot;];
+    Binner          [label=&quot;Tile Binner\n(Determines Which Tiles Each Triangle Touches)&quot;];
+    TileLists       [label=&quot;Per-Tile Triangle Lists\n(Store Geometry; No Rendering Yet)&quot;];
 
     CPU_DrawCall -&gt; VS -&gt; TriangleSetup -&gt; Binner -&gt; TileLists;
 }" class="graphviz" /></div>
@@ -1566,12 +1794,11 @@ Tile 2 → triangles: [T4, T5, T6, T9, T10]
 <p>→ Shade only visible fragments</p>
 <p>→ Keep all intermediate buffers in on‑chip <strong>SRAM</strong></p>
 <p>→ Write final tile to DRAM once</p>
-<p>★ As you can see, tile is a small part of rendering frame.
-In Phase 2 — Tile Rendering, GPU rendering each tile and
-keep the rendering result of each <strong>tile in SRAM</strong>.</p>
+<p>★ A tile is a small portion of the rendered frame. In Phase 2—tile rendering—
+the GPU renders each tile and keeps its intermediate result in <strong>SRAM</strong>.</p>
 </section>
 <section id="tbdr-rendering">
-<h4><a class="toc-backref" href="#id99" role="doc-backlink">TBDR Rendering</a><a class="headerlink" href="#tbdr-rendering" title="Link to this heading">¶</a></h4>
+<h4><a class="toc-backref" href="#id100" role="doc-backlink">TBDR Rendering</a><a class="headerlink" href="#tbdr-rendering" title="Link to this heading">¶</a></h4>
 <p>✅ Rendering flow:</p>
 <blockquote>
 <div><ul class="simple">
@@ -1594,13 +1821,13 @@ GS and Tessellation introduce <strong>unbounded geometry amplification</strong>,
 breaks these assumptions and forces expensive DRAM spills for TBDR as shown in
 <a class="reference internal" href="#mobile-tile-base-pipeline"><span class="std std-numref">Fig. 43</span></a>,</p>
 <figure class="align-default" id="id78">
-<span id="mobile-tile-base-pipeline"></span><div class="graphviz"><img src="_images/graphviz-70955bb21f759683ee89690930fa5b839289b5a6.png" alt="digraph TBDR_GS_Comparison {
+<span id="mobile-tile-base-pipeline"></span><div class="graphviz"><img src="_images/graphviz-c606690443b44fedefd47994f94c0fb447b3755d.png" alt="digraph TBDR_GS_Comparison {
     rankdir=LR;
     node [shape=box, style=rounded, fontsize=11];
 
     // Clean TBDR pipeline
     subgraph cluster_clean {
-        label=&quot;A. Clean TBDR Pipeline (Mobile GPUs: Mali / PowerVR / Apple)&quot;;
+        label=&quot;A. Conventional TBDR Pipeline (Mobile GPUs: Mali / PowerVR / Apple)&quot;;
         style=rounded;
 
         C_VS   [label=&quot;Vertex Shader\n• Transform\n• Skinning\n• Varyings&quot;];
@@ -1615,7 +1842,7 @@ breaks these assumptions and forces expensive DRAM spills for TBDR as shown in
 
     // GS/Tessellation amplified pipeline
     subgraph cluster_gs {
-        label=&quot;B. TBDR with GS/Tessellation (Hypothetical — Why It Breaks)&quot;;
+        label=&quot;B. TBDR with Geometry Shaders/Tessellation (Hypothetical — Why It Breaks)&quot;;
         style=rounded;
 
         G_VS   [label=&quot;Vertex Shader&quot;];
@@ -1659,7 +1886,7 @@ section.</p></li>
 </ul>
 <p>This is developer‑controlled, not automatic.</p>
 <figure class="align-default" id="id79">
-<span id="mobile-mesh-to-meshlets-to-render"></span><div class="graphviz"><img src="_images/graphviz-749407db8010fc515a20c400c5d634f6760629a1.png" alt="digraph Meshlet_Convert_To_Render_Mobile {
+<span id="mobile-mesh-to-meshlets-to-render"></span><div class="graphviz"><img src="_images/graphviz-6554e77b1d027153724eda629ee8d0386f090a9e.png" alt="digraph Meshlet_Convert_To_Render_Mobile {
     rankdir=LR;
     node [shape=box, style=rounded, fontsize=12];
 
@@ -1667,7 +1894,7 @@ section.</p></li>
         label=&quot;Input Mesh Data&quot;;
         style=rounded;
 
-        BigMesh [label=&quot;Big Mesh\n(Vertex + Index Buffers)&quot;];
+        BigMesh [label=&quot;Source Mesh\n(Vertex and Index Buffers)&quot;];
     }
 
     subgraph cluster_runtime {
@@ -1684,7 +1911,7 @@ section.</p></li>
         label=&quot;Mobile Meshlet Rendering Flow\n(Compute + VS Pipeline)&quot;;
         style=rounded;
 
-        VS [label=&quot;Mobile Rendering Pipeline\n(VS Pipeline&quot;];
+        VS [label=&quot;Mobile Rendering Pipeline\n(Vertex-Shader Pipeline)&quot;];
     }
 
     BigMesh -&gt; CS_Convert;
@@ -1706,7 +1933,7 @@ section.</p></li>
 <p>The Mali and PowerVR’s rendering flow is illustrated as
 <a class="reference internal" href="#mobile-rendering-pipeline-shaders-cpu-gpu"><span class="std std-numref">Fig. 45</span></a>.</p>
 <figure class="align-default" id="id80">
-<span id="mobile-rendering-pipeline-shaders-cpu-gpu"></span><div class="graphviz"><img src="_images/graphviz-097ea5cb41cca1f7737d4370737fe770caf3d3d3.png" alt="digraph Mobile_GPU_Comparison {
+<span id="mobile-rendering-pipeline-shaders-cpu-gpu"></span><div class="graphviz"><img src="_images/graphviz-12bf47f3efabc74084f0b56e8ca172c66079172c.png" alt="digraph Mobile_GPU_Comparison {
     rankdir=TB;
     node [shape=box, style=rounded, fontsize=11];
 
@@ -1747,7 +1974,7 @@ section.</p></li>
     CPU [shape=box, style=rounded, label=&quot;CPU\n• glDispatchCompute\n• glDraw*&quot;];
 
     // Shared compute flow
-    CPU -&gt; Compute [label=&quot;optional&quot;];
+    CPU -&gt; Compute [label=&quot;optional dispatch&quot;];
     Compute -&gt; Mali_VS [label=&lt;&lt;b&gt;&lt;font color=&quot;blue&quot;&gt;Small Meshlets&lt;br/&gt;in SSBO/buffers&lt;/font&gt;&lt;/b&gt;&gt;];
     Compute -&gt; PV_VS   [label=&lt;&lt;b&gt;&lt;font color=&quot;blue&quot;&gt;Small Meshlets&lt;br/&gt;in SSBO/buffers&lt;/font&gt;&lt;/b&gt;&gt;];
     CPU -&gt; Mali_VS     [label=&quot;draw call&quot;];
@@ -1767,7 +1994,7 @@ in the section <a class="reference internal" href="#mesh-shader"><span class="st
 </section>
 </section>
 <section id="mesh-shader-pipeline">
-<span id="mesh-shader"></span><h3><a class="toc-backref" href="#id100" role="doc-backlink">Mesh-Shader Pipeline</a><a class="headerlink" href="#mesh-shader-pipeline" title="Link to this heading">¶</a></h3>
+<span id="mesh-shader"></span><h3><a class="toc-backref" href="#id101" role="doc-backlink">Mesh-Shader Pipeline</a><a class="headerlink" href="#mesh-shader-pipeline" title="Link to this heading">¶</a></h3>
 <p>A single 3D object can contain 1 mesh, multiple meshes or hundreds of meshes
 (complex characters, vehicles, weapons).</p>
 <p><strong>Reasons</strong></p>
@@ -1806,7 +2033,7 @@ selection, and procedural geometry generation.</p></li>
 <p>✔ Microsoft and Khronos (Vulkan) each standardized it in their own APIs</p>
 <p>✅ <strong>Solution</strong>: As shown in <a class="reference internal" href="#meshlet-offline-to-render"><span class="std std-numref">Fig. 46</span></a>.</p>
 <figure class="align-default" id="id81">
-<span id="meshlet-offline-to-render"></span><div class="graphviz"><img src="_images/graphviz-e9ac08a8ed97d378d22482f6d1cc4e71a943fa63.png" alt="digraph Meshlet_Offline_To_Render {
+<span id="meshlet-offline-to-render"></span><div class="graphviz"><img src="_images/graphviz-544e54497d96525047817df305b59d69b17dd7df.png" alt="digraph Meshlet_Offline_To_Render {
     rankdir=LR;
     node [shape=box, style=rounded, fontsize=12];
 
@@ -1814,7 +2041,7 @@ selection, and procedural geometry generation.</p></li>
         label=&quot;Offline / Build Time&quot;;
         style=rounded;
 
-        BigMesh [label=&quot;Big Mesh\n(High-Poly Model)&quot;];
+        BigMesh [label=&quot;Source Mesh\n(High-Polygon Model)&quot;];
         MeshletGen [label=&quot;CPU Meshlet Generator Tool\n(Cluster Vertices &amp; Triangles,\nBuild Meshlets, Culling Data)&quot;,
                     style=filled, fillcolor=orange];
         Meshlets [label=&quot;Small Clusters\n(Meshlets)\n(Precomputed)&quot;];
@@ -1824,7 +2051,7 @@ selection, and procedural geometry generation.</p></li>
         label=&quot;Runtime / Load Time&quot;;
         style=rounded;
 
-        Loader [label=&quot;Meshlets Loader\n(Load Meshlet Buffers,\nBuild GPU-Ready Data)&quot;];
+        Loader [label=&quot;Meshlet Loader\n(Loads Meshlet Buffers,\nBuilds GPU-Ready Data)&quot;];
     }
 
     subgraph cluster_render {
@@ -1875,7 +2102,7 @@ shown in <a class="reference internal" href="#short-rendering-pipeline-shaders-c
 the fixed vertex-input + VS + optional tess/GS stages with a compute-like
 geometry pipeline:</p>
 <figure class="align-default" id="id82">
-<span id="short-rendering-pipeline-shaders-cpu-gpu-2"></span><div class="graphviz"><img src="_images/graphviz-4c42872853d72d2c3e664016415994f17fe45e68.png" alt="digraph CPU_GPU_Pipeline {
+<span id="short-rendering-pipeline-shaders-cpu-gpu-2"></span><div class="graphviz"><img src="_images/graphviz-d2a2d584f3b8c4f4f02d8547c78ca0d075810a22.png" alt="digraph CPU_GPU_Pipeline {
     rankdir=LR;
     node [shape=box, style=rounded, fontsize=12];
 
@@ -1883,14 +2110,14 @@ geometry pipeline:</p>
         label=&quot;CPU&quot;;
         style=rounded;
         CPU_Vertex [label=&quot;Load 3D Model\n(Vertex Data)\nVBOs, VAOs, Indices&quot;];
-        CPU_Anim   [label=&quot;Update Animation Parameters\n(Bone Matrices, Morph Weights,\nTime, Material Params)&quot;];
+        CPU_Anim   [label=&quot;Update Animation Parameters\n(Bone Matrices, Morph Weights,\nTime, Material Parameters)&quot;];
     }
 
     subgraph cluster_gpu {
         label=&quot;GPU&quot;;
         style=rounded;
 
-        VS   [label=&quot;Vertex Shader\n(Skinning, Morphing,\nModel/View/Proj Transform)&quot;,
+        VS   [label=&quot;Vertex Shader\n(Skinning, Morphing,\nModel/View/Projection Transform)&quot;,
               style=filled, fillcolor=orange];
 
         subgraph cluster_optional {
@@ -1929,11 +2156,11 @@ geometry pipeline:</p>
         FB   [label=&quot;Final Rendered Image\n(Framebuffer Output)&quot;];
     }
 
-    CPU_Vertex -&gt; VS [label=&lt;&lt;b&gt;&lt;font color=&quot;red&quot;&gt;Big Mesh&lt;/font&gt;&lt;/b&gt;&gt;];
+    CPU_Vertex -&gt; VS [label=&lt;&lt;b&gt;&lt;font color=&quot;red&quot;&gt;Source Mesh&lt;/font&gt;&lt;/b&gt;&gt;];
     CPU_Anim   -&gt; VS;
 
-    VS  -&gt; TCS [label=&quot;Transformed Vertices +\nControl Points(CP)&quot;];
-    TES -&gt; GS [label=&quot;Tessellated Vertices\n(more vertices)&quot;];
+    VS  -&gt; TCS [label=&quot;Transformed Vertices +\nControl Points (CPs)&quot;];
+    TES -&gt; GS [label=&quot;Tessellated Vertices\n(Increased Vertex Count)&quot;];
     GS  -&gt; Raster;
 
     Raster -&gt; FS;
@@ -1944,7 +2171,7 @@ geometry pipeline:</p>
 </figcaption>
 </figure>
 <figure class="align-default" id="id83">
-<span id="short-mobile-rendering-pipeline-shaders-cpu-gpu"></span><div class="graphviz"><img src="_images/graphviz-47a61012dfa1253a84c011a3a925ca46afa577f3.png" alt="digraph CPU_GPU_MobilePipeline {
+<span id="short-mobile-rendering-pipeline-shaders-cpu-gpu"></span><div class="graphviz"><img src="_images/graphviz-fa69ebc3e76ea973976589310c88306b50f0a69f.png" alt="digraph CPU_GPU_MobilePipeline {
     rankdir=LR;
     node [shape=box, style=rounded, fontsize=12];
 
@@ -1953,7 +2180,7 @@ geometry pipeline:</p>
         style=rounded;
 
         CPU_Vertex   [label=&quot;Load 3D Model\n(Vertex Data)\nVBOs, VAOs, Indices&quot;];
-        CPU_Anim     [label=&quot;Update Animation Parameters\n(Bone Matrices, Morph Weights,\nTime, Material Params)&quot;];
+        CPU_Anim     [label=&quot;Update Animation Parameters\n(Bone Matrices, Morph Weights,\nTime, Material Parameters)&quot;];
     }
 
     subgraph cluster_gpu {
@@ -1986,7 +2213,7 @@ geometry pipeline:</p>
 </figcaption>
 </figure>
 <figure class="align-default" id="id84">
-<span id="short-mesh-rendering-pipeline-shaders-cpu-gpu"></span><div class="graphviz"><img src="_images/graphviz-80fe60cbc9521f2c4d4655a32cfcd733b65f4e7a.png" alt="digraph CPU_GPU_Pipeline {
+<span id="short-mesh-rendering-pipeline-shaders-cpu-gpu"></span><div class="graphviz"><img src="_images/graphviz-d58864dec3d3156de19db72ec6b3f43546bdd162.png" alt="digraph CPU_GPU_Pipeline {
     rankdir=LR;
     node [shape=box, style=rounded, fontsize=12];
 
@@ -1995,7 +2222,7 @@ geometry pipeline:</p>
         style=rounded;
         CPU_Vertex   [label=&quot;Load 3D Model\n(Vertex Data)\nVBOs, VAOs, Indices&quot;];
         MeshletGen   [label=&quot;Meshlet Generator Tool\n(Cluster Vertices &amp; Triangles,\nBuild Meshlets, Culling Data)&quot;, style=filled, fillcolor=orange];
-        CPU_Anim     [label=&quot;Update Animation Parameters\n(Bone Matrices, Morph Weights,\nTime, Material Params)&quot;];
+        CPU_Anim     [label=&quot;Update Animation Parameters\n(Bone Matrices, Morph Weights,\nTime, Material Parameters)&quot;];
     }
 
     subgraph cluster_gpu {
@@ -2003,7 +2230,7 @@ geometry pipeline:</p>
         style=rounded;
 
         TaskS   [label=&quot;Task Shader (Optional)\n(Work Distribution,\nMeshlet Dispatch)&quot;, style=filled, fillcolor=orange];
-        MeshS   [label=&quot;Mesh Shader\n(Expand Meshlets,\nCulling, LOD,\nEmit Triangles\nskinning)&quot;, style=filled, fillcolor=orange];
+        MeshS   [label=&quot;Mesh Shader\n(Expands Meshlets,\nCulling, LOD,\nTriangle Emission,\nSkinning)&quot;, style=filled, fillcolor=orange];
 
         Raster  [label=&quot;Rasterizer\n(Consumes Mesh Shader Output,\nClipping, Interpolation)&quot;, style=filled, fillcolor=yellow];
 
@@ -2088,10 +2315,10 @@ without CPU intervention, enabling GPU-driven rendering.</p></li>
 Each meshlet is processed independently, allowing thousands of
 workgroups to run in parallel across GPU SMs.</p></li>
 </ul>
-<p>Both Mobile GPU and Mesh-Shader GPU convert big mesh to small meshlets and
-render them efficiently using GPU SIMT executation and memory hierarchy.
-The comparsion is shown in the following table.</p>
-<p><strong>Comparsion: Mobile GPU (Compute-Shader Based) vs Desktop Mesh-Shader GPU</strong></p>
+<p>Both mobile GPUs and mesh-shader GPUs convert a source mesh into smaller
+meshlets and render them efficiently using GPU SIMT execution and the memory
+hierarchy. The comparison is shown in the following table.</p>
+<p><strong>Comparison: Mobile GPU (Compute-Shader Based) vs. Desktop Mesh-Shader GPU</strong></p>
 <p>The <strong>Mesh Shader</strong> is similar to the previous section of <strong>Mobile
 Compute Shader</strong> based Meshlets as the following table:</p>
 <table class="docutils align-default" id="id85">
@@ -2146,7 +2373,7 @@ achieve higher throughput, better culling efficiency, and reduced CPU
 overhead compared to the traditional vertex-processing pipeline.</p>
 </section>
 <section id="animation-example">
-<span id="animation-ex"></span><h3><a class="toc-backref" href="#id101" role="doc-backlink">Animation Example</a><a class="headerlink" href="#animation-example" title="Link to this heading">¶</a></h3>
+<span id="animation-ex"></span><h3><a class="toc-backref" href="#id102" role="doc-backlink">Animation Example</a><a class="headerlink" href="#animation-example" title="Link to this heading">¶</a></h3>
 <p>The skinning formula is described in <a class="reference internal" href="hw-sw-stack.html#sw-stack"><span class="std std-ref">SW Stack and Data Flow</span></a> section as follows:</p>
 <div class="math notranslate nohighlight">
 \[finalPosition =
@@ -2380,7 +2607,7 @@ and the vertex shader applies animation math during the draw call. The
 GPU performs the animation only when the draw command is issued.</p>
 </section>
 <section id="ray-tracing-pipeline">
-<h3><a class="toc-backref" href="#id102" role="doc-backlink">Ray Tracing Pipeline</a><a class="headerlink" href="#ray-tracing-pipeline" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id103" role="doc-backlink">Ray Tracing Pipeline</a><a class="headerlink" href="#ray-tracing-pipeline" title="Link to this heading">¶</a></h3>
 <figure class="align-center" id="id87">
 <span id="ray-trace-diagram"></span><a class="reference internal image-reference" href="_images/ray_trace_diagram.png"><img alt="_images/ray_trace_diagram.png" height="244" src="_images/ray_trace_diagram.png" width="367" />
 </a>
@@ -2580,7 +2807,7 @@ very similar to traditional OpenGL fragment shading.</p>
 </section>
 </section>
 <section id="glsl-gl-shader-language">
-<h2><a class="toc-backref" href="#id103" role="doc-backlink">GLSL (GL Shader Language)</a><a class="headerlink" href="#glsl-gl-shader-language" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id104" role="doc-backlink">GLSL (GL Shader Language)</a><a class="headerlink" href="#glsl-gl-shader-language" title="Link to this heading">¶</a></h2>
 <p>OpenGL is a standard specification for designing 2D and 3D graphics and animation
 in computer graphics. To support advanced animation and rendering, OpenGL provides
 a large set of APIs (functions) for graphics processing. Popular 3D modeling and
@@ -2589,7 +2816,7 @@ animation tools—such as Maya, Blender, and others—can utilize these APIs to 
 <p>The hardware-specific implementation of these APIs is provided by GPU manufacturers,
 ensuring that rendering is optimized for the underlying hardware.</p>
 <section id="background">
-<h3><a class="toc-backref" href="#id104" role="doc-backlink">Background</a><a class="headerlink" href="#background" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id105" role="doc-backlink">Background</a><a class="headerlink" href="#background" title="Link to this heading">¶</a></h3>
 <p>In the previous section <a class="reference internal" href="hw-sw-stack.html#sw-stack"><span class="std std-ref">SW Stack and Data Flow</span></a> described <strong>how each frame is
 generated</strong> to display the <strong>movement animation or skinning effects</strong> using the
 small animation parameters stored in 3D model and sent from CPU.</p>
@@ -2618,8 +2845,8 @@ No shaders existed yet.</p>
 </ul>
 <p>Again, no shaders — but hardware skinning existed.</p>
 <p>The previous <a class="reference internal" href="hw-sw-stack.html#role-shaders"><span class="std std-ref">section Role and Purpose of Shaders</span></a> also
-explained different visual effects can be achieved by <strong>switching shaders</strong> to
-shapplying different materials across frames.</p>
+explained how different visual effects can be achieved by <strong>switching shaders</strong>
+and applying different materials across frames.</p>
 <p>❌ However <strong>the fixed‑function pipeline (OpenGL 1.x / early 2.x without
 shaders)</strong> has:</p>
 <ul class="simple">
@@ -2630,7 +2857,7 @@ shaders)</strong> has:</p>
 <li><p>no ability to read custom vertex attributes</p></li>
 <li><p>no ability to modify vertex positions except via the model‑view matrix</p></li>
 </ul>
-<p>❌ As result the shader-less (fixed-function) pipeline in early OpenGL did not
+<p>❌ As a result, the shader-less (fixed-function) pipeline in early OpenGL did not
 support GPU-based skinning.
 Skinning had to be implemented on the CPU, which imposed limitations on both
 <strong>animation capability and performance</strong>, as described below:</p>
@@ -2690,7 +2917,7 @@ are fully programmable shader GPUs.</p></li>
 </div></blockquote>
 </section>
 <section id="examples">
-<h3><a class="toc-backref" href="#id105" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id106" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading">¶</a></h3>
 <p>An OpenGL program typically follows a structure like the example below:</p>
 <p class="rubric">Vertex shader</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#version 330 core</span>
@@ -2773,7 +3000,7 @@ program is a good choice for dealing the cases of driver software or gpu
 hardware replacement <a class="footnote-reference brackets" href="#onlinecompile" id="id39" role="doc-noteref"><span class="fn-bracket">[</span>30<span class="fn-bracket">]</span></a>.</p>
 </section>
 <section id="goals">
-<h3><a class="toc-backref" href="#id106" role="doc-backlink">Goals</a><a class="headerlink" href="#goals" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id107" role="doc-backlink">Goals</a><a class="headerlink" href="#goals" title="Link to this heading">¶</a></h3>
 <p>Goals of GLSL Shader Language:</p>
 <p>GLSL was designed for real-time graphics using programmable GPUs.</p>
 <ol class="arabic simple">
@@ -2827,7 +3054,7 @@ hardware replacement <a class="footnote-reference brackets" href="#onlinecompile
 </ul>
 </section>
 <section id="glsl-vs-c-feature-overview">
-<h3><a class="toc-backref" href="#id107" role="doc-backlink">GLSL vs. C: Feature Overview</a><a class="headerlink" href="#glsl-vs-c-feature-overview" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id108" role="doc-backlink">GLSL vs. C: Feature Overview</a><a class="headerlink" href="#glsl-vs-c-feature-overview" title="Link to this heading">¶</a></h3>
 <p>GLSL expands upon C for GPU-based graphics programming.</p>
 <p><strong>Additions to C:</strong></p>
 <ol class="arabic simple">
@@ -2930,12 +3157,12 @@ section.</p></li>
 </ul>
 </section>
 <section id="glsl-qualifiers-by-shader-stage">
-<h3><a class="toc-backref" href="#id108" role="doc-backlink">GLSL Qualifiers by Shader Stage</a><a class="headerlink" href="#glsl-qualifiers-by-shader-stage" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id109" role="doc-backlink">GLSL Qualifiers by Shader Stage</a><a class="headerlink" href="#glsl-qualifiers-by-shader-stage" title="Link to this heading">¶</a></h3>
 <p>The CPU and GPU Pipeline For Shaders is introduced in section
 <a class="reference internal" href="#three-d-rendering-pipeline"><span class="std std-ref">3D Rendering Pipeline</span></a>.
 The <a class="reference internal" href="#shaders-pipeline-in-out"><span class="std std-numref">Fig. 51</span></a> is the summary of GLSL Qualifiers below.</p>
 <figure class="align-default" id="id88">
-<span id="shaders-pipeline-in-out"></span><div class="graphviz"><img src="_images/graphviz-780e408f0b952281248bb73814dcb1a07f202597.png" alt="digraph CPU_GPU_Pipeline {
+<span id="shaders-pipeline-in-out"></span><div class="graphviz"><img src="_images/graphviz-3e463c735560da1d98c3a9103d5ebd09f4a12e2f.png" alt="digraph CPU_GPU_Pipeline {
     rankdir=LR;
     node [shape=box, style=rounded, fontsize=12];
 
@@ -2944,7 +3171,7 @@ The <a class="reference internal" href="#shaders-pipeline-in-out"><span class="s
         style=rounded;
 
         CPU_Vertex [label=&quot;Load 3D Model\n(Per-Vertex Attributes)\nVBOs, VAOs, Indices&quot;];
-        CPU_Anim   [label=&quot;Uniform Updates\n(Animation Parameters,\nMatrices, Lighting,\nMaterial Params)&quot;];
+        CPU_Anim   [label=&quot;Uniform Updates\n(Animation Parameters,\nMatrices, Lighting,\nMaterial Parameters)&quot;];
     }
 
     subgraph cluster_gpu {
@@ -2959,7 +3186,7 @@ The <a class="reference internal" href="#shaders-pipeline-in-out"><span class="s
 
         FB      [label=&quot;Framebuffer\n(Final Rendered Image)&quot;];
 
-        CS      [label=&quot;Compute Shader\n(Workgroups, SSBOs,\nImages, Shared Memory)\nIndependent of VS→FS Pipeline&quot;];
+        CS      [label=&quot;Compute Shader\n(Workgroups, SSBOs,\nImages, Shared Memory)\nIndependent of the VS→FS Pipeline&quot;];
     }
 
     # Main graphics pipeline
@@ -3003,8 +3230,9 @@ demostrates animation using both the 3D model information and Uniform Updates.</
 all shaders in the pipeline.
 This means that uniform data represents global parameters for 3D GPU rendering.</p></li>
 <li><p>flat: Disables interpolation; uses provoking vertex</p></li>
-<li><p>smooth: Enables perspective-correct interpolation (default)</p></li>
-<li><p>noperspective: Linear interpolation in screen space</p></li>
+<li><p><strong>smooth:</strong> Enables perspective-correct interpolation (default);
+<strong>noperspective:</strong> Use Linear interpolation in screen space instead of “smooth”
+option.</p></li>
 <li><p>centroid: Samples within primitive area (for multisampling)</p></li>
 <li><p>sample: Per-sample interpolation (GLSL 4.0+)</p></li>
 <li><p>discard: Terminates fragment processing early</p></li>
@@ -3119,7 +3347,7 @@ This means that uniform data represents global parameters for 3D GPU rendering.<
 </section>
 </section>
 <section id="opengl-shader-compiler">
-<span id="id40"></span><h2><a class="toc-backref" href="#id109" role="doc-backlink">OpenGL Shader Compiler</a><a class="headerlink" href="#opengl-shader-compiler" title="Link to this heading">¶</a></h2>
+<span id="id40"></span><h2><a class="toc-backref" href="#id110" role="doc-backlink">OpenGL Shader Compiler</a><a class="headerlink" href="#opengl-shader-compiler" title="Link to this heading">¶</a></h2>
 <p>The OpenGL standard is defined in <a class="footnote-reference brackets" href="#openglspec" id="id41" role="doc-noteref"><span class="fn-bracket">[</span>31<span class="fn-bracket">]</span></a>. OpenGL is primarily designed for
 desktop computers and servers, whereas OpenGL ES is a subset tailored for embedded systems
 <a class="footnote-reference brackets" href="#opengleswiki" id="id42" role="doc-noteref"><span class="fn-bracket">[</span>32<span class="fn-bracket">]</span></a>.</p>
@@ -3162,7 +3390,7 @@ define void @main() #0 {
 <span class="nf">load</span><span class="w"> </span><span class="no">$1</span><span class="p">,</span><span class="w"> </span><span class="no">tex_a</span><span class="c1">;</span>
 <span class="nf">sample2d_inst</span><span class="w"> </span><span class="no">$1</span><span class="p">,</span><span class="w"> </span><span class="no">$2</span><span class="p">,</span><span class="w"> </span><span class="no">$3</span><span class="w"> </span><span class="c1">// $1: tex_a, $2: %uv_2d, $3: %bias</span>
 
-<span class="na">.tex_a</span><span class="w"> </span><span class="c1">// Driver set the index of gpu descriptor regsters here</span>
+<span class="na">.tex_a</span><span class="w"> </span><span class="c1">// The driver sets the GPU descriptor-register index here</span>
 </pre></div>
 </div>
 <p>As shown at the end of the code above, the <cite>.tex_a</cite> memory address contains the Texture
@@ -3228,14 +3456,14 @@ reads metadata from a compiled GLSL object, how the OpenGL API <strong>links</st
 <strong>sampler uniform variables</strong> to <strong>Texture Units</strong>,
 and how the GPU <strong>executes</strong> the corresponding <strong>texture instructions</strong>.</p>
 <figure class="align-default" id="id91">
-<span id="driver-sampler-table"></span><div class="graphviz"><img src="_images/graphviz-01d45d110db537133c346b3b675ceba1f58a77ed.png" alt="digraph G {
+<span id="driver-sampler-table"></span><div class="graphviz"><img src="_images/graphviz-43d94cab37ed65e8c646a03b57e2aa1912b3f83e.png" alt="digraph G {
     graph [rankdir=TB];
 
     // ---------------------
     // Node n1, n2, n3, n4
     // ---------------------
     n1 [shape=box, label=&quot;1. GPU Compiler&quot;];
-    n2 [shape=box, label=&quot;2. Driver alloc memory xLoc for x&quot;];
+    n2 [shape=box, label=&quot;2. Driver allocates storage for xLoc&quot;];
     n3 [shape=box, label=&quot;3. xLoc = gl.getUniformLocation(prog, \&quot;x\&quot;)&quot;];
     n4 [shape=box, label=&quot;4. gl.uniform1i(xLoc, 1)&quot;];
 
@@ -3246,7 +3474,7 @@ and how the GPU <strong>executes</strong> the corresponding <strong>texture inst
         shape=none
         label=&lt;
         &lt;TABLE BORDER=&quot;1&quot; CELLBORDER=&quot;1&quot; CELLSPACING=&quot;0&quot;&gt;
-            &lt;TR&gt;&lt;TD COLSPAN=&quot;3&quot;&gt;&lt;B&gt;driver Sampler Variables table&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
+            &lt;TR&gt;&lt;TD COLSPAN=&quot;3&quot;&gt;&lt;B&gt;Driver Sampler-Variable Table&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
             &lt;TR&gt;
                 &lt;TD PORT=&quot;r0c0&quot;&gt;name&lt;/TD&gt;
                 &lt;TD PORT=&quot;r0c1&quot;&gt;type&lt;/TD&gt;
@@ -3259,7 +3487,7 @@ and how the GPU <strong>executes</strong> the corresponding <strong>texture inst
             &lt;/TR&gt;
             &lt;TR&gt;
                 &lt;TD PORT=&quot;r2c0&quot;&gt;&quot;x&quot;&lt;/TD&gt;
-                &lt;TD PORT=&quot;r2c1&quot;&gt;SAMPLE_2D&lt;/TD&gt;
+                &lt;TD PORT=&quot;r2c1&quot;&gt;sampler2D&lt;/TD&gt;
                 &lt;TD PORT=&quot;r2c2&quot;&gt;xLoc&lt;/TD&gt;
             &lt;/TR&gt;
             &lt;TR&gt;
@@ -3278,7 +3506,7 @@ and how the GPU <strong>executes</strong> the corresponding <strong>texture inst
         shape=none
         label=&lt;
         &lt;TABLE BORDER=&quot;1&quot; CELLBORDER=&quot;1&quot; CELLSPACING=&quot;0&quot;&gt;
-            &lt;TR&gt;&lt;TD COLSPAN=&quot;4&quot;&gt;&lt;B&gt;texture descriptor&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
+            &lt;TR&gt;&lt;TD COLSPAN=&quot;4&quot;&gt;&lt;B&gt;Texture Descriptor Table&lt;/B&gt;&lt;/TD&gt;&lt;/TR&gt;
             &lt;TR&gt;
                 &lt;TD PORT=&quot;t0c0&quot;&gt;offset&lt;/TD&gt;
                 &lt;TD PORT=&quot;t0c1&quot;&gt;location&lt;/TD&gt;
@@ -3318,7 +3546,7 @@ and how the GPU <strong>executes</strong> the corresponding <strong>texture inst
                 &lt;TD PORT=&quot;u1c0&quot; ALIGN=&quot;LEFT&quot;&gt;   sample_inst $1, $2, $3 // $2: %uv_2d, $3: %bias&lt;/TD&gt;
             &lt;/TR&gt;
             &lt;TR&gt;
-                &lt;TD PORT=&quot;u2c0&quot; ALIGN=&quot;LEFT&quot;&gt;   .tex_a // Driver set value to k when calling gl.uniformli(xLoc, 1)&lt;/TD&gt;
+                &lt;TD PORT=&quot;u2c0&quot; ALIGN=&quot;LEFT&quot;&gt;   .tex_a // Driver sets the value to k when gl.uniform1i(xLoc, 1) is called&lt;/TD&gt;
             &lt;/TR&gt;
         &lt;/TABLE&gt;
         &gt;
@@ -3329,19 +3557,19 @@ and how the GPU <strong>executes</strong> the corresponding <strong>texture inst
     // -------------------------
 
     // n1 -&gt; n2 -&gt; tbl1(2,2)
-    n1 -&gt; n2 [label=&quot;During the link stage for uniform sampler2D x;&quot;];
+    n1 -&gt; n2 [label=&quot;Linking a uniform sampler2D x&quot;];
     n2 -&gt; tbl1:r2c2;
 
     // tbl1(2,2) -&gt; n3
     tbl1:r2c2 -&gt; n3;
 
-    n3 -&gt; tbl2:t2c1 [label=&quot;Driver fill xLoc \n(the location of x sampler variable)\n to the offset k in the table&quot;];
+    n3 -&gt; tbl2:t2c1 [label=&quot;Driver records xLoc\n(the location of sampler x)\nat offset k in the table&quot;];
 
     // n4 -&gt; right side of tbl2 (choose last column: row 2 col 2)
-    n4 -&gt; tbl2:t2c2 [label=&quot;Driver write 1 to the table\nfor using Texture Unit 1&quot;];
+    n4 -&gt; tbl2:t2c2 [label=&quot;Driver writes 1 to the table\nto select Texture Unit 1&quot;];
 
     // tbl2(2,0) -&gt; tb3(2,0)
-    tbl2:t2c0 -&gt; tbl3:u2c0 [label=&quot;Driver lookup the table and \nset the value of the symbol '.tex_a' to k \nin the executable binary file&quot;];
+    tbl2:t2c0 -&gt; tbl3:u2c0 [label=&quot;Driver looks up the table and\nsets the symbol '.tex_a' to k\nin the executable binary&quot;];
 }" class="graphviz" /></div>
 <figcaption>
 <p><span class="caption-number">Fig. 54 </span><span class="caption-text">Binding Sampler Variables to Texture Instructions</span><a class="headerlink" href="#id91" title="Link to this image">¶</a></p>
@@ -3400,15 +3628,15 @@ and access the texture object during shader execution.</p>
 <span class="go">load $1, tex_a;</span>
 <span class="go">sample2d_inst $1, $2, $3 // $1: tex_a, $2: %uv_2d, $3: %bias</span>
 
-<span class="go">.tex_a // Driver set the index of gpu descriptor regsters here at step 4</span>
+<span class="go">.tex_a // The driver sets the GPU descriptor-register index here at step 4</span>
 </pre></div>
 </div>
-<p>When executing the texture instructions from glsl binary file on gpu, the
-corresponding ‘Texture Unit 1’ on gpu will being executed through texture
-descriptor in gpu’s memory because .tex_a: {xLoc, 1}. Driver may set
-texture descriptor in gpu’s texture desciptors if gpu provides specific
-texture descriptors in architecture <a class="footnote-reference brackets" href="#descriptorreg" id="id53" role="doc-noteref"><span class="fn-bracket">[</span>39<span class="fn-bracket">]</span></a>.</p>
-<p>For instance, Nvidia texture instruction as follow,</p>
+<p>When the GPU executes texture instructions from a GLSL binary, the corresponding
+texture unit is selected through a texture descriptor in GPU memory. In this
+example, <code class="docutils literal notranslate"><span class="pre">.tex_a</span></code> refers to <code class="docutils literal notranslate"><span class="pre">{xLoc,</span> <span class="pre">1}</span></code>. If the architecture provides
+dedicated texture descriptors, the driver writes the descriptor into the
+descriptor table <a class="footnote-reference brackets" href="#descriptorreg" id="id53" role="doc-noteref"><span class="fn-bracket">[</span>39<span class="fn-bracket">]</span></a>.</p>
+<p>For example, an NVIDIA texture instruction is as follows:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">// the content of tex_a bound to texture unit as step 5 above</span>
 <span class="go">tex.3d.v4.s32.s32  {r1,r2,r3,r4}, [tex_a, {f1,f2,f3,f4}];</span>
 

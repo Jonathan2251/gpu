@@ -145,7 +145,7 @@ An OpenGL program is made of two shaders [#monstar-lab-opengl]_
 
 Since we have 6 vertices in our buffer, this shader will be executed 6 times by 
 the GPU (once per vertex)! We can also expect all 6 instances of the shader to 
-be executed in parallel, since a GPU have so many cores.
+be executed in parallel, since a GPU has many cores.
 
 .. _rendering3d:
 
@@ -316,45 +316,59 @@ Primitive Assembly (fixed-function) and Primitive Setup (fixed-function).
 
           OpenGL pipeline in blue book
 
+In :numref:`rp:left`, the "Primitive Assembly" is the "Output Primitive 
+Assembly". A more accurate ordering is:
+
+.. code-block:: text
+
+  Vertex Shader
+      ↓
+  Patch assembly / Input Primitive Assembly
+      ↓
+  Tessellation
+      ├── Tessellation Control Shader
+      ├── Primitive Generation
+      └── Tessellation Evaluation Shader
+      ↓
+  Geometry Shader
+      ↓
+  Output Primitive Assembly
+      ↓
+  Rasterization
+
+
 .. _gpu-pipeline: 
 .. graphviz:: ../Fig/opengl/gpu-pipeline.gv
   :caption: Modern GPU Pipeline
 
 As shown in :numref:`gpu-pipeline`:
 
-- Vertex Shader and Tessellation: processing and transform for **vertices** 
-  data.
-- Primitive Processing: processing and transform for **primitives** data.
-- Rasterizer: **Primitives → Fragment**.
-- Fragment Shader: **Fragment → Colored Fragment**.
+- Vertex Shader and Tessellation: process and transform **vertex** data.
+- Primitive Processing: processes and transforms **primitive** data.
+- Rasterizer: **Primitives → Fragments**.
+- Fragment Shader: **Fragments → Colored Fragments**.
 
-As illustred in :ref:`cross-product` section, 
+As illustrated in the :ref:`cross-product` section,
 
 ✔️  Each mesh (triangle or primitive) has a fixed “outer” and “inner” side,
 determined by CCW ordering in object space.
 
-✔️  By reading these CCW-ordered vertices sequentially, the shape and surface 
-orientation of the 3D model can be constructed.
+✔️  By reading these CCW-ordered vertices in a triangle sequentially, the shape 
+and surface orientation of the 3D model can be constructed.
 
 ✔️  There is no need to wait for the entire mesh to be received; once three 
-CCW-ordered vertices are available, each triangle can be processed correctly.
+CCW-ordered vertices in a triangle are available, each triangle can be 
+processed correctly.
 
 ✔️  When the camera moves to the inside an object: CCW ↔ CW flips.
 
 This means:
 
-✔️  Vertex Shader and Tessellation: **may processing each vertex independently**
-as long as the vertex order is preserved.
+✔️  Vertex Shader and Tessellation: **may process each vertex independently**
+as long as the vertex order in a triangle is preserved.
 
 ✔️  Once **three CCW-ordered vertices are available**, Primitive Assembly can 
 convert them into a triangle and pass it to the next pipeline stage.
-
-   - For example: once v0,v1,v2,v3 are available, Primitive Assembly outputs:
-
-     Triangle A (v0,v1,v2)
-
-     Triangle B (v2,v3,v0)
-
 
 After vertices are assembled into
 primitives (such as triangles), the front-facing and back-facing surfaces can 
@@ -494,7 +508,7 @@ broad enough to cover animation.
        “Compute Shaders” [#redbook-p36]_.
 
 
-**Tessllation**
+**Tessellation**
 
 - Tessellation Shading: 
   The core problem that Tessellation deals with is the static nature of 3D models
@@ -515,17 +529,17 @@ broad enough to cover animation.
   is called **Tessellation Control Shader (TCS)**, the **fixed function** stage 
   is called the **Primitive Generator (PG)**, and the second shader stage is 
   called **Tessellation Evaluation Shader (TES)**. 
-  Some GPU havn't this fixed function stage implemented in HW and even havn't
-  provide these TCS, TES and Gemoetry Shader. User can write 
-  **Compute Shaders** instead for this on-fly detail display.
+  Some GPUs do not implement this fixed-function stage in hardware and do not
+  provide TCS, TES, or geometry shaders. A user can write **compute shaders**
+  instead to generate detail on the fly.
   This surface is usually defined by some **polynomial formula** and the idea 
   is that moving a **CP** has an effect on the entire surface. ...
   The group of CPs is usually called a **Patch** [#ts-tu30]_.
-  The data flow in Tessllation Stage between TCS, Fixed-Function Tessellator 
+  The data flow in the Tessellation Stage between the TCS, Fixed-Function Tessellator,
   and TES is illustrated in :numref:`imr-rendering-pipeline-1`.
   Chapter 9 of Red Book [#redbook]_ has details. 
   The next section :ref:`tessellation-ex` describes the details for the 
-  Tessallation with an example.
+  tessellation with an example.
 
 - Tessellation **cannot** decrease the resolution of vertices from the VS.
   The Geometry Shader can **reduce geometry** (by discarding primitives), but it
@@ -534,7 +548,7 @@ broad enough to cover animation.
 
 **Data Flow**
 
-Sumarize the OpenGL Rendering Pipeline as shown in the 
+The following diagrams summarize the OpenGL rendering pipeline:
 :numref:`imr-rendering-pipeline-1` and 
 :numref:`imr-rendering-pipeline-2`.
 
@@ -550,8 +564,8 @@ Sumarize the OpenGL Rendering Pipeline as shown in the
 
    \clearpage
 
-The data flow through the OpenGL Shader and the details flow
-in TCS, Fixed-Function Tessellator and TES are described in below.
+The data flow through the OpenGL shader pipeline and the details of the TCS,
+Fixed-Function Tessellator, and TES are described below.
 
 .. list-table:: Data Flow Through the OpenGL Shader Pipeline
    :widths: 20 35 35 45
@@ -603,7 +617,7 @@ in TCS, Fixed-Function Tessellator and TES are described in below.
        - Winding order
      - - **Tessellated coordinates (u,v,w)**: gl_TessCoord
        - Bypass modified Control Points
-     - - **Fixed‑Function Tessellator (TS)**, also name as **Primitive Generator (PG)**:
+     - - **Fixed‑Function Tessellator (TS)**, also known as **Primitive Generator (PG)**:
 
          - Generates tessellated domain coordinates (u,v,w) to TES
 
@@ -718,10 +732,243 @@ triangle**.
        must be interpolated so each fragment knows its own world position
 
 
-For 2D animation, the model is created by 2D only (1 face only), so it only can be 
-viewed from the same face of model. If you want to display different faces of model,
-multiple 2D models need to be created and switch these 2D models from face(flame) to 
-face(flame) from time to time [#2danimation]_.
+In 2D animation, a model is a single flat view and can be viewed only from that
+side. To display different views, multiple 2D models must be created and
+switched from frame to frame [#2danimation]_.
+
+
+Mesh Construction
+*****************
+
+As described in section :ref:`three-d-rendering-pipeline`:
+
+✔️  By reading these CCW-ordered vertices in a triangle sequentially, the shape
+and surface orientation of the 3D model can be constructed.
+
+Because a mesh contains many vertices shared across triangles, this section 
+explains how OpenGL and GPUs avoid reprocessing those redundant vertices.”
+
+**OpenGL Triangles**
+
+OpenGL has:
+
+- GL_TRIANGLES — every 3 vertices form an independent triangle
+- GL_TRIANGLE_STRIP — consecutive vertices share edges
+- GL_TRIANGLE_FAN — all triangles share the first vertex
+
+For example:
+
+.. code-block:: text
+
+   glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
+
+   With vertices:
+
+   v0 ───── v2 ───── v4
+   │     ╱  │     ╱  │
+   │   ╱    │   ╱    │
+   │ ╱      │ ╱      │
+   v1 ───── v3 ───── v5
+
+   vertices:
+   v0, v1, v2, v3, v4, v5
+
+   Triangle list for GL_TRIANGLE:
+
+   indices:
+
+   (0,1,2)
+   (2,1,3)
+   (2,3,4)
+   (4,3,5)
+
+   Triangle strip for GL_TRIANGLE_STRIP:
+
+   indices:
+
+   0,1,2,3,4,5
+
+The triangles are generated as:
+
+.. code-block:: text
+
+   Triangle 0: v0, v1, v2
+   Triangle 1: v2, v1, v3
+   Triangle 2: v2, v3, v4
+   Triangle 3: v4, v3, v5
+
+So after the first 3 vertices, each additional vertex creates one new 
+triangle.
+
+For a GPU compiler, triangle strip is important because the primitive assembly 
+stage has to keep track of the previous vertices and **alternates triangle 
+winding order** for successive triangles.
+
+For the first triangle:
+
+v0 → v1 → v2
+
+For the second triangle, the shared edge is v1-v2. To maintain the same winding 
+direction, OpenGL uses:
+
+v2 → v1 → v3
+
+rather than:
+
+v1 → v2 → v3
+
+That causes the second triangle's winding to be opposite.
+
+3D models may create meshes with ndividual triangles or triangle strips. 
+However, real 3D meshes are usually not one continuous strip. A model has:
+
+- branches
+- holes
+- disconnected surfaces
+- different materials
+- hard edges
+- UV seams
+- normal seams
+
+These make a single efficient triangle strip difficult.
+Modern GPUs also have **post-transform vertex caches**, so well-organized 
+triangle lists can reuse vertex shader results efficiently.
+
+The mesh itself is a collection of triangles. GL_TRIANGLES and GL_TRIANGLE_STRIP 
+are primarily different primitive assembly methods for interpreting the 
+index/vertex stream.
+Also, modern APIs such as Vulkan and Direct3D still support triangle strips, 
+but triangle lists are the dominant representation for general-purpose 3D 
+meshes.
+
+**Post-Transform Vertex Cache**
+
+A modern GPU usually has a small **post-transform vertex cache** that stores
+the results of vertex shader execution.
+
+This cache allows the GPU to avoid executing the vertex shader multiple times
+for the same vertex when that vertex is referenced by several triangles.
+
+For example, consider the following indexed triangle list::
+
+    Triangle 0: 0, 1, 2
+    Triangle 1: 2, 1, 3
+    Triangle 2: 2, 3, 4
+
+The vertices ``1`` and ``2`` are shared by the first two triangles. The GPU
+can process the first triangle as follows::
+
+    Index       Cache       Action
+    ------------------------------------
+      0         miss        Run vertex shader
+      1         miss        Run vertex shader
+      2         miss        Run vertex shader
+
+When processing the second triangle::
+
+    Index       Cache       Action
+    ------------------------------------
+      2         hit         Reuse vertex shader result
+      1         hit         Reuse vertex shader result
+      3         miss        Run vertex shader
+
+Therefore, although vertex ``1`` and vertex ``2`` appear multiple times in the
+index buffer, their vertex shaders do not need to be executed again as long as
+their transformed results are still in the cache.
+
+The cache is called a *post-transform* cache because it stores the results
+*after* vertex transformation, rather than merely caching the original
+vertex attributes.
+
+A simplified GPU pipeline is::
+
+    Index Buffer
+         |
+         v
+    Vertex Fetch
+         |
+         v
+    Vertex Shader
+         |
+         v
+    Post-Transform Vertex Cache
+         |
+         v
+    Primitive Assembly
+         |
+         v
+    Rasterization
+
+Triangle Order Matters
+
+The cache has limited capacity. If a vertex is referenced again after it has
+been evicted from the cache, the vertex shader must execute again.
+
+For example, consider a small cache::
+
+    T0: 0, 1, 2
+    T1: 3, 4, 5
+    T2: 0, 1, 2
+
+After processing ``T0``, vertices ``0``, ``1``, and ``2`` may be in the
+cache. Processing ``T1`` replaces them with ``3``, ``4``, and ``5``. When
+``T2`` is processed, vertices ``0``, ``1``, and ``2`` are no longer in the
+cache, so their vertex shaders must execute again.
+
+A different triangle order can keep shared vertices in the cache for longer::
+
+    T0: 0, 1, 2
+    T1: 2, 1, 3
+    T2: 2, 3, 4
+    T3: 3, 4, 5
+
+This ordering has good locality because neighboring triangles share recently
+processed vertices.
+
+**Mesh Optimization**
+
+A **mesh optimizer** can reorder the triangles, and therefore the indices,
+to improve vertex-cache locality.
+
+The mesh optimizer does not remove duplicated vertex processing by itself.
+Instead, it arranges the triangle order so that the GPU's post-transform
+vertex cache can reuse more previously computed vertex shader results.
+
+The relationship is::
+
+    Mesh Optimizer
+          |
+          | Reorders triangles / indices
+          v
+    Better Vertex Locality
+          |
+          v
+    Post-Transform Vertex Cache
+          |
+          | More cache hits
+          v
+    Fewer Vertex Shader Executions
+
+This is one reason that a well-organized **triangle list** can achieve
+substantial vertex reuse on modern GPUs, even without using a triangle strip.
+
+Triangle strips provide vertex reuse through their primitive-assembly rules,
+whereas an optimized triangle list relies on the post-transform cache to
+reuse previously computed vertex shader results.
+
+The two mechanisms are therefore different::
+
+    Triangle Strip
+        |
+        +-- Implicit vertex reuse in primitive assembly
+
+    Optimized Triangle List
+        |
+        +-- Explicit indices
+        |
+        +-- Good triangle ordering
+        |
+        +-- Post-transform cache reuse
 
 
 .. _tessellation-ex:
@@ -789,14 +1036,14 @@ Only CPs 5, 6, 9, and 10 are elevated to create curvature.
        }
    }
 
-**Fixed-Function Tessellator (TS)**, also name as **Primitive Generator 
+**Fixed-Function Tessellator (TS)**, also known as the **Primitive Generator
 (PG)**: output:
 
 - **Tessellated coordinates (u,v,w)**: gl_TessCoord
 
-The PG takes the TLs and based on their values generates a **set of points** 
-inside the triangle. Each point is defined by its own barycentric coordinate.
-The set of points named **Tessellated coordinates**.
+The PG uses the tessellation levels to generate a **set of points** inside the
+triangle. Each point has its own barycentric coordinates. This set is called
+the **tessellated coordinates**.
 
 The grid size depends on tessellation levels:
 
@@ -965,8 +1212,8 @@ Evaluated surface points P(u,v) are also vec4.
 
           Geometry Shader (GS) can expand a 5×5 tessellated grid into a 6×6 mesh
 
-The following TCS glsl from the Red Book can patch high or low resolution of 
-CPs at runtime according the distance of the squre vertices.
+The following TCS GLSL code from the Red Book adjusts the resolution of control
+points at runtime according to the distance of the square's vertices.
 
 Specifying Tessellation Level Factors Using Perimeter Edge Centers.
 
@@ -1155,9 +1402,8 @@ For each tile:
 
 → Write final tile to DRAM once
 
-★ As you can see, tile is a small part of rendering frame. 
-In Phase 2 — Tile Rendering, GPU rendering each tile and
-keep the rendering result of each **tile in SRAM**.
+★ A tile is a small portion of the rendered frame. In Phase 2—tile rendering—
+the GPU renders each tile and keeps its intermediate result in **SRAM**.
 
 
 TBDR Rendering
@@ -1423,11 +1669,11 @@ Meshlets align naturally with GPU hardware for several reasons:
   workgroups to run in parallel across GPU SMs.
 
 
-Both Mobile GPU and Mesh-Shader GPU convert big mesh to small meshlets and
-render them efficiently using GPU SIMT executation and memory hierarchy. 
-The comparsion is shown in the following table.
+Both mobile GPUs and mesh-shader GPUs convert a source mesh into smaller
+meshlets and render them efficiently using GPU SIMT execution and the memory
+hierarchy. The comparison is shown in the following table.
 
-**Comparsion: Mobile GPU (Compute-Shader Based) vs Desktop Mesh-Shader GPU**
+**Comparison: Mobile GPU (Compute-Shader Based) vs. Desktop Mesh-Shader GPU**
 
 The **Mesh Shader** is similar to the previous section of **Mobile 
 Compute Shader** based Meshlets as the following table:
@@ -2017,9 +2263,9 @@ The GameCube GPU had a fixed‑function transform unit that supported:
 
 Again, no shaders — but hardware skinning existed.
 
-The previous :ref:`section Role and Purpose of Shaders <role-shaders>` also 
-explained different visual effects can be achieved by **switching shaders** to 
-shapplying different materials across frames. 
+The previous :ref:`section Role and Purpose of Shaders <role-shaders>` also
+explained how different visual effects can be achieved by **switching shaders**
+and applying different materials across frames.
 
 ❌ However **the fixed‑function pipeline (OpenGL 1.x / early 2.x without 
 shaders)** has:
@@ -2031,7 +2277,7 @@ shaders)** has:
 -  no ability to read custom vertex attributes
 -  no ability to modify vertex positions except via the model‑view matrix
 
-❌ As result the shader-less (fixed-function) pipeline in early OpenGL did not 
+❌ As a result, the shader-less (fixed-function) pipeline in early OpenGL did not
 support GPU-based skinning.
 Skinning had to be implemented on the CPU, which imposed limitations on both 
 **animation capability and performance**, as described below:
@@ -2339,8 +2585,9 @@ The :numref:`shaders-pipeline-in-out` is the summary of GLSL Qualifiers below.
   all shaders in the pipeline.
   This means that uniform data represents global parameters for 3D GPU rendering.
 - flat: Disables interpolation; uses provoking vertex
-- smooth: Enables perspective-correct interpolation (default)
-- noperspective: Linear interpolation in screen space
+- **smooth:** Enables perspective-correct interpolation (default);
+  **noperspective:** Use Linear interpolation in screen space instead of "smooth" 
+  option.
 - centroid: Samples within primitive area (for multisampling)
 - sample: Per-sample interpolation (GLSL 4.0+)
 - discard: Terminates fragment processing early
@@ -2508,7 +2755,7 @@ workflow is illustrated as follows:
   load $1, tex_a;
   sample2d_inst $1, $2, $3 // $1: tex_a, $2: %uv_2d, $3: %bias
 
-  .tex_a // Driver set the index of gpu descriptor regsters here
+  .tex_a // The driver sets the GPU descriptor-register index here
 
 As shown at the end of the code above, the `.tex_a` memory address contains the Texture 
 Object, which is bound by the driver during online compilation and linking. By binding 
@@ -2656,15 +2903,15 @@ and access the texture object during shader execution.
   load $1, tex_a;
   sample2d_inst $1, $2, $3 // $1: tex_a, $2: %uv_2d, $3: %bias
 
-  .tex_a // Driver set the index of gpu descriptor regsters here at step 4
+  .tex_a // The driver sets the GPU descriptor-register index here at step 4
       
-When executing the texture instructions from glsl binary file on gpu, the 
-corresponding 'Texture Unit 1' on gpu will being executed through texture 
-descriptor in gpu's memory because .tex_a: {xLoc, 1}. Driver may set
-texture descriptor in gpu's texture desciptors if gpu provides specific
-texture descriptors in architecture [#descriptorreg]_.
+When the GPU executes texture instructions from a GLSL binary, the corresponding
+texture unit is selected through a texture descriptor in GPU memory. In this
+example, ``.tex_a`` refers to ``{xLoc, 1}``. If the architecture provides
+dedicated texture descriptors, the driver writes the descriptor into the
+descriptor table [#descriptorreg]_.
 
-For instance, Nvidia texture instruction as follow,
+For example, an NVIDIA texture instruction is as follows:
 
 .. code-block:: console
 
@@ -2854,4 +3101,3 @@ Here is the software stack of the 3D graphics system for OpenGL on Linux
 .. [#texturewrapper] https://learnopengl.com/Getting-started/Textures
 
 .. [#mesa] https://www.mesa3d.org/
-
