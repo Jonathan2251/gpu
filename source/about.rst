@@ -22,7 +22,15 @@ https://github.com/Jonathan2251/sa/blob/master/README.md
 Revision history
 ----------------
 
-Version 0.6, not released yet.
+Version 0.7, not released yet.
+
+Version 0.6, Released September 27, 2026.
+
+  opengl.rst: refine section '3D Rendering'. hw.rst: add section 
+  'Framebuffer hierarchy'.
+  hw.rst: move section 'System Features – Buffers' to opengl.rst 
+  'OpenGL Buffers' and refine it.
+  sw.rst: refine section 'Unified IR Conversion Flows'.
 
 Version 0.5, Released September 20, 2026.
 

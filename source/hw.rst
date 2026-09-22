@@ -630,7 +630,8 @@ details in Lanes masked.
 
 - GPU scoreboard = in-order issue, out-of-order completion
 
-- CPU reorder buffer (ROB) = out-of-order issue + completion, but retire in-order
+- CPU reorder buffer (ROB) = out-of-order issue + completion, but retire in-orde
+
   - CPUs use a ROB to support out-of-order issue and retirement.
 
 
@@ -644,9 +645,8 @@ real-world GPUs), the scoreboard entries expand to {Warp-ID, PC, mask, …}.
 **Volta (Cuda thread/SIMD Lane with PC, Program Couner and Call Stack)**
 
 **GPU scoreboard = in-order issue, out-of-order completion**
-
-	•	SIMT GPU before Volta = scoreboard contains: { Warp ID + PC + Active Mask }
-	•	Volta = scoreboard contains: { Warp ID + PC per thread (+ readiness per thread) }
+  - SIMT GPU before Volta = scoreboard contains: { Warp ID + PC + Active Mask }
+  - Volta = scoreboard contains: { Warp ID + PC per thread (+ readiness per thread) }
 
 
 **Example for mutex** [#Volta]_
@@ -719,14 +719,14 @@ is as follows:
 Animation Parameters:
   - Bone matrices → Uniform Cache → Registers
   - Morph targets → Global → L2 → L1 → Registers
-  - Shared bone data (compute) → Shared Memory
+  - Shared bone data (compute) → Shared Memory → Registers
 
 GLSL Variables:
-  - uniform → Uniform Cache
-  - in (vertex attributes) → Global → L2 → L1
+  - uniform (include uniform variable and UBO) → Uniform Cache → Registers
+  - in (vertex attributes) → Global → L2 → L1 → Registers
   - out (varyings) → Registers → Interpolators
-  - buffer (SSBO) → Global → L2 → L1
-  - shared → Shared Memory
+  - buffer (SSBO) → Global → L2 → L1 → Registers
+  - shared → Shared Memory → Registers
   - local arrays → Registers or Local Memory
 
 More details of the NVIDIA GPU memory hierarchy are described as follows:
@@ -1306,6 +1306,11 @@ Geometry Units
 
   Raw Vertices & Primitives → Transformed Vertices & Primitives
 
+The GS does not output arbitrary primitive types. GS only output:
+
+- point_strip
+- line_strip
+- triangle_strip
 
 Suppose the GLSL geometry shader looks like this:
 
@@ -1468,6 +1473,18 @@ maximize throughput. A simplified block diagram includes:
 - **Triangle Setup Engine**: Prepares edge equations and bounding boxes.
 - **Rasterizer Core**: Performs scan conversion and fragment generation.
 - **Early-Z Unit**: Performs early depth testing to discard hidden fragments.
+
+  Clipping and culling (in the geometry/primitive stage) only guarantee:
+
+    - triangles outside the frustum are removed
+    - triangles behind the camera are removed
+    - triangles partly outside the frustum are clipped
+    - degenerate triangles are removed
+
+  But they do not determine which triangle is in front of another at a given 
+  pixel.
+  For example when two triangles overlap on screen, both pass clipping and 
+  culling, and get rasterized and produce fragment.
 - **Fragment Queue**: Buffers fragments for shading.
 
 Optimization Techniques
@@ -1583,6 +1600,7 @@ Key Responsibilities
      then L2/VRAM on miss).
 
    * Handle different texture layouts:
+
      - 1D, 2D, 3D textures
      - Cubemaps
      - Texture arrays
@@ -1810,176 +1828,6 @@ it to the panel’s TCON, which then drives the physical pixels.
   TCON
 
 
-System Features -- Buffers
---------------------------
-
-CPU and GPU provides different 
-Buffers to speedup OpenGL pipeline rendering [#buffers-redbook]_.
-
-.. list-table:: Graphics Buffers
-   :widths: 20 10 14 16 20 20
-   :header-rows: 1
-
-   * - Buffer Type
-     - Access
-     - Location
-     - API/Usage
-     - Function
-     - Description
-   * - Vertex Buffer (VBO)
-     - Read
-     - GPU
-     - OpenGL, Vulkan
-     - Store vertex attributes
-     - Holds data like position, normal, and texture coords for drawing geometry.
-   * - Index Buffer (IBO/EBO)
-     - Read
-     - GPU
-     - OpenGL, Vulkan
-     - Reuse vertex data
-     - Stores indices into the vertex buffer to avoid duplication.
-   * - Uniform Buffer (UBO)
-     - Read
-     - GPU or Shared
-     - OpenGL, Vulkan
-     - Constant input data
-     - Shares transformation matrices, lighting, or material data across shaders.
-   * - Shader Storage Buffer (SSBO)
-     - Read/Write
-     - GPU or Shared
-     - OpenGL, Vulkan
-     - General data exchange
-     - Flexible, large buffers accessible for structured shader I/O.
-   * - Constant Buffer
-     - Read
-     - GPU or Shared
-     - DirectX, Vulkan
-     - Fast uniform access
-     - Optimized for fast access to frequently read small data.
-   * - Image / Texture Buffer
-     - Read/Write
-     - GPU
-     - OpenGL, Vulkan
-     - Sample/store pixels
-     - Stores image data for sampling or read/write image operations in shaders.
-   * - Color Buffer
-     - Write
-     - GPU
-     - OpenGL, Vulkan
-     - Store final pixel color
-     - Stores output of fragment shaders; used for display or post-processing.
-   * - Depth Buffer (Z-Buffer)
-     - Write/Read
-     - GPU
-     - OpenGL, Vulkan
-     - Visibility testing
-     - Stores per-pixel depth values for hidden surface removal.
-   * - Frame Buffer
-     - Write
-     - GPU
-     - OpenGL, Vulkan
-     - Store render output
-     - Holds final color, depth, or other rendered output.
-   * - Stencil Buffer
-     - Read/Write
-     - GPU
-     - OpenGL, Vulkan
-     - Pixel masking
-     - Used to conditionally discard or preserve pixels in the pipeline.
-
-- Color buffer
-
-  They contain the RGB or sRGB color data and may also contain alpha values for 
-  each pixel in the framebuffer. There may be multiple color buffers in a 
-  framebuffer.
-  You’ve already used double buffering for animation. Double buffering is done 
-  by making the main color buffer have two parts: a front buffer that’s displayed 
-  in your window; and a back buffer, which is where you render the new image 
-  [#redbook-p155]_.
-
-- Depth buffer (Z buffer)
-
-  Depth is measured in terms of distance to the eye, so pixels with larger 
-  depth-buffer values are overwritten by pixels with smaller values 
-  [#redbook-p156]_ [#z-buffer-wiki]_ [#depthstencils-ogl]_.
-
-- Frame Buffer
-
-  OpenGL offers: the color, depth and stencil buffers. 
-  This combination of buffers is known as the default framebuffer and as you've 
-  seen, a framebuffer is an area in memory that can be rendered to 
-  [#framebuffers-ogl]_. 
-
-- Stencil Buffer
-
-  In the simplest case, the stencil buffer is used to limit the area of 
-  rendering (stenciling) [#stencils-buffer-wiki]_ [#depthstencils-ogl]_.  
-
-
-.. list-table:: Compute Buffers
-   :widths: 20 10 14 16 20 20
-   :header-rows: 1
-
-   * - Buffer Type
-     - Access
-     - Location
-     - API/Usage
-     - Function
-     - Description
-   * - Compute Buffer
-     - Read/Write
-     - GPU or Shared
-     - OpenCL, Vulkan, CUDA
-     - Parallel compute data
-     - Buffers used in compute kernels or shaders for general processing.
-   * - Atomic Buffer
-     - Read/Write (Atomic)
-     - GPU
-     - OpenGL, Vulkan
-     - Shared counters/data
-     - Used with atomic ops for synchronization or accumulation.
-   * - Acceleration Structure Buffer
-     - Read
-     - GPU
-     - Vulkan RT, DXR
-     - Ray tracing acceleration
-     - Holds spatial hierarchy (BVH) for ray traversal efficiency.
-   * - Indirect Draw Buffer
-     - Read
-     - GPU
-     - Vulkan, DirectX
-     - GPU-issued draw
-     - Stores draw/dispatch args to issue commands without CPU.
-
-- DXR: DirectX Raytracing — a D3D12 extension for real-time ray tracing using 
-  GPU acceleration.
-
-- Indirect Draw Buffer: A GPU-side buffer holding draw parameters so that GPU 
-  (not CPU) can issue rendering work dynamically.
- 
-
-.. list-table:: System-Level and Utility Buffers
-   :widths: 20 10 14 16 20 20
-   :header-rows: 1
-
-   * - Buffer Type
-     - Access
-     - Location
-     - API/Usage
-     - Function
-     - Description
-   * - Command Buffer
-     - Write (CPU) / Read (GPU)
-     - Host → GPU
-     - Vulkan, DirectX12
-     - Submit work
-     - Encapsulates commands like draw, dispatch, and memory ops.
-   * - Parking / Staging Buffer
-     - Read/Write
-     - Host-visible
-     - Vulkan, CUDA
-     - Temporary transfer
-     - Temporary CPU-visible buffer for uploading/downloading GPU data.
 
 
 .. [#cg_basictheory] https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_BasicsTheory.html
@@ -2053,21 +1901,3 @@ Buffers to speedup OpenGL pipeline rendering [#buffers-redbook]_.
 .. [#texturewrapper] https://learnopengl.com/Getting-started/Textures
 
 .. [#rops] copilot: Please provide detailed information about the Render Output Units (ROPs) and its pipeline, including a dot graph and relevant website references in reStructuredText (reST) format.
-
-.. [#redbook] http://www.opengl-redbook.com
-
-.. [#buffers-redbook] Page 155 - 185 of book "OpenGL Programming Guide 9th Edition" [#redbook]_. 
-
-n Series in Computer Architecture and Design)
-
-.. [#redbook-p155] Page 155 of book "OpenGL Programming Guide 9th Edition" [#redbook]_.
-
-.. [#redbook-p156] Page 156 of book "OpenGL Programming Guide 9th Edition" [#redbook]_.
-
-..  [#z-buffer-wiki] https://en.wikipedia.org/wiki/Z-buffering
-
-.. [#depthstencils-ogl] https://open.gl/depthstencils
-
-.. [#framebuffers-ogl] https://open.gl/framebuffers
-
-.. [#stencils-buffer-wiki] https://en.wikipedia.org/wiki/Stencil_buffer
