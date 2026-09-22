@@ -1762,6 +1762,54 @@ References
 - `TechPowerUp Forums: ROPs and TMUs 
   <https://www.techpowerup.com/forums/threads/rops-and-tmus-what-is-it.227596/>`_
 
+
+Framebuffer hierarchy
+*********************
+
+The framebuffer is a collection of per‑pixel attachments.  
+The color buffer is only one part of it.  
+A complete framebuffer has a clear hierarchy: Framebuffer → Attachments → 
+Per‑pixel storage (color/depth/stencil).
+
+.. code-block:: text
+
+   Framebuffer (FBO)
+   │
+   ├── Color Attachment 0 → Color Buffer (RGBA)
+   ├── Color Attachment 1 → Color Buffer (RGBA)
+   │
+   ├── Depth Attachment → Depth Buffer (float)
+   ├── Stencil Attachment → Stencil Buffer (8-bit)
+   └── Depth-Stencil Attachment → Combined Buffer
+
+The LCD/LED screen does not directly read the GPU color buffer.  
+Instead, the GPU’s display engine scans out the final framebuffer and sends 
+it to the panel’s TCON, which then drives the physical pixels.
+
+.. code-block:: text
+
+   GPU Rendering Pipeline
+   │
+   └── Color Buffer (Back Buffer)
+         │
+         └── Swap → Front Buffer
+                 │
+                 └── GPU Display Engine
+                         │
+                         └── HDMI/DP/eDP Signal
+                                 │
+                                 └── LCD/LED TCON
+                                         │
+                                         └── Pixel Matrix (LCD/LED)
+
+.. _tcon:
+.. figure:: ../Fig/hw/tcon.png
+  :align: center
+  :scale: 50 %
+  
+  TCON
+
+
 System Features -- Buffers
 --------------------------
 

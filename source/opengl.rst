@@ -157,14 +157,35 @@ objects within a three‑dimensional space.
 3D rendering is the process of converting 3D models into 2D images on a  
 computer [#3drendering_wiki]_.
 
-Based on the previous section of 3D modeling, the 3D modeling tool will  
-generate a 3D vertex model and OpenGL code. Then, programmers may manually  
-modify the OpenGL code and add or update shaders. 
+Based on the previous section of 3D modeling, the 3D modeling tool produces
+a 3D vertex model. 
+Then, the 3D gaming designers or programmers will manually write the scripting 
+language that instructs the 3D engine to issue corresponding OpenGL calls, as 
+shown in :numref:`graphic_sw_stack-2-copy`.
+
+.. _graphic_sw_stack-2-copy: 
+.. graphviz:: ../Fig/hw-sw-stack/graphic-sw-stack-2.gv
+  :caption: Graphic SW Stack and data flow in rendering 
 
 In section :ref:`sw-stack`, we mentioned the GPU will generate the rendering
 image for each frame according the 3D Inforamtion and Uniform Updates sent from
 CPU, and write each of the final frame of data in the form of color pixels to 
-framebuffer (video memory) as :numref:`in-out-rendering`.
+framebuffer (video memory) as :numref:`in-out-rendering-copy`.
+
+.. _in-out-rendering-copy: 
+.. graphviz:: ../Fig/hw-sw-stack/in-out-rendering.gv
+  :caption: The input and output for GPU rendering
+
+However, the 3D engine only executes the animation within the frustum‑projection
+space used for on‑screen rendering, as illustrated in 
+:numref:`engine-call-rendering`.
+
+.. _engine-call-rendering:
+.. figure:: ../Fig/opengl/engine-call-rendering.png
+  :align: center
+  :scale: 50 %
+
+  The needed animation space
 
 
 .. _animation-parameters:
@@ -173,7 +194,7 @@ Animation Parameters
 ********************
 
 ✅ CPU only updates small animation parameters named **Uniform Updates** as
-appeared in :numref:`graphic_sw_stack-2`; GPU computes the heavy per‑vertex work.
+appeared in :numref:`graphic_sw_stack-2-copy`; GPU computes the heavy per‑vertex work.
 
 The 3D animation will  
 trigger the 3D rendering process for each 2D image drawing accoriding the
