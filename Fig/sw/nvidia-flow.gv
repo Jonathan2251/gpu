@@ -1,24 +1,27 @@
+digraph NVIDIA_IR_Flow {
+    rankdir=LR;
+    node [shape=box];
 
-  
-    digraph NVIDIA_IR_Flow {
-        rankdir=LR;
-  
-        node [shape=box]; 
-  
-        ONNX [style=filled, fillcolor=lightyellow];
-        "TensorRT Graph IR" [style=filled, fillcolor=lightgray];
-        "CUDA Kernel IR" [style=filled, fillcolor=lightgray];
-        PTX [style=filled, fillcolor=lightyellow];
-        SASS [label="SASS (NVIDIA GPU ISA)", style=filled, fillcolor=lightblue];
-        TensorRT [style=filled, shape=oval, fillcolor=lightgreen];
+    // High-level frontends
+    ONNX   [style=filled, fillcolor=lightyellow];
+    TOSA   [style=filled, fillcolor=lightyellow];
 
-        TOSA [style=filled, fillcolor=lightyellow];
-        "MLIR GPU Dialects" [style=filled, fillcolor=lightyellow];
-        "LLVM IR" [style=filled, fillcolor=lightyellow];
+    // MLIR / LLVM path
+    "MLIR GPU Dialects" [style=filled, fillcolor=lightyellow];
+    "LLVM IR"           [style=filled, fillcolor=lightyellow];
 
-        ONNX -> "TensorRT Graph IR" -> "CUDA Kernel IR" -> PTX;
-        "TensorRT Graph IR" -> TensorRT;
+    // TensorRT path
+    "TensorRT Graph IR" [style=filled, fillcolor=lightgray];
+    "CUDA Kernel IR"    [style=filled, fillcolor=lightgray];
+    TensorRT            [style=filled, shape=oval, fillcolor=lightgreen];
 
-        TOSA -> "MLIR GPU Dialects" -> "LLVM IR" -> PTX -> SASS;
-    }
+    // NVIDIA backend
+    PTX  [style=filled, fillcolor=lightyellow];
+    SASS [label="SASS (NVIDIA GPU ISA)", style=filled, fillcolor=lightblue];
 
+    // Edges
+    ONNX -> "TensorRT Graph IR" -> "CUDA Kernel IR" -> PTX -> SASS;
+    "TensorRT Graph IR" -> TensorRT;
+
+    TOSA -> "MLIR GPU Dialects" -> "LLVM IR" -> PTX;
+}

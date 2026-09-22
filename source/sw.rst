@@ -747,6 +747,35 @@ SPIR-V.
 .. graphviz:: ../Fig/sw/ogl-ocl-flow.gv
   :caption: Graphics and OpenCL Compiler IR Conversion Flow
 
+.. list-table::
+   :header-rows: 1
+
+   * - IR
+     - SSA Form
+     - Virtual Registers
+     - Notes
+
+   * - PTX IR
+     - Yes
+     - Yes
+     - Standalone SSA IR; unlimited virtual registers; lowered to SASS.
+
+   * - `GCN IR (LLVM AMDGPU) <https://llvm.org/docs/AMDGPUUsage.html>`_
+     - Yes
+     - Yes
+     - LLVM IR with AMD intrinsics; backend lowers to GCN ISA.
+
+   * - `Burst IR (PowerVR / IMG) <https://www.imgtec.com/blog/>`_
+     - Yes (SSA-like)
+     - Yes
+     - Driver-side IR; physical register allocation done by driver.
+
+   * - `Apple Meta-IR <https://developer.apple.com/metal/>`_
+     - No
+     - No
+     - Not a shader IR; used for tiling, dependencies, pipeline state.
+
+
 - OpenCL C is the device side code in C language while Host side code is C/C++.
 
 - OpenCL C is compiled to SPIR-V in later versions of OpenCL, while earlier 
@@ -783,7 +812,8 @@ SPIR-V.
      - **Region-based register allocation; dynamic renaming; not exposed as 
        physical register model**
 
-✅ NVIDIA, AMD, ARM and Imagination all have exposed LLVM IR and convert SPIR-V IR to LLVM IR.
+✅ NVIDIA, AMD, ARM and Imagination all have exposed LLVM IR and convert 
+   SPIR-V IR to LLVM IR.
 
   - SPIR:
 
@@ -795,10 +825,26 @@ SPIR-V.
 
     - A complete redesign: binary format, not tied to LLVM.
     - Designed for Vulkan, but also supports OpenCL and OpenGL.
-    - Enables cross-vendor portability, shader reflection, and custom extensions.
-    - Used in graphics and compute pipelines, including ML workloads via Vulkan compute.
-    - A Vulkan shader written in GLSL is compiled to SPIR-V, then passed to the GPU driver.
-    - An OpenCL kernel written in C can be compiled to SPIR-V, then lowered to LLVM IR internally by vendors like AMD or NVIDIA.
+    - Enables cross-vendor portability, **shader reflection**, and custom 
+      extensions.
+    - Used in graphics and compute pipelines, including ML workloads via Vulkan 
+      compute.
+    - A Vulkan shader written in GLSL is compiled to SPIR-V, then passed to the 
+      GPU driver.
+    - An OpenCL kernel written in C can be compiled to SPIR-V, then lowered to 
+      LLVM IR internally by vendors like AMD or NVIDIA.
+
+    - **Shader reflection:**
+
+      Means reading information out of the compiled shader binary (SPIR‑V) so 
+      the engine can understand what the shader needs — without looking at 
+      the original GLSL/HLSL source code.
+
+      The key idea: SPIR‑V preserves metadata about resources, types, and 
+      interfaces, and reflection tools can extract that metadata 
+      programmatically.
+
+      SPIRV-Cross tool can convert SPIR-V file to GLSL source code.
 
 ⚠️  Apple
 
@@ -831,8 +877,14 @@ Notes:
 Notes:
 
 - **OpenCL C → SPIR → Vendor Driver → GPU ISA** is the standard compilation path.
-- Some vendors (e.g., AMD, NVIDIA) may bypass SPIR and compile directly to LLVM IR or PTX.
+- Some vendors (e.g., AMD, NVIDIA) may bypass SPIR and compile directly to LLVM 
+  IR or PTX.
 - Apple deprecated OpenCL in favor of Metal, but legacy support remains.
+- **All major GPU vendors use microcode**, but only for complex, multi‑cycle, or 
+  evolving instructions such as matrix engines, texture units, and 
+  transcendental units.
+  Microcode allows new hardware designs to be implemented without modifying the 
+  instruction set.
 
 
 ✅ References
@@ -892,6 +944,31 @@ targeting CUDA GPUs is shown as :numref:`nvidia-flow`.
   As a result, their applicability is limited to the corresponding hardware 
   platforms.
 - MLIR GPU Dialects is public but it is for Nvidia's GPU.
+
+.. _tensor-rt:
+.. figure:: ../Fig/sw/tensor-rt.png
+  :align: center
+  :scale: 50 %
+
+  Tensor-RT
+
+Tensor-RT is a SDK bundles tools for model import, graph optimization, precision
+calibration, engine building, runtime execution, and specialized LLM 
+acceleration. 
+
+TensorRT‑SDK includes: [#tensor-rt-sdk]_
+
+- TensorRT compiler — converts neural networks into optimized inference engines
+- TensorRT runtime — executes the compiled engine on NVIDIA GPUs
+- TensorRT Model Optimizer — performs graph‑level transformations, quantization, fusion
+- TensorRT‑LLM — specialized compiler/runtime for large language models
+- TensorRT for RTX — consumer GPU‑optimized inference stack
+- TensorRT Cloud — cloud‑based inference services
+- Tools & utilities — trtexec, calibration tools, profiling tools
+- Kernel libraries — highly optimized CUDA kernels for inference
+- Precision calibration — FP16, BF16, FP8, INT8, INT4, FP4 support
+- Integration APIs — C++/Python APIs for engine building and execution
+
 
 AMD IR Conversion Flow
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -1121,6 +1198,8 @@ follow a similar idea [#cuda-graph-blog]_ [#cuda-graph-pytorch]_.
 .. [#tensor-rt-nvidia] https://resources.nvidia.com/en-us-inference-resources/nvidia-tensorrt 
 
 .. [#tensor-rt-geeks] https://www.geeksforgeeks.org/deep-learning/what-is-tensorrt/
+
+.. [#tensor-rt-sdk] https://developer.nvidia.com/tensorrt
 
 .. [#hsa] HSA is an open standard developed to simplify programming across 
           heterogeneous systems — especially those combining CPUs and GPUs. 
