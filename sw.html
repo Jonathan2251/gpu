@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/haiku.css?v=fce32b03" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
-    <script src="_static/documentation_options.js?v=db78e746"></script>
+    <script src="_static/documentation_options.js?v=ec806d2c"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="author" title="About these documents" href="about.html" />
@@ -41,34 +41,34 @@
 <h1>Software Structure<a class="headerlink" href="#software-structure" title="Link to this heading">¶</a></h1>
 <nav class="contents local" id="contents">
 <ul class="simple">
-<li><p><a class="reference internal" href="#vector-processor" id="id59">Vector Processor</a></p></li>
-<li><p><a class="reference internal" href="#general-purpose-gpu" id="id60">General purpose GPU</a></p>
+<li><p><a class="reference internal" href="#vector-processor" id="id61">Vector Processor</a></p></li>
+<li><p><a class="reference internal" href="#general-purpose-gpu" id="id62">General purpose GPU</a></p>
 <ul>
-<li><p><a class="reference internal" href="#mapping-data-in-gpu" id="id61">Mapping data in GPU</a></p></li>
-<li><p><a class="reference internal" href="#work-between-cpu-and-gpu-in-cuda" id="id62">Work between CPU and GPU in Cuda</a></p></li>
+<li><p><a class="reference internal" href="#mapping-data-in-gpu" id="id63">Mapping data in GPU</a></p></li>
+<li><p><a class="reference internal" href="#work-between-cpu-and-gpu-in-cuda" id="id64">Work between CPU and GPU in Cuda</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#opencl-vulkan-and-spir-v" id="id63">OpenCL, Vulkan and Spir-v</a></p>
+<li><p><a class="reference internal" href="#opencl-vulkan-and-spir-v" id="id65">OpenCL, Vulkan and Spir-v</a></p>
 <ul>
-<li><p><a class="reference internal" href="#summary" id="id64">Summary</a></p></li>
+<li><p><a class="reference internal" href="#summary" id="id66">Summary</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#unified-ir-conversion-flows" id="id65">Unified IR Conversion Flows</a></p>
+<li><p><a class="reference internal" href="#unified-ir-conversion-flows" id="id67">Unified IR Conversion Flows</a></p>
 <ul>
-<li><p><a class="reference internal" href="#graphics-compilation-flow-microsoft-directx-opengl" id="id66">Graphics Compilation Flow (Microsoft DirectX &amp; OpenGL)</a></p></li>
-<li><p><a class="reference internal" href="#ml-and-gpu-compilation" id="id67">ML and GPU Compilation</a></p>
+<li><p><a class="reference internal" href="#graphics-compilation-flow-microsoft-directx-opengl" id="id68">Graphics Compilation Flow (Microsoft DirectX &amp; OpenGL)</a></p></li>
+<li><p><a class="reference internal" href="#ml-and-gpu-compilation" id="id69">ML and GPU Compilation</a></p>
 <ul>
-<li><p><a class="reference internal" href="#nvidia-ir-conversion-flow" id="id68">NVIDIA IR Conversion Flow</a></p></li>
-<li><p><a class="reference internal" href="#amd-ir-conversion-flow" id="id69">AMD IR Conversion Flow</a></p></li>
-<li><p><a class="reference internal" href="#arm-ir-conversion-flow" id="id70">ARM IR Conversion Flow</a></p></li>
-<li><p><a class="reference internal" href="#imagination-technologies-ir-conversion-flow" id="id71">Imagination Technologies IR Conversion Flow</a></p></li>
-<li><p><a class="reference internal" href="#comparison-summary" id="id72">Comparison Summary</a></p></li>
-<li><p><a class="reference internal" href="#references" id="id73">References</a></p></li>
+<li><p><a class="reference internal" href="#nvidia-ir-conversion-flow" id="id70">NVIDIA IR Conversion Flow</a></p></li>
+<li><p><a class="reference internal" href="#amd-ir-conversion-flow" id="id71">AMD IR Conversion Flow</a></p></li>
+<li><p><a class="reference internal" href="#arm-ir-conversion-flow" id="id72">ARM IR Conversion Flow</a></p></li>
+<li><p><a class="reference internal" href="#imagination-technologies-ir-conversion-flow" id="id73">Imagination Technologies IR Conversion Flow</a></p></li>
+<li><p><a class="reference internal" href="#comparison-summary" id="id74">Comparison Summary</a></p></li>
+<li><p><a class="reference internal" href="#references" id="id75">References</a></p></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#accelerate-ml-dl-on-opencl-sycl" id="id74">Accelerate ML/DL on OpenCL/SYCL</a></p></li>
+<li><p><a class="reference internal" href="#accelerate-ml-dl-on-opencl-sycl" id="id76">Accelerate ML/DL on OpenCL/SYCL</a></p></li>
 </ul>
 </nav>
 <p>As the previous section illustrated, GPU is a SIMT (SIMD) for data parallel
@@ -77,7 +77,7 @@ This section introduces the GPU evolved from Graphics GPU to the General
 purpose GPU (GPGPU) and the software architecture of GPUs and explores AI
 software frameworks designed for GPUs, NPUs, and CPUs.</p>
 <section id="vector-processor">
-<h2><a class="toc-backref" href="#id59" role="doc-backlink">Vector Processor</a><a class="headerlink" href="#vector-processor" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id61" role="doc-backlink">Vector Processor</a><a class="headerlink" href="#vector-processor" title="Link to this heading">¶</a></h2>
 <p>As described in the Computer Architecture: A Quantitative Approach book, the
 vector processor VMIPS introduces the <strong>Vector Length Register (VLR) and Vector
 Mask (VM)</strong> to support SIMD execution.
@@ -128,14 +128,14 @@ Vector Length Register (VLR) as shown below.</p>
 </ul>
 </section>
 <section id="general-purpose-gpu">
-<h2><a class="toc-backref" href="#id60" role="doc-backlink">General purpose GPU</a><a class="headerlink" href="#general-purpose-gpu" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id62" role="doc-backlink">General purpose GPU</a><a class="headerlink" href="#general-purpose-gpu" title="Link to this heading">¶</a></h2>
 <p>Because GLSL shaders provide a C-like programming model, a software framework
 can use GPU shaders for data-parallel computation instead of only graphics
 rendering. This can accelerate work and allow CPU and GPU execution to overlap.
 Furthermore, any language that lets CPU code retrieve results from a GPU shader
 can support a GPGPU framework <a class="footnote-reference brackets" href="#gpgpuwiki" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
 <section id="mapping-data-in-gpu">
-<span id="id3"></span><h3><a class="toc-backref" href="#id61" role="doc-backlink">Mapping data in GPU</a><a class="headerlink" href="#mapping-data-in-gpu" title="Link to this heading">¶</a></h3>
+<span id="id3"></span><h3><a class="toc-backref" href="#id63" role="doc-backlink">Mapping data in GPU</a><a class="headerlink" href="#mapping-data-in-gpu" title="Link to this heading">¶</a></h3>
 <p>As described in the previous section on GPUs, the subset of the array
 calculation <cite>y[] = a * x[] + y[]</cite>.</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>// Invoke DAXPY with 256 threads per Thread Block
@@ -283,8 +283,8 @@ two SIMD Lanes cannot simultaneously execute different instructions
 <p>The following table explains how the elements of <cite>saxpy()</cite> are mapped to the
 Lanes of a SIMD Thread (Warp), which belongs to a Thread Block (Core) within
 a Grid.</p>
-<table class="docutils align-default" id="id41">
-<caption><span class="caption-number">Table 13 </span><span class="caption-text">Mapping saxpy code to <a class="reference internal" href="hw.html#grid"><span class="std std-numref">Fig. 69</span></a>.</span><a class="headerlink" href="#id41" title="Link to this table">¶</a></caption>
+<table class="docutils align-default" id="id42">
+<caption><span class="caption-number">Table 13 </span><span class="caption-text">Mapping saxpy code to <a class="reference internal" href="hw.html#grid"><span class="std std-numref">Fig. 72</span></a>.</span><a class="headerlink" href="#id42" title="Link to this table">¶</a></caption>
 <colgroup>
 <col style="width: 10.0%" />
 <col style="width: 21.2%" />
@@ -292,14 +292,14 @@ a Grid.</p>
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>saxpy(()</p></th>
-<th class="head"><p>Instance in <a class="reference internal" href="hw.html#grid"><span class="std std-numref">Fig. 69</span></a></p></th>
+<th class="head"><p>Instance in <a class="reference internal" href="hw.html#grid"><span class="std std-numref">Fig. 72</span></a></p></th>
 <th class="head"><p>Description</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>blockDim.x</p></td>
 <td><p>The index of Thread Block</p></td>
-<td><p>blockDim: in this example configured as <a class="reference internal" href="hw.html#grid"><span class="std std-numref">Fig. 69</span></a> is 16(Thread Blocks) * 16(SIDM Threads) = 256</p></td>
+<td><p>blockDim: in this example configured as <a class="reference internal" href="hw.html#grid"><span class="std std-numref">Fig. 72</span></a> is 16(Thread Blocks) * 16(SIDM Threads) = 256</p></td>
 </tr>
 <tr class="row-odd"><td><p>blockIdx.x</p></td>
 <td><p>The index of SIMD Thread</p></td>
@@ -319,10 +319,10 @@ two clock cycles to complete.</p></li>
 Chime is 2 clock cycles.</p></li>
 <li><p>The mape of <cite>y[0..31] = a * x[0..31] * y[0..31]</cite> to <cite>&lt;Core, Warp, Cuda Thread&gt;</cite>
 of GPU as the following table. <cite>x[0..31]</cite> map to 32 Cuda Threads; <strong>two Cuda
-Threads map to one SIMD Lane</strong> as <a class="reference internal" href="hw.html#warp-sched-pipeline"><span class="std std-numref">Fig. 68</span></a>..</p></li>
+Threads map to one SIMD Lane</strong> as <a class="reference internal" href="hw.html#warp-sched-pipeline"><span class="std std-numref">Fig. 71</span></a>..</p></li>
 </ul>
-<table class="docutils align-default" id="id42">
-<caption><span class="caption-number">Table 14 </span><span class="caption-text">Map <cite>&lt;Core, Warp&gt;</cite> to saxpy</span><a class="headerlink" href="#id42" title="Link to this table">¶</a></caption>
+<table class="docutils align-default" id="id43">
+<caption><span class="caption-number">Table 14 </span><span class="caption-text">Map <cite>&lt;Core, Warp&gt;</cite> to saxpy</span><a class="headerlink" href="#id43" title="Link to this table">¶</a></caption>
 <thead>
 <tr class="row-odd"><th class="head"><ul class="simple">
 <li></li>
@@ -358,7 +358,7 @@ Threads map to one SIMD Lane</strong> as <a class="reference internal" href="hw.
 <ul class="simple">
 <li><p>Each Cuda Thread runs the GPU function code <cite>saxpy</cite>. Fermi has a register file
 of size 32768 x 32-bit.
-As shown in <a class="reference internal" href="hw.html#sm-left"><span class="std std-numref">Fig. 60</span></a>, the number of registers in a Thread Block is:
+As shown in <a class="reference internal" href="hw.html#sm-left"><span class="std std-numref">Fig. 63</span></a>, the number of registers in a Thread Block is:
 16 (SM) * 32 (Cuda Threads) * 64 (TLR, Thread Level Register) =
 32768 x 32-bit (Register file).</p></li>
 <li><p>When mapping to fragments/pixels in a graphics GPU, <cite>x[0..15]</cite> corresponds to
@@ -367,7 +367,7 @@ use tile-based grouping to cluster similar colors together.</p></li>
 </ul>
 </section>
 <section id="work-between-cpu-and-gpu-in-cuda">
-<h3><a class="toc-backref" href="#id62" role="doc-backlink">Work between CPU and GPU in Cuda</a><a class="headerlink" href="#work-between-cpu-and-gpu-in-cuda" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id64" role="doc-backlink">Work between CPU and GPU in Cuda</a><a class="headerlink" href="#work-between-cpu-and-gpu-in-cuda" title="Link to this heading">¶</a></h3>
 <p>The previous <cite>daxpy()</cite> GPU code did not include the host (CPU) side code that
 triggers the GPU function.</p>
 <p>The following example shows the host (CPU) side of a CUDA program that calls
@@ -432,8 +432,8 @@ machine learning, oil exploration, scientific image processing, linear algebra,
 statistics, 3D reconstruction and even stock options pricing determination.
 In addition, section “GPU accelerated video decoding and encoding” for video
 compressing <a class="footnote-reference brackets" href="#gpuspeedup" id="id14" role="doc-noteref"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></a> gives the more applications for GPU acceleration.</p>
-<table class="docutils align-default" id="id43">
-<caption><span class="caption-number">Table 15 </span><span class="caption-text">The differences for speedup in architecture of CPU and GPU</span><a class="headerlink" href="#id43" title="Link to this table">¶</a></caption>
+<table class="docutils align-default" id="id44">
+<caption><span class="caption-number">Table 15 </span><span class="caption-text">The differences for speedup in architecture of CPU and GPU</span><a class="headerlink" href="#id44" title="Link to this table">¶</a></caption>
 <thead>
 <tr class="row-odd"><th class="head"><p>Item</p></th>
 <th class="head"><p>CPU</p></th>
@@ -495,8 +495,8 @@ deeper cache hierarchies.</p>
 </section>
 </section>
 <section id="opencl-vulkan-and-spir-v">
-<h2><a class="toc-backref" href="#id63" role="doc-backlink">OpenCL, Vulkan and Spir-v</a><a class="headerlink" href="#opencl-vulkan-and-spir-v" title="Link to this heading">¶</a></h2>
-<figure class="align-default" id="id44">
+<h2><a class="toc-backref" href="#id65" role="doc-backlink">OpenCL, Vulkan and Spir-v</a><a class="headerlink" href="#opencl-vulkan-and-spir-v" title="Link to this heading">¶</a></h2>
+<figure class="align-default" id="id45">
 <span id="spirv"></span><div class="graphviz"><img src="_images/graphviz-678a5386e53109164da6c2108f4c0cb8c8bc3794.png" alt="digraph G {
   rankdir=LR;
 
@@ -505,11 +505,11 @@ deeper cache hierarchies.</p>
   SW_LAYER [label=&quot;{ GLSL | OpenCL } | SPIR-V | GPU Machine Code&quot;];
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 89 </span><span class="caption-text">OpenCL and GLSL(OpenGL)</span><a class="headerlink" href="#id44" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 93 </span><span class="caption-text">OpenCL and GLSL(OpenGL)</span><a class="headerlink" href="#id45" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
-<table class="docutils align-default" id="id45">
-<caption><span class="caption-number">Table 16 </span><span class="caption-text">OpenCL and OpenGL SW system</span><a class="headerlink" href="#id45" title="Link to this table">¶</a></caption>
+<table class="docutils align-default" id="id46">
+<caption><span class="caption-number">Table 16 </span><span class="caption-text">OpenCL and OpenGL SW system</span><a class="headerlink" href="#id46" title="Link to this table">¶</a></caption>
 <thead>
 <tr class="row-odd"><th class="head"><p>Name of SW</p></th>
 <th class="head"><p>GPU language</p></th>
@@ -531,11 +531,11 @@ deeper cache hierarchies.</p>
 </tr>
 </tbody>
 </table>
-<figure class="align-center" id="id46">
+<figure class="align-center" id="id47">
 <span id="opencl-to-spirv"></span><a class="reference internal image-reference" href="_images/opencl-to-spirv-offine-compilation.png"><img alt="_images/opencl-to-spirv-offine-compilation.png" height="284" src="_images/opencl-to-spirv-offine-compilation.png" width="714" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 90 </span><span class="caption-text">Offline Compilation of OpenCL Kernels into SPIR-V Using Open Source Tooling <a class="footnote-reference brackets" href="#id39" id="id15" role="doc-noteref"><span class="fn-bracket">[</span>11<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id46" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 94 </span><span class="caption-text">Offline Compilation of OpenCL Kernels into SPIR-V Using Open Source Tooling <a class="footnote-reference brackets" href="#id40" id="id15" role="doc-noteref"><span class="fn-bracket">[</span>11<span class="fn-bracket">]</span></a></span><a class="headerlink" href="#id47" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <ul class="simple">
@@ -544,7 +544,7 @@ it compiles OpenCL to LLVM, after which the SPIR-V–LLVM translator converts
 LLVM to SPIR-V.</p></li>
 <li><p>clspv: Compiles OpenCL to SPIR-V directly.</p></li>
 </ul>
-<figure class="align-default" id="id47">
+<figure class="align-default" id="id48">
 <span id="gpu-compiler-toolchain"></span><div class="graphviz"><img src="_images/graphviz-2007be8ad431932103c722afc2e03f6f6beb028b.png" alt="digraph ShaderToLLVMIR {
     rankdir=LR;
     node [shape=record, style=filled, color=black];
@@ -576,21 +576,21 @@ LLVM to SPIR-V.</p></li>
     OpenCL_C -&gt; CL_SPIRV -&gt; SPIRV -&gt;  SPIRV_LLVM -&gt; LLVM_IR -&gt; LLVMCompiler -&gt; GPU_ISA;
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 91 </span><span class="caption-text">GPU Compiler Components and Flow</span><a class="headerlink" href="#id47" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 95 </span><span class="caption-text">GPU Compiler Components and Flow</span><a class="headerlink" href="#id48" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>The flow and relationships among GLSL, OpenCL, SPIR-V (Vulkan/OpenCL), LLVM IR,
-and the GPU compiler are shown in the <a class="reference internal" href="#spirv"><span class="std std-numref">Fig. 89</span></a>,
-<a class="reference internal" href="#opencl-to-spirv"><span class="std std-numref">Fig. 90</span></a> and <a class="reference internal" href="#gpu-compiler-toolchain"><span class="std std-numref">Fig. 91</span></a>.
-As shown in <a class="reference internal" href="#gpu-compiler-toolchain"><span class="std std-numref">Fig. 91</span></a>, OpenCL-C to SPIR-V (OpenCL) can
+and the GPU compiler are shown in the <a class="reference internal" href="#spirv"><span class="std std-numref">Fig. 93</span></a>,
+<a class="reference internal" href="#opencl-to-spirv"><span class="std std-numref">Fig. 94</span></a> and <a class="reference internal" href="#gpu-compiler-toolchain"><span class="std std-numref">Fig. 95</span></a>.
+As shown in <a class="reference internal" href="#gpu-compiler-toolchain"><span class="std std-numref">Fig. 95</span></a>, OpenCL-C to SPIR-V (OpenCL) can
 be compiled using <strong>clang + llvm-spirv</strong> tools or a proprietary converter.</p>
-<p>As shown in <a class="reference internal" href="#gpu-compiler-toolchain"><span class="std std-numref">Fig. 91</span></a>, both GLSL and OpenCL use frontend
+<p>As shown in <a class="reference internal" href="#gpu-compiler-toolchain"><span class="std std-numref">Fig. 95</span></a>, both GLSL and OpenCL use frontend
 tools to generate SPIR-V.
 The driver can invoke either the GLSL or OpenCL compiler based on metadata
-fields in the SPIR-V, as illustrated in <a class="reference internal" href="#spirv-deploy"><span class="std std-numref">Fig. 92</span></a> and the
+fields in the SPIR-V, as illustrated in <a class="reference internal" href="#spirv-deploy"><span class="std std-numref">Fig. 96</span></a> and the
 following figures, which describe offline compilation from GLSL/OpenCL to
 SPIR-V and online execution using the generated SPIR-V files.</p>
-<figure class="align-default" id="id48">
+<figure class="align-default" id="id49">
 <span id="spirv-deploy"></span><div class="graphviz"><img src="_images/graphviz-4328f830a3d0ede003db7fc48b209d7e62b5430f.png" alt="digraph SPIRV_Deployment {
     rankdir=LR;
     node [shape=box, style=filled, fillcolor=lightgray, fontname=&quot;Helvetica&quot;];
@@ -626,14 +626,14 @@ SPIR-V and online execution using the generated SPIR-V files.</p>
     edge [fontname=&quot;Helvetica&quot;];
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 92 </span><span class="caption-text">Compiling and Deploying GPU Code from GLSL, Vulkan, and OpenCL</span><a class="headerlink" href="#id48" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 96 </span><span class="caption-text">Compiling and Deploying GPU Code from GLSL, Vulkan, and OpenCL</span><a class="headerlink" href="#id49" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>Based on the flows above, the public standards OpenGL and OpenCL provide
 tools for transferring these data format, as illustrated in
-<a class="reference internal" href="#glsl-spirv"><span class="std std-numref">Fig. 93</span></a>.
+<a class="reference internal" href="#glsl-spirv"><span class="std std-numref">Fig. 97</span></a>.
 The corresponding LLVM IR and SPIR-V formats are listed below.</p>
-<figure class="align-default" id="id49">
+<figure class="align-default" id="id50">
 <span id="glsl-spirv"></span><div class="graphviz"><img src="_images/graphviz-b5055f1cd12243a254b827d6188f30882ca57e37.png" alt="digraph G {
   rankdir=LR;
 
@@ -659,7 +659,7 @@ The corresponding LLVM IR and SPIR-V formats are listed below.</p>
   llvm -&gt; llvm_spirv -&gt; spirv;
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 93 </span><span class="caption-text">Convertion between GLSL, OpenCL C, SPIRV-V and LLVM-IR</span><a class="headerlink" href="#id49" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 97 </span><span class="caption-text">Convertion between GLSL, OpenCL C, SPIRV-V and LLVM-IR</span><a class="headerlink" href="#id50" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p class="rubric">References/add-matrix.ll</p>
@@ -854,7 +854,7 @@ OpEntryPoint Kernel %foo &quot;foo&quot;
 </li>
 </ul>
 <section id="summary">
-<h3><a class="toc-backref" href="#id64" role="doc-backlink">Summary</a><a class="headerlink" href="#summary" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id66" role="doc-backlink">Summary</a><a class="headerlink" href="#summary" title="Link to this heading">¶</a></h3>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Feature</p></th>
@@ -926,9 +926,9 @@ Subgroup operations to data parallel programming on Lanes of SIMD processor
 <p>Subgroup operations provide a fast way for moving data between Lanes intra Warp.
 Assuming each Warp has four Lanes.
 The following table lists result of reduce, inclusive and exclusive operations.</p>
-<table class="docutils align-default" id="id50">
+<table class="docutils align-default" id="id51">
 <caption><span class="caption-number">Table 17 </span><span class="caption-text">Lists each Lane’s value after <strong>Reduce</strong>, <strong>Inclusive</strong> and
-<strong>Exclusive</strong> operations repectively</span><a class="headerlink" href="#id50" title="Link to this table">¶</a></caption>
+<strong>Exclusive</strong> operations repectively</span><a class="headerlink" href="#id51" title="Link to this table">¶</a></caption>
 <thead>
 <tr class="row-odd"><th class="head"><p>Lane</p></th>
 <th class="head"><p>0</p></th>
@@ -1004,12 +1004,12 @@ as I have observed.</p>
 </section>
 </section>
 <section id="unified-ir-conversion-flows">
-<h2><a class="toc-backref" href="#id65" role="doc-backlink">Unified IR Conversion Flows</a><a class="headerlink" href="#unified-ir-conversion-flows" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id67" role="doc-backlink">Unified IR Conversion Flows</a><a class="headerlink" href="#unified-ir-conversion-flows" title="Link to this heading">¶</a></h2>
 <p>This section outlines the intermediate representation (IR) flows for graphics
 (Microsoft DirectX, OpenGL) and OpenCL compilation across major GPU vendors:
 NVIDIA, AMD, ARM, Imagination Technologies, and Apple.</p>
 <section id="graphics-compilation-flow-microsoft-directx-opengl">
-<h3><a class="toc-backref" href="#id66" role="doc-backlink">Graphics Compilation Flow (Microsoft DirectX &amp; OpenGL)</a><a class="headerlink" href="#graphics-compilation-flow-microsoft-directx-opengl" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id68" role="doc-backlink">Graphics Compilation Flow (Microsoft DirectX &amp; OpenGL)</a><a class="headerlink" href="#graphics-compilation-flow-microsoft-directx-opengl" title="Link to this heading">¶</a></h3>
 <p>Graphics shaders are compiled from high-level languages (HLSL, GLSL) into
 vendor-specific GPU binaries via intermediate representations like DXIL and
 SPIR-V.</p>
@@ -1025,8 +1025,8 @@ or role within the structure.</p>
 <ul class="simple">
 <li><p><strong>Vendor Driver will call Vendor Compiler</strong> for on-line compilation.</p></li>
 </ul>
-<figure class="align-default" id="id51">
-<span id="ogl-ocl-flow"></span><div class="graphviz"><img src="_images/graphviz-239718c68c5ac9e9ad10711d65ad2f74e9cc33c8.png" alt="digraph OpenCL_OpenGL_Compilation {
+<figure class="align-default" id="id52">
+<span id="ogl-ocl-flow"></span><div class="graphviz"><img src="_images/graphviz-b10764ee394e0b7a022e59587896281ad6466781.png" alt="digraph OpenCL_OpenGL_Compilation {
     rankdir=LR;
     node [shape=box];
 
@@ -1039,7 +1039,7 @@ or role within the structure.</p>
     SPIRV [label=&quot;SPIR-V IR&quot;, style=filled, fillcolor=lightyellow];
     LLVM_IR [style=filled, fillcolor=lightyellow];
 
-    // Vendor Drivers
+   // Vendor Drivers
     node [shape=oval];
     &quot;NVIDIA Driver&quot; [style=filled, fillcolor=lightgreen];
     &quot;AMD Driver&quot; [style=filled, fillcolor=lightgreen];
@@ -1049,10 +1049,10 @@ or role within the structure.</p>
 
     // Private IRs
     node [shape=box];
-    &quot;PTX IR&quot; [style=filled, fillcolor=gray];
-    &quot;GCN IR&quot; [style=filled, fillcolor=gray];
-    &quot;Burst IR&quot; [style=filled, fillcolor=gray];
-    &quot;Metal IR&quot; [style=filled, fillcolor=gray];
+    PTX_IR [label=&quot;PTX IR\nSSA&quot;, style=filled, fillcolor=gray];
+    GCN_IR [label=&quot;GCN IR\nSSA, \nllvm based&quot;, style=filled, fillcolor=gray];
+    Burst_IR [label=&quot;Burst IR\nSSA&quot;, style=filled, fillcolor=gray];
+    Metal_IR [label=&quot;Metal IR&quot; ,style=filled, fillcolor=gray];
 
     // GPU Targets
     &quot;NVIDIA GPU ISA&quot; [style=filled, fillcolor=lightblue];
@@ -1069,16 +1069,47 @@ or role within the structure.</p>
     GLSL -&gt; SPIRV -&gt; LLVM_IR;
 
     // LLVM based Compilation Flow
-    LLVM_IR -&gt; &quot;PTX IR&quot; -&gt; &quot;NVIDIA Driver&quot; -&gt; &quot;NVIDIA GPU ISA&quot;;
-    LLVM_IR -&gt; &quot;GCN IR&quot; -&gt; &quot;AMD Driver&quot; -&gt; &quot;AMD GPU ISA&quot;;
+    LLVM_IR -&gt; PTX_IR -&gt; &quot;NVIDIA Driver&quot; -&gt; &quot;NVIDIA GPU ISA&quot;;
+    LLVM_IR -&gt; GCN_IR -&gt; &quot;AMD Driver&quot; -&gt; &quot;AMD GPU ISA&quot;;
     LLVM_IR -&gt; &quot;ARM Driver&quot; -&gt; &quot;ARM Mali ISA&quot;;
-    LLVM_IR -&gt; &quot;Burst IR&quot; -&gt; &quot;Imagination Driver&quot; -&gt; &quot;Imagination USC ISA&quot;;
-    LLVM_IR -&gt; &quot;Metal IR&quot; -&gt; &quot;Apple Driver&quot; -&gt; &quot;Apple GPU ISA&quot;;
+    LLVM_IR -&gt; Burst_IR -&gt; &quot;Imagination Driver&quot; -&gt; &quot;Imagination USC ISA&quot;;
+    LLVM_IR -&gt; Metal_IR -&gt; &quot;Apple Driver&quot; -&gt; &quot;Apple GPU ISA&quot;;
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 94 </span><span class="caption-text">Graphics and OpenCL Compiler IR Conversion Flow</span><a class="headerlink" href="#id51" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 98 </span><span class="caption-text">Graphics and OpenCL Compiler IR Conversion Flow</span><a class="headerlink" href="#id52" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>IR</p></th>
+<th class="head"><p>SSA Form</p></th>
+<th class="head"><p>Virtual Registers</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>PTX IR</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+<td><p>Standalone SSA IR; unlimited virtual registers; lowered to SASS.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://llvm.org/docs/AMDGPUUsage.html">GCN IR (LLVM AMDGPU)</a></p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+<td><p>LLVM IR with AMD intrinsics; backend lowers to GCN ISA.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://www.imgtec.com/blog/">Burst IR (PowerVR / IMG)</a></p></td>
+<td><p>Yes (SSA-like)</p></td>
+<td><p>Yes</p></td>
+<td><p>Driver-side IR; physical register allocation done by driver.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://developer.apple.com/metal/">Apple Meta-IR</a></p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+<td><p>Not a shader IR; used for tiling, dependencies, pipeline state.</p></td>
+</tr>
+</tbody>
+</table>
 <ul class="simple">
 <li><p>OpenCL C is the device side code in C language while Host side code is C/C++.</p></li>
 <li><p>OpenCL C is compiled to SPIR-V in later versions of OpenCL, while earlier
@@ -1086,8 +1117,8 @@ versions used SPIR.
 SPIR-V has now largely replaced SPIR as the standard intermediate
 representation.</p></li>
 </ul>
-<table class="docutils align-default" id="id52">
-<caption><span class="caption-number">Table 18 </span><span class="caption-text">Comparison of PTX, GCN IR, Burst IR, and Metal IR</span><a class="headerlink" href="#id52" title="Link to this table">¶</a></caption>
+<table class="docutils align-default" id="id53">
+<caption><span class="caption-number">Table 18 </span><span class="caption-text">Comparison of PTX, GCN IR, Burst IR, and Metal IR</span><a class="headerlink" href="#id53" title="Link to this table">¶</a></caption>
 <colgroup>
 <col style="width: 20.0%" />
 <col style="width: 40.0%" />
@@ -1127,11 +1158,13 @@ physical register model</strong></p></td>
 </tr>
 </tbody>
 </table>
-<p>✅ NVIDIA, AMD, ARM and Imagination all have exposed LLVM IR and convert SPIR-V IR to LLVM IR.</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>SPIR:</p>
+<dl>
+<dt>✅ NVIDIA, AMD, ARM and Imagination all have exposed LLVM IR and convert</dt><dd><blockquote>
+<div><p>SPIR-V IR to LLVM IR.</p>
+</div></blockquote>
 <ul>
+<li><p>SPIR:</p>
+<ul class="simple">
 <li><p>For OpenCL development, the IR started from SPIR (LLVM-based IR).</p></li>
 <li><p>SPIRV’s Limitation: tightly coupled to specific LLVM versions, making it
 brittle across.</p></li>
@@ -1141,14 +1174,28 @@ brittle across.</p></li>
 <ul>
 <li><p>A complete redesign: binary format, not tied to LLVM.</p></li>
 <li><p>Designed for Vulkan, but also supports OpenCL and OpenGL.</p></li>
-<li><p>Enables cross-vendor portability, shader reflection, and custom extensions.</p></li>
-<li><p>Used in graphics and compute pipelines, including ML workloads via Vulkan compute.</p></li>
-<li><p>A Vulkan shader written in GLSL is compiled to SPIR-V, then passed to the GPU driver.</p></li>
-<li><p>An OpenCL kernel written in C can be compiled to SPIR-V, then lowered to LLVM IR internally by vendors like AMD or NVIDIA.</p></li>
+<li><p>Enables cross-vendor portability, <strong>shader reflection</strong>, and custom
+extensions.</p></li>
+<li><p>Used in graphics and compute pipelines, including ML workloads via Vulkan
+compute.</p></li>
+<li><p>A Vulkan shader written in GLSL is compiled to SPIR-V, then passed to the
+GPU driver.</p></li>
+<li><p>An OpenCL kernel written in C can be compiled to SPIR-V, then lowered to
+LLVM IR internally by vendors like AMD or NVIDIA.</p></li>
+<li><p><strong>Shader reflection:</strong></p>
+<p>Means reading information out of the compiled shader binary (SPIR‑V) so
+the engine can understand what the shader needs — without looking at
+the original GLSL/HLSL source code.</p>
+<p>The key idea: SPIR‑V preserves metadata about resources, types, and
+interfaces, and reflection tools can extract that metadata
+programmatically.</p>
+<p>SPIRV-Cross tool can convert SPIR-V file to GLSL source code.</p>
+</li>
 </ul>
 </li>
 </ul>
-</div></blockquote>
+</dd>
+</dl>
 <p>⚠️  Apple</p>
 <ul class="simple">
 <li><p>Uses LLVM IR Partially. Apple supports SPIR-V in Metal and OpenCL, but
@@ -1184,8 +1231,14 @@ or graphics APIs for the reasons below:</p>
 <p>Notes:</p>
 <ul class="simple">
 <li><p><strong>OpenCL C → SPIR → Vendor Driver → GPU ISA</strong> is the standard compilation path.</p></li>
-<li><p>Some vendors (e.g., AMD, NVIDIA) may bypass SPIR and compile directly to LLVM IR or PTX.</p></li>
+<li><p>Some vendors (e.g., AMD, NVIDIA) may bypass SPIR and compile directly to LLVM
+IR or PTX.</p></li>
 <li><p>Apple deprecated OpenCL in favor of Metal, but legacy support remains.</p></li>
+<li><p><strong>All major GPU vendors use microcode</strong>, but only for complex, multi‑cycle, or
+evolving instructions such as matrix engines, texture units, and
+transcendental units.
+Microcode allows new hardware designs to be implemented without modifying the
+instruction set.</p></li>
 </ul>
 <p>✅ References</p>
 <ul class="simple">
@@ -1197,7 +1250,7 @@ or graphics APIs for the reasons below:</p>
 </ul>
 </section>
 <section id="ml-and-gpu-compilation">
-<h3><a class="toc-backref" href="#id67" role="doc-backlink">ML and GPU Compilation</a><a class="headerlink" href="#ml-and-gpu-compilation" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id69" role="doc-backlink">ML and GPU Compilation</a><a class="headerlink" href="#ml-and-gpu-compilation" title="Link to this heading">¶</a></h3>
 <p>This section outlines the intermediate representation (IR) flows used by
 NVIDIA, AMD, and ARM in machine learning and GPU compilation pipelines.
 It includes both inference engines and compiler toolchains.</p>
@@ -1212,33 +1265,39 @@ used instead of <em>driver</em>.</p>
     MA [label=&quot;Machine&quot;, fillcolor=lightblue];
 }" class="graphviz" /></div>
 <section id="nvidia-ir-conversion-flow">
-<h4><a class="toc-backref" href="#id68" role="doc-backlink">NVIDIA IR Conversion Flow</a><a class="headerlink" href="#nvidia-ir-conversion-flow" title="Link to this heading">¶</a></h4>
+<h4><a class="toc-backref" href="#id70" role="doc-backlink">NVIDIA IR Conversion Flow</a><a class="headerlink" href="#nvidia-ir-conversion-flow" title="Link to this heading">¶</a></h4>
 <p>NVIDIA supports both TensorRT-based inference and MLIR-based compilation
-targeting CUDA GPUs is shown as <a class="reference internal" href="#nvidia-flow"><span class="std std-numref">Fig. 95</span></a>.</p>
-<figure class="align-default" id="id53">
-<span id="nvidia-flow"></span><div class="graphviz"><img src="_images/graphviz-9e7ea0b93900fccdd807f79e4b8f2bb6c23fc030.png" alt="digraph NVIDIA_IR_Flow {
-        rankdir=LR;
-  
-        node [shape=box]; 
-  
-        ONNX [style=filled, fillcolor=lightyellow];
-        &quot;TensorRT Graph IR&quot; [style=filled, fillcolor=lightgray];
-        &quot;CUDA Kernel IR&quot; [style=filled, fillcolor=lightgray];
-        PTX [style=filled, fillcolor=lightyellow];
-        SASS [label=&quot;SASS (NVIDIA GPU ISA)&quot;, style=filled, fillcolor=lightblue];
-        TensorRT [style=filled, shape=oval, fillcolor=lightgreen];
+targeting CUDA GPUs is shown as <a class="reference internal" href="#nvidia-flow"><span class="std std-numref">Fig. 99</span></a>.</p>
+<figure class="align-default" id="id54">
+<span id="nvidia-flow"></span><div class="graphviz"><img src="_images/graphviz-b1cae9be1c50d5b1824a51b34c4ca9cc0527a153.png" alt="digraph NVIDIA_IR_Flow {
+    rankdir=LR;
+    node [shape=box];
 
-        TOSA [style=filled, fillcolor=lightyellow];
-        &quot;MLIR GPU Dialects&quot; [style=filled, fillcolor=lightyellow];
-        &quot;LLVM IR&quot; [style=filled, fillcolor=lightyellow];
+    // High-level frontends
+    ONNX   [style=filled, fillcolor=lightyellow];
+    TOSA   [style=filled, fillcolor=lightyellow];
 
-        ONNX -&gt; &quot;TensorRT Graph IR&quot; -&gt; &quot;CUDA Kernel IR&quot; -&gt; PTX;
-        &quot;TensorRT Graph IR&quot; -&gt; TensorRT;
+    // MLIR / LLVM path
+    &quot;MLIR GPU Dialects&quot; [style=filled, fillcolor=lightyellow];
+    &quot;LLVM IR&quot;           [style=filled, fillcolor=lightyellow];
 
-        TOSA -&gt; &quot;MLIR GPU Dialects&quot; -&gt; &quot;LLVM IR&quot; -&gt; PTX -&gt; SASS;
-    }" class="graphviz" /></div>
+    // TensorRT path
+    &quot;TensorRT Graph IR&quot; [style=filled, fillcolor=lightgray];
+    &quot;CUDA Kernel IR&quot;    [style=filled, fillcolor=lightgray];
+    TensorRT            [style=filled, shape=oval, fillcolor=lightgreen];
+
+    // NVIDIA backend
+    PTX  [style=filled, fillcolor=lightyellow];
+    SASS [label=&quot;SASS (NVIDIA GPU ISA)&quot;, style=filled, fillcolor=lightblue];
+
+    // Edges
+    ONNX -&gt; &quot;TensorRT Graph IR&quot; -&gt; &quot;CUDA Kernel IR&quot; -&gt; PTX -&gt; SASS;
+    &quot;TensorRT Graph IR&quot; -&gt; TensorRT;
+
+    TOSA -&gt; &quot;MLIR GPU Dialects&quot; -&gt; &quot;LLVM IR&quot; -&gt; PTX;
+}" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 95 </span><span class="caption-text">NVIDIA IR Conversion Flow</span><a class="headerlink" href="#id53" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 99 </span><span class="caption-text">NVIDIA IR Conversion Flow</span><a class="headerlink" href="#id54" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <ul class="simple">
@@ -1262,12 +1321,35 @@ As a result, their applicability is limited to the corresponding hardware
 platforms.</p></li>
 <li><p>MLIR GPU Dialects is public but it is for Nvidia’s GPU.</p></li>
 </ul>
+<figure class="align-center" id="id55">
+<span id="tensor-rt"></span><a class="reference internal image-reference" href="_images/tensor-rt.png"><img alt="_images/tensor-rt.png" height="433" src="_images/tensor-rt.png" width="780" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 100 </span><span class="caption-text">Tensor-RT</span><a class="headerlink" href="#id55" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Tensor-RT is a SDK bundles tools for model import, graph optimization, precision
+calibration, engine building, runtime execution, and specialized LLM
+acceleration.</p>
+<p>TensorRT‑SDK includes: <a class="footnote-reference brackets" href="#tensor-rt-sdk" id="id30" role="doc-noteref"><span class="fn-bracket">[</span>25<span class="fn-bracket">]</span></a></p>
+<ul class="simple">
+<li><p>TensorRT compiler — converts neural networks into optimized inference engines</p></li>
+<li><p>TensorRT runtime — executes the compiled engine on NVIDIA GPUs</p></li>
+<li><p>TensorRT Model Optimizer — performs graph‑level transformations, quantization, fusion</p></li>
+<li><p>TensorRT‑LLM — specialized compiler/runtime for large language models</p></li>
+<li><p>TensorRT for RTX — consumer GPU‑optimized inference stack</p></li>
+<li><p>TensorRT Cloud — cloud‑based inference services</p></li>
+<li><p>Tools &amp; utilities — trtexec, calibration tools, profiling tools</p></li>
+<li><p>Kernel libraries — highly optimized CUDA kernels for inference</p></li>
+<li><p>Precision calibration — FP16, BF16, FP8, INT8, INT4, FP4 support</p></li>
+<li><p>Integration APIs — C++/Python APIs for engine building and execution</p></li>
+</ul>
 </section>
 <section id="amd-ir-conversion-flow">
-<h4><a class="toc-backref" href="#id69" role="doc-backlink">AMD IR Conversion Flow</a><a class="headerlink" href="#amd-ir-conversion-flow" title="Link to this heading">¶</a></h4>
+<h4><a class="toc-backref" href="#id71" role="doc-backlink">AMD IR Conversion Flow</a><a class="headerlink" href="#amd-ir-conversion-flow" title="Link to this heading">¶</a></h4>
 <p>AMD uses ROCm and MIOpen for ML workloads, with LLVM-based compilation targeting
-GCN or RDNA architectures is shown as <a class="reference internal" href="#amd-flow"><span class="std std-numref">Fig. 96</span></a>.</p>
-<figure class="align-default" id="id54">
+GCN or RDNA architectures is shown as <a class="reference internal" href="#amd-flow"><span class="std std-numref">Fig. 101</span></a>.</p>
+<figure class="align-default" id="id56">
 <span id="amd-flow"></span><div class="graphviz"><img src="_images/graphviz-036275b186c4ea21ff8e302d4331db91d1ac2246.png" alt="digraph ROCm_Runtime_PyTorch_MIOpen_PreMLIR_Flow {
     rankdir=LR;
     node [shape=box];
@@ -1310,15 +1392,36 @@ GCN or RDNA architectures is shown as <a class="reference internal" href="#amd-f
     { rank = same; GCN_IR; MIOpen_IR }
 }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 96 </span><span class="caption-text">AMD IR Conversion Flow</span><a class="headerlink" href="#id54" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 101 </span><span class="caption-text">AMD IR Conversion Flow</span><a class="headerlink" href="#id56" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <ul class="simple">
+<li><p><strong>ROCm device libraies (.bc)</strong>:
+ROCm device libraries (.bc files) are LLVM bitcode libraries containing AMD’s
+<strong>built‑in GPU functions</strong>.
+Before lowering to GCN‑IR, the compiler <strong>links</strong> your generated LLVM IR with
+these <strong>.bc libraries</strong>, so all intrinsic calls (math, atomics, wave ops, etc.)
+are resolved at the LLVM level.
+This ensures the final GCN machine code has concrete implementations for all
+built‑ins.</p>
+<ul>
+<li><p>They are LLVM bitcode archives containing AMD’s GPU‑side implementations of:</p>
+<ul>
+<li><p>OCML — optimized math library (sin, cos, exp, log, pow, etc.)</p></li>
+<li><p>OCKL — kernel library (barriers, wave ops, LDS operations)</p></li>
+<li><p>OCLC — language runtime (OpenCL builtins, address space helpers)</p></li>
+<li><p>Atomic / synchronization intrinsics</p></li>
+<li><p>Vectorized math routines</p></li>
+<li><p>FP mode handling, denorm behavior, rounding rules</p></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><p><strong>ROCm</strong> is not just a compiler or driver — it includes a full runtime stack that
 enables AMD GPUs to execute compute workloads across HIP
 (Heterogeneous-compute Interface for Portability), OpenCL, and ML frameworks.
 It’s <strong>analogous to NVIDIA’s CUDA runtime</strong> but built around open standards like
-HSA (Heterogeneous System Architecture) <a class="footnote-reference brackets" href="#hsa" id="id30" role="doc-noteref"><span class="fn-bracket">[</span>25<span class="fn-bracket">]</span></a>  and LLVM.</p></li>
+HSA (Heterogeneous System Architecture) <a class="footnote-reference brackets" href="#hsa" id="id31" role="doc-noteref"><span class="fn-bracket">[</span>26<span class="fn-bracket">]</span></a>  and LLVM.</p></li>
 <li><p><strong>MIOpen Graph IR</strong> includes different form and structure. <strong>(Pre-MLIR) and
 (Post-GCN)</strong> are different.</p>
 <ul>
@@ -1331,11 +1434,11 @@ transformation passes are internal.</p></li>
 </ul>
 </section>
 <section id="arm-ir-conversion-flow">
-<h4><a class="toc-backref" href="#id70" role="doc-backlink">ARM IR Conversion Flow</a><a class="headerlink" href="#arm-ir-conversion-flow" title="Link to this heading">¶</a></h4>
+<h4><a class="toc-backref" href="#id72" role="doc-backlink">ARM IR Conversion Flow</a><a class="headerlink" href="#arm-ir-conversion-flow" title="Link to this heading">¶</a></h4>
 <p>ARM supports both CPU/NPU deployment (e.g., Ethos-U/N) and GPU execution (e.g.,
 Mali via Vulkan). The IR flow diverges depending on the target is shown as
-<a class="reference internal" href="#arm-flow"><span class="std std-numref">Fig. 97</span></a>.</p>
-<figure class="align-default" id="id55">
+<a class="reference internal" href="#arm-flow"><span class="std std-numref">Fig. 102</span></a>.</p>
+<figure class="align-default" id="id57">
 <span id="arm-flow"></span><div class="graphviz"><img src="_images/graphviz-727b81f5e50877d95fccbb291678ff174442f5fb.png" alt="digraph ARM_IR_Flow {
         rankdir=LR;
 
@@ -1363,7 +1466,7 @@ Mali via Vulkan). The IR flow diverges depending on the target is shown as
         SPIRV -&gt; Vulkan;
     }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 97 </span><span class="caption-text">ARM IR Conversion Flow</span><a class="headerlink" href="#id55" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 102 </span><span class="caption-text">ARM IR Conversion Flow</span><a class="headerlink" href="#id57" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <ul class="simple">
@@ -1399,8 +1502,8 @@ handles:</p>
 </ul>
 </section>
 <section id="imagination-technologies-ir-conversion-flow">
-<h4><a class="toc-backref" href="#id71" role="doc-backlink">Imagination Technologies IR Conversion Flow</a><a class="headerlink" href="#imagination-technologies-ir-conversion-flow" title="Link to this heading">¶</a></h4>
-<figure class="align-default" id="id56">
+<h4><a class="toc-backref" href="#id73" role="doc-backlink">Imagination Technologies IR Conversion Flow</a><a class="headerlink" href="#imagination-technologies-ir-conversion-flow" title="Link to this heading">¶</a></h4>
+<figure class="align-default" id="id58">
 <span id="imagination-flow"></span><div class="graphviz"><img src="_images/graphviz-e1e9c09ce11bc10928e97ec3bfb7e817a3d6b929.png" alt="digraph Imagination_IR_Flow {
         rankdir=LR;
         node [shape=box];
@@ -1418,7 +1521,7 @@ handles:</p>
         &quot;ONNX / TFLite&quot; -&gt; OpenCL -&gt; &quot;E-Series Compiler IR&quot;;
     }" class="graphviz" /></div>
 <figcaption>
-<p><span class="caption-number">Fig. 98 </span><span class="caption-text">Imagination Technologies IR Conversion Flow</span><a class="headerlink" href="#id56" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 103 </span><span class="caption-text">Imagination Technologies IR Conversion Flow</span><a class="headerlink" href="#id58" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>Notes:</p>
@@ -1431,7 +1534,7 @@ handles:</p>
 </ul>
 </section>
 <section id="comparison-summary">
-<h4><a class="toc-backref" href="#id72" role="doc-backlink">Comparison Summary</a><a class="headerlink" href="#comparison-summary" title="Link to this heading">¶</a></h4>
+<h4><a class="toc-backref" href="#id74" role="doc-backlink">Comparison Summary</a><a class="headerlink" href="#comparison-summary" title="Link to this heading">¶</a></h4>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Vendor</p></th>
@@ -1470,7 +1573,7 @@ handles:</p>
 </table>
 </section>
 <section id="references">
-<h4><a class="toc-backref" href="#id73" role="doc-backlink">References</a><a class="headerlink" href="#references" title="Link to this heading">¶</a></h4>
+<h4><a class="toc-backref" href="#id75" role="doc-backlink">References</a><a class="headerlink" href="#references" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>NVIDIA TensorRT: <a class="reference external" href="https://developer.nvidia.com/tensorrt">https://developer.nvidia.com/tensorrt</a></p></li>
 <li><p>AMD ROCm: <a class="reference external" href="https://rocm.docs.amd.com/">https://rocm.docs.amd.com/</a></p></li>
@@ -1490,15 +1593,15 @@ handles:</p>
 </section>
 </section>
 <section id="accelerate-ml-dl-on-opencl-sycl">
-<h2><a class="toc-backref" href="#id74" role="doc-backlink">Accelerate ML/DL on OpenCL/SYCL</a><a class="headerlink" href="#accelerate-ml-dl-on-opencl-sycl" title="Link to this heading">¶</a></h2>
-<figure class="align-center" id="id57">
+<h2><a class="toc-backref" href="#id76" role="doc-backlink">Accelerate ML/DL on OpenCL/SYCL</a><a class="headerlink" href="#accelerate-ml-dl-on-opencl-sycl" title="Link to this heading">¶</a></h2>
+<figure class="align-center" id="id59">
 <span id="opengl-ml-graph"></span><a class="reference internal image-reference" href="_images/opencl_ml_graph.png"><img alt="_images/opencl_ml_graph.png" height="325" src="_images/opencl_ml_graph.png" width="918" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 99 </span><span class="caption-text">ML graph scheduling in both the compiler and runtime</span><a class="headerlink" href="#id57" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 104 </span><span class="caption-text">ML graph scheduling in both the compiler and runtime</span><a class="headerlink" href="#id59" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
-<p>As shown in <a class="reference internal" href="#opengl-ml-graph"><span class="std std-numref">Fig. 99</span></a>, the Device, such as a GPU or a CPU+NPU,
+<p>As shown in <a class="reference internal" href="#opengl-ml-graph"><span class="std std-numref">Fig. 104</span></a>, the Device, such as a GPU or a CPU+NPU,
 is capable of running the entire ML graph. However, if the Device has only
 an NPU, then operations like Avg-Pool, which require CPU support, must run
 on the Host side. This introduces communication overhead between the Host
@@ -1508,26 +1611,26 @@ on-line or off-line and then sent to the GPU as a programmable function.</p>
 <p>To run machine-learning (ML) workloads efficiently, GPU/NPU platforms implement
 scheduling software in both the graph compiler and runtime. If OpenCL were
 extended to support ML graphs, graph compilers such as TVM and open-source
-runtimes could reuse scheduling work <a class="footnote-reference brackets" href="#paper-graph-on-opencl" id="id31" role="doc-noteref"><span class="fn-bracket">[</span>26<span class="fn-bracket">]</span></a>. CUDA Graphs
-follow a similar idea <a class="footnote-reference brackets" href="#cuda-graph-blog" id="id32" role="doc-noteref"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#cuda-graph-pytorch" id="id33" role="doc-noteref"><span class="fn-bracket">[</span>28<span class="fn-bracket">]</span></a>.</p>
+runtimes could reuse scheduling work <a class="footnote-reference brackets" href="#paper-graph-on-opencl" id="id32" role="doc-noteref"><span class="fn-bracket">[</span>27<span class="fn-bracket">]</span></a>. CUDA Graphs
+follow a similar idea <a class="footnote-reference brackets" href="#cuda-graph-blog" id="id33" role="doc-noteref"><span class="fn-bracket">[</span>28<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#cuda-graph-pytorch" id="id34" role="doc-noteref"><span class="fn-bracket">[</span>29<span class="fn-bracket">]</span></a>.</p>
 <ul class="simple">
 <li><p>SYCL uses C++ templates to optimize and generate code for OpenCL and CUDA. It
 provides a consistent language, APIs, and ecosystem for writing and tuning
-code for different accelerator architectures, CPUs, GPUs, and FPGAs <a class="footnote-reference brackets" href="#sycl" id="id34" role="doc-noteref"><span class="fn-bracket">[</span>29<span class="fn-bracket">]</span></a>.</p>
+code for different accelerator architectures, CPUs, GPUs, and FPGAs <a class="footnote-reference brackets" href="#sycl" id="id35" role="doc-noteref"><span class="fn-bracket">[</span>30<span class="fn-bracket">]</span></a>.</p>
 <ul>
 <li><p>SYCL uses generic programming with templates and generic lambda functions to
 enable higher-level application software to be cleanly coded with optimized
 acceleration of kernel code across an extensive range of acceleration backend
-APIs, such as OpenCL and CUDA <a class="footnote-reference brackets" href="#sycl-cuda" id="id35" role="doc-noteref"><span class="fn-bracket">[</span>30<span class="fn-bracket">]</span></a>.</p></li>
+APIs, such as OpenCL and CUDA <a class="footnote-reference brackets" href="#sycl-cuda" id="id36" role="doc-noteref"><span class="fn-bracket">[</span>31<span class="fn-bracket">]</span></a>.</p></li>
 </ul>
 </li>
 </ul>
-<figure class="align-center" id="id58">
+<figure class="align-center" id="id60">
 <span id="sycl-role"></span><a class="reference internal image-reference" href="_images/sycl.png"><img alt="_images/sycl.png" height="448" src="_images/sycl.png" width="1158" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 100 </span><span class="caption-text">SYCL = C++ template and compiler for Data Parallel Applications on AI on CPUs,
-GPUs and HPGAs.</span><a class="headerlink" href="#id58" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Fig. 105 </span><span class="caption-text">SYCL = C++ template and compiler for Data Parallel Applications on AI on CPUs,
+GPUs and HPGAs.</span><a class="headerlink" href="#id60" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <ul>
@@ -1535,7 +1638,7 @@ GPUs and HPGAs.</span><a class="headerlink" href="#id58" title="Link to this ima
 for both CPU host and GPU device. DPC++ (Data Parallel C++) is a language
 developed by Intel and may be adopted into standard C++. The GPU-side
 (kernel code) is written in C++ but does not support exception handling
-<a class="footnote-reference brackets" href="#dpcpp" id="id36" role="doc-noteref"><span class="fn-bracket">[</span>31<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#dpcpp-book" id="id37" role="doc-noteref"><span class="fn-bracket">[</span>32<span class="fn-bracket">]</span></a>.</p>
+<a class="footnote-reference brackets" href="#dpcpp" id="id37" role="doc-noteref"><span class="fn-bracket">[</span>32<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#dpcpp-book" id="id38" role="doc-noteref"><span class="fn-bracket">[</span>33<span class="fn-bracket">]</span></a>.</p>
 <ul>
 <li><p>Features of Kernel Code:</p>
 <ul>
@@ -1548,7 +1651,7 @@ be called from kernel code. Recursion is not allowed within kernel code.</p>
 </li>
 <li><p>Supported:</p>
 <p>Lambdas, operator overloading, templates, classes, and static polymorphism
-<a class="footnote-reference brackets" href="#dpcpp-features" id="id38" role="doc-noteref"><span class="fn-bracket">[</span>33<span class="fn-bracket">]</span></a>.</p>
+<a class="footnote-reference brackets" href="#dpcpp-features" id="id39" role="doc-noteref"><span class="fn-bracket">[</span>34<span class="fn-bracket">]</span></a>.</p>
 </li>
 </ul>
 </li>
@@ -1601,18 +1704,18 @@ Morgan Kaufmann Series in Computer Architecture and Design)</p>
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id16">10</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://stackoverflow.com/questions/15868498/what-is-the-difference-between-opencl-and-opengls-compute-shader">https://stackoverflow.com/questions/15868498/what-is-the-difference-between-opencl-and-opengls-compute-shader</a></p>
 </aside>
-<aside class="footnote brackets" id="id39" role="doc-footnote">
+<aside class="footnote brackets" id="id40" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id15">11</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://www.khronos.org/blog/offline-compilation-of-opencl-kernels-into-spir-v-using-open-source-tooling">https://www.khronos.org/blog/offline-compilation-of-opencl-kernels-into-spir-v-using-open-source-tooling</a></p>
 </aside>
 <aside class="footnote brackets" id="ogl-cpu-gpu" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id40">12</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id41">12</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://en.wikipedia.org/wiki/Vulkan">https://en.wikipedia.org/wiki/Vulkan</a></p>
 </aside>
 <aside class="footnote brackets" id="vulkanapiwiki" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span>13<span class="fn-bracket">]</span></span>
 <span class="backrefs">(<a role="doc-backlink" href="#id17">1</a>,<a role="doc-backlink" href="#id21">2</a>)</span>
-<p>Vulkan offers lower overhead, more direct control over the GPU, and lower CPU usage… By allowing shader pre-compilation, application initialization speed is improved… A Vulkan driver only needs to do GPU specific optimization and code generation, resulting in easier driver maintenance… <a class="footnote-reference brackets" href="#ogl-cpu-gpu" id="id40" role="doc-noteref"><span class="fn-bracket">[</span>12<span class="fn-bracket">]</span></a> <a class="reference external" href="https://en.wikipedia.org/wiki/Vulkan#OpenGL_vs._Vulkan">https://en.wikipedia.org/wiki/Vulkan#OpenGL_vs._Vulkan</a></p>
+<p>Vulkan offers lower overhead, more direct control over the GPU, and lower CPU usage… By allowing shader pre-compilation, application initialization speed is improved… A Vulkan driver only needs to do GPU specific optimization and code generation, resulting in easier driver maintenance… <a class="footnote-reference brackets" href="#ogl-cpu-gpu" id="id41" role="doc-noteref"><span class="fn-bracket">[</span>12<span class="fn-bracket">]</span></a> <a class="reference external" href="https://en.wikipedia.org/wiki/Vulkan#OpenGL_vs._Vulkan">https://en.wikipedia.org/wiki/Vulkan#OpenGL_vs._Vulkan</a></p>
 </aside>
 <aside class="footnote brackets" id="vulkanex" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id18">14</a><span class="fn-bracket">]</span></span>
@@ -1658,8 +1761,12 @@ Morgan Kaufmann Series in Computer Architecture and Design)</p>
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id29">24</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://www.geeksforgeeks.org/deep-learning/what-is-tensorrt/">https://www.geeksforgeeks.org/deep-learning/what-is-tensorrt/</a></p>
 </aside>
-<aside class="footnote brackets" id="hsa" role="doc-footnote">
+<aside class="footnote brackets" id="tensor-rt-sdk" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id30">25</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://developer.nvidia.com/tensorrt">https://developer.nvidia.com/tensorrt</a></p>
+</aside>
+<aside class="footnote brackets" id="hsa" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id31">26</a><span class="fn-bracket">]</span></span>
 <p>HSA is an open standard developed to simplify programming across
 heterogeneous systems — especially those combining CPUs and GPUs.
 It defines:</p>
@@ -1671,35 +1778,35 @@ It defines:</p>
 </ul>
 </aside>
 <aside class="footnote brackets" id="paper-graph-on-opencl" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id31">26</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id32">27</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://easychair.org/publications/preprint/GjhX">https://easychair.org/publications/preprint/GjhX</a></p>
 </aside>
 <aside class="footnote brackets" id="cuda-graph-blog" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id32">27</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id33">28</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://developer.nvidia.com/blog/cuda-graphs/">https://developer.nvidia.com/blog/cuda-graphs/</a></p>
 </aside>
 <aside class="footnote brackets" id="cuda-graph-pytorch" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id33">28</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id34">29</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://pytorch.org/blog/accelerating-pytorch-with-cuda-graphs/">https://pytorch.org/blog/accelerating-pytorch-with-cuda-graphs/</a></p>
 </aside>
 <aside class="footnote brackets" id="sycl" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id34">29</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id35">30</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://www.khronos.org/sycl/">https://www.khronos.org/sycl/</a></p>
 </aside>
 <aside class="footnote brackets" id="sycl-cuda" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id35">30</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id36">31</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://github.com/codeplaysoftware/sycl-for-cuda/blob/cuda/sycl/doc/GetStartedWithSYCLCompiler.md">https://github.com/codeplaysoftware/sycl-for-cuda/blob/cuda/sycl/doc/GetStartedWithSYCLCompiler.md</a></p>
 </aside>
 <aside class="footnote brackets" id="dpcpp" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id36">31</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id37">32</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/dpc-compiler.html#gs.cxolyy">https://www.intel.com/content/www/us/en/developer/tools/oneapi/dpc-compiler.html#gs.cxolyy</a></p>
 </aside>
 <aside class="footnote brackets" id="dpcpp-book" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id37">32</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id38">33</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://link.springer.com/book/10.1007/978-1-4842-5574-2">https://link.springer.com/book/10.1007/978-1-4842-5574-2</a></p>
 </aside>
 <aside class="footnote brackets" id="dpcpp-features" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id38">33</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id39">34</a><span class="fn-bracket">]</span></span>
 <p>Page 14 of DPC++ book.</p>
 </aside>
 </aside>
