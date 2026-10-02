@@ -38,9 +38,24 @@ From compiler's view, GPU is shown as :numref:`gpu-hw`.
   :caption: Components of a GPU: SIMD/SIMT + several specialized processing units
 
  
-A GPU is not just “many cores” — it’s a mix of general-purpose ompute clusters, 
-specialized units, and the memory subsystem. It corresponds to the block 
-diagram graph shown in :numref:`gpu-hw`. 
+A GPU is not merely “many cores” — it’s a mix of general-purpose compute clusters, 
+specialized units, and the memory subsystem. Its structure corresponds to the 
+block diagram graph shown in :numref:`gpu-hw`. 
+
+A GPU contains units:
+
+1. Computer Cluster -- comprising many SIMT processing cores, known as 
+   Streaming Multiprocessors (SMs), which will be discussed in detail in the 
+   next section on :ref:`computer-cluster`.
+
+2. Memory Subsystem -- will be discussed in the later section 
+   :ref:`memory-subsystem`.
+
+3. Specialized Units -- will be discussed in the later section 
+   :ref:`specialized-units`.
+
+4. Host & Cluster Interconnects -- will be discussed in the later section
+   :ref:`host-cluster-interconnects`.
 
 The stages of the OpenGL rendering pipeline and the GPU hardware units
 that accelerate them as shown in :numref:`ogl-pipeline-hw`:
@@ -241,8 +256,51 @@ supported [#vrs]_.
   - Apply results to the framebuffer, handling blending/depth as usual.
 
 
-SM (SIMT)
----------
+.. note:: **Summary**
+  
+  A GPU contains a **general-purpose Compute Cluster composed of SIMT-based
+  Streaming Multiprocessors (SMs)**. By replacing the graphics-oriented
+  specialized units with AI-oriented fixed-function units—such as Tensor
+  and Matrix Cores —- **the same architectural framework can be applied to
+  accelerate AI workloads instead of traditional graphics workloads.**
+
+
+.. _computer-cluster: 
+
+Computer Cluster
+----------------
+
+The newest NVIDIA data‑center GPU you asked about — Blackwell Ultra
+(GB200-class) — contains 160 Streaming Multiprocessors (SMs), and those SMs 
+serve both graphics‑style workloads (CUDA cores, Ray Tracing, RT, cores) and 
+AI workloads (Tensor Cores).
+
+CUDA is a general-purpose parallel compute architecture.
+
+CUDA is used for:
+
+AI / ML
+
+- TensorFlow, PyTorch, JAX
+- Matrix multiplications
+- Transformer kernels
+- FP8/FP4 tensor operations (via Tensor Cores)
+
+Graphics (non‑raster parts)
+
+- Physics simulation
+- Particle systems
+- Cloth, fluid, destruction
+- GPU-based culling
+- Meshlet building
+- Skinning (compute skinning)
+- Occlusion compute passes
+- Post‑processing filters
+- Temporal reconstruction
+
+
+SM Hardware
+***********
 
 Single instruction, multiple threads (SIMT) is an execution model used in 
 parallel computing where a single central "Control Unit" broadcasts an 
@@ -262,9 +320,6 @@ Summary:
 
 - A PU is a pipeline execution unit, analogous to a CPU execution unit.
 
-
-SM Hardware
-***********
 
 The leading NVIDIA GPU architecture is illustrated in :numref:`gpu-sched`, 
 **where the scoreboard is shown without the mask field**. 
@@ -672,10 +727,18 @@ Therefore, the average total execution time for 32 threads in an SM is:
    progress inside a Warp)
 
 
-.. _sec-mem-hierarchy:
+.. _memory-subsystem:
 
-Processor Units and Memory Hierarchy in NVIDIA GPU [#chatgpt-pumh]_
--------------------------------------------------------------------
+Memory Subsystem
+----------------
+
+NVIDIA GPU Architectural Hierarchy [#chatgpt-pumh]_
+
+In the previous section, we know a Stream Multiprocessor, SM, (SIMT processing
+cores) includes 32 threads to run parallel data in pipeline. 
+
+Processor Units and Memory Hierarchy
+************************************
 
 .. _gpu-mem: 
 .. figure:: ../Fig/hw/memory.png
@@ -690,6 +753,10 @@ Processor Units and Memory Hierarchy in NVIDIA GPU [#chatgpt-pumh]_
             **Local Memory is shared by all threads and Cached in L1 and L2.**
             In addition, the **Shared Memory is provided to use per-SM, not 
             cacheable**.
+
+**Grid** is a software/programming abstraction in CUDA, whereas a **GPC** 
+(Graphics Processing Cluster) is a physical hardware unit on the GPU silicon 
+chip.
 
 Illustrate L1, L2 and Global Memory used by SM and whole chip of GPU as 
 :numref:`l1-l2`.
@@ -923,10 +990,6 @@ References
 
 - `NVIDIA GPU Architecture Overview <https://developer.nvidia.com/blog/nvidia-ampere-architecture-in-depth/>`_
 - `Understanding Warps and Threads <https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#Warps>`_
-
-
-Memory Subsystem
-----------------
 
 Address Coalescing and Gather-scatter
 *************************************
@@ -1271,6 +1334,8 @@ and enables more efficient shader execution. Compiler-guided operand staging and
 region slicing allow hardware to dynamically optimize operand placement without
 burdening the instruction stream with excessive metadata.
 
+
+.. _specialized-units:
 
 Specialized Units
 -----------------
@@ -1802,7 +1867,8 @@ Per‑pixel storage (color/depth/stencil).
 
 The LCD/LED screen does not directly read the GPU color buffer.  
 Instead, the GPU’s display engine scans out the final framebuffer and sends 
-it to the panel’s TCON, which then drives the physical pixels.
+it to the panel’s TCON, which then drives the physical pixels as shown in 
+:numref:`tcon`.
 
 .. code-block:: text
 
@@ -1827,6 +1893,284 @@ it to the panel’s TCON, which then drives the physical pixels.
   
   TCON
 
+
+.. _host-cluster-interconnects:
+
+Host & Cluster Interconnects
+----------------------------
+
+The newest NVIDIA data‑center GPU you asked about — Blackwell Ultra 
+(GB200-class) — contains 160 Streaming Multiprocessors (SMs), and those SMs 
+serve both graphics‑style workloads (CUDA cores, RT cores) and AI workloads 
+(Tensor Cores).
+
+- **Graphics workloads** generally do not require NVLink. **One GPU is usually 
+  sufficient**.
+- **NVLink** exists primarily for **AI**, HPC, and large‑scale compute workloads, 
+  not for traditional graphics rendering.
+
+
+Network Connection
+******************
+
+.. code-block:: text
+
+   ┌─────────────────────────────────────────────────────────────────────────────┐
+   │                       SERVER CHASSIS (Metal Enclosure)                      │
+   │                                                                             │
+   │   ┌─────────────────────────────────────────────────────────────────────┐   │
+   │   │                    BASEBOARD / BACKPLANE BOARD                      │   │
+   │   │                                                                     │   │
+   │   │   ┌────────┐       ┌────────┐       ┌────────┐       ┌────────┐     │   │
+   │   │   │ GPU 0  │       │ GPU 1  │       │ GPU 2  │       │ GPU 3  │     │   │
+   │   │   └───┬────┘       └───┬────┘       └───┬────┘       └───┬────┘     │   │
+   │   │       │                │                │                │          │   │
+   │   │  ═════╧════════════════╧════════════════╧════════════════╧═════     │   │
+   │   │                NVLink Interconnect Traces (High Bandwidth)          │   │
+   │   │  ═════╤════════════════╤════════════════╤════════════════╤═════     │   │
+   │   │       │                │                │                │          │   │
+   │   │   ┌───┴────┐       ┌───┴────┐       ┌───┴────┐       ┌───┴────┐     │   │
+   │   │   │ GPU 4  │       │ GPU 5  │       │ GPU 6  │       │ GPU 7  │     │   │
+   │   │   └────────┘       └────────┘       └────────┘       └────────┘     │   │
+   │   │                                                                     │   │
+   │   │            ┌───────────────────────────────────────────┐            │   │
+   │   │            │        On-Board NVSwitch Chips            │            │   │
+   │   │            └───────────────────────────────────────────┘            │   │
+   │   └──────────────────────────────────┬──────────────────────────────────┘   │
+   │                                      │                                      │
+   └──────────────────────────────────────┼──────────────────────────────────────┘
+                                          │ (InfiniBand NICs / PCIe)
+                                          ▼
+                          Out to Network / Other Servers
+
+NVLink connects GPUs within a single board inside a server chassis, while 
+InfiniBand connects GPUs across racks and clusters.
+
+References:
+
+- https://docs.nvidia.com/datacenter/tesla/fabric-manager-user-guide/index.html
+
+
+- PCIe as the standard highway connecting the GPU to the rest of the computer 
+  (CPU, storage, peripherals).
+- NVLink = intra‑node GPU interconnect (inside a server chassis)
+- InfiniBand = inter‑node network fabric (between server chassis)
+- NVSwitch = extends NVLink inside large multi‑GPU nodes
+- InfiniBand + RDMA = connects multiple NVLink/NVSwitch nodes together
+
+  - RDMA: Remote Direct Memory Access
+
+NVLINK
+******
+
+NVLINK used in NVidia's GPUs for AI application.
+
+**NVLink** provides remote memory access (**RDMA-like**) between GPUs within a 
+single node (same chassis).
+A GPU can directly read, write, and perform atomic operations on another
+GPU’s memory without CPU involvement. Although NVIDIA does not label
+this mechanism as "RDMA," its semantics are equivalent to RDMA at the
+intra-node level.
+
+In contrast, **InfiniBand** implements **RDMA** across nodes, enabling
+GPU-to-GPU communication between separate server chassis. Thus, NVLink
+offers **RDMA-like capabilities within a node, while InfiniBand provides
+RDMA across nodes**.
+
+- DMA: Direct Memory Access
+- RDMA: Reomote Direct Memory Access
+
+In **PTX, small data** transfers are handled directly by the SM using 
+**ld.global and st.global instructions**. 
+For **bulk or large-scale data** transfers, the SM issues a single **TMA 
+descriptor instruction (such as cp.async.bulk)** to trigger **RDMA-like** 
+transfer.
+
+Whether a thread executes a simple st.global instruction or triggers a bulk 
+transfer via the Tensor Memory Accelerator (TMA) using cp.async.bulk, the 
+**hardware** uses the exact same **Virtual Address** resolution pipeline to 
+route packets over NVLink as the following diagram, or over InfiniBand for 
+intra-nodes as the next section :ref:`infiniband`.
+
+.. rubric:: Virtual Address map for NVLINK
+.. code-block:: text
+
+                     ┌──────────────────────────────────────────┐
+                     │ Target 64-bit Virtual Address (UVA Space)│
+                     └────────────────────┬─────────────────────┘
+                                          │
+                                          ▼
+                     ┌──────────────────────────────────────────┐
+                     │       GPU GMMU / TLB Translation         │
+                     └────────────────────┬─────────────────────┘
+                                          │
+               ┌──────────────────────────┴──────────────────────────┐
+               ▼                                                     ▼
+   ┌───────────────────────────────┐                     ┌───────────────────────────────┐
+   │ Local VRAM Physical Address   │                     │ Remote GPU Physical Address   │
+   │ (Local HBM Controller)        │                     │ (Mapped to NVLink Port/Node)  │
+   └───────────────────────────────┘                     └───────────────┬───────────────┘
+                                                                         │
+                                                                         ▼
+                                                         ┌───────────────────────────────┐
+                                                         │ Packetized into NVLink TLPs   │
+                                                         │ (Transaction Layer Packets)   │
+                                                         └───────────────────────────────┘
+
+For the small transfer, the st.global does not directly send packets.
+The memory subsystem packetizes the transaction.
+For the bulk transer, RDMA engines break the transfer into a sequence of 
+packets.
+
+As shown in :numref:`nvlink`, NVLINK is network like ethernet using
+packet which including preamble, header, data and CRC to send data
+between GPUs.
+
+Through checking the target address in header sent from , the data can be sent to the
+correct GPU node. Details as follows:
+
+The sequence below tracks a memory read request from GPU0 to GPU2, passing 
+through GPU1, and explains the critical role of NVLink routers and doorbell 
+mechanisms:
+
+**1. Request Initiation at GPU0:** The CPU submits work to the GPU0 Command 
+Processor (Step 1). The GPU0 NVLink Router performs a lookup in its routing 
+table (Step 2) to determine the next hop. Since GPU2 is not a direct neighbor, 
+it identifies Port 1 (connected to GPU1) as the path to reach GPU2's address 
+space.
+
+**2. Routing Through GPU1:** The packet is transmitted to GPU1 (Step 3). The 
+GPU1 NVLink Router receives the packet, identifies that the target address 
+belongs to GPU2 (Step 4), and forwards it to Port 1 (connected to GPU2) 
+(Step 5).
+
+**3. Delivery to GPU2:** The packet arrives at GPU2 (Step 6). Since the packet 
+has reached its destination, the NVLink controller places the request into the 
+L2 Cache Queue. It then updates a specific GPU2 Register, triggering the 
+Doorbell mechanism. This signal alerts the L2 Controller that new data is 
+waiting. 
+The L2 Controller fetches the request, processes the memory read (Step 7), and 
+prepares the response.
+
+4. Response Return (Steps 8-11): The requested data is packaged into a new 
+packet. The reverse routing logic is applied to send the response from GPU2 
+back to GPU0, following the same path in reverse (GPU2 -> GPU1 -> GPU0), 
+completing the operation.
+
+.. _nvlink:
+.. figure:: ../Fig/hw/nvlink.png
+  :align: center
+  :scale: 50 %
+  
+  NVLINK
+
+**NVSwitch (Intra‑Node GPU Fabric Switch)**
+
+NVSwitch is a switching fabric that extends NVLink inside large multi‑GPU nodes.
+
+It enables:
+
+- All‑to‑all GPU connectivity
+- Full‑bandwidth cross‑GPU routing
+- Multi‑GPU unified memory domains
+
+Scope:
+
+- Still inside a single server
+- Used in DGX/HGX systems (8, 16, 32 GPUs)
+
+.. _infiniband:
+
+InfiniBand
+**********
+
+.. code-block: asm
+
+   // Initiates bulk multi-dimensional tensor transfer via TMA DMA engine
+  cp.async.bulk.tensor.2d.shared::cluster.global.mbarrier::complete_tx::bytes ...
+
+.. list-table:: GPU Hierarchy Level Comparison
+   :widths: 15 20 20 15 30
+   :header-rows: 1
+
+   * - Hierarchy Level
+     - Primary Interconnect
+     - Typical Bandwidth (per GPU)
+     - Latency
+     - Memory Architecture & Protocol
+
+   * - **Intra-Node**
+       *(GPUs within 1 server chassis)*
+     - **NVLink** (+ NVSwitch)
+     - **1.8 TB/s** *(NVLink 5 / Blackwell)*
+
+       **900 GB/s** *(NVLink 4 / Hopper)*
+     - **Sub-microsecond**
+       (<0.5 µs)
+     - **Shared Virtual Memory.** GPUs use direct ``NVLink P2P`` memory 
+       reads/writes (``LD/ST`` operations) straight into remote GPU VRAM without 
+       network protocol overhead.
+
+   * - **Inter-Node**
+       *(Server to Server)*
+     - **InfiniBand** (NDR / XDR)
+     - **400 – 800 Gbps** per NIC
+       *(~50–100 GB/s per rail)*
+     - **1 – 2 microseconds**
+     - **Distributed Memory (Message Passing).** Uses **GPUDirect RDMA (GDR)** 
+       to bypass host CPU/system RAM, transferring data GPU VRAM -> IB NIC -> 
+       IB Switch -> IB NIC -> GPU VRAM.
+
+   * - **Inter-Rack / SuperPOD**
+     - **InfiniBand Fat-Tree**
+     - **800 Gbps – 1.6 Tbps** links
+     - **2 – 5 microseconds**
+     - **Network Packet Switching.** Managed via specialized InfiniBand subnet 
+       managers, routing data through multi-tier Leaf-Spine switches over fiber 
+       cables.
+
+   * - **Cluster / Datacenter**
+     - **InfiniBand / RoCE** Ethernet
+     - Multi-Terabit spine capacity
+     - **5+ microseconds**
+     - **Large-scale Packet Routing.** Connects independent compute pods, 
+       shared storage pools, and management head nodes.
+
+**Latency** is the time delay between triggering an action and seeing the 
+result—in simple terms, it is the lag or response time of a system.
+For **NVLINK**, it is (**LD/ST or fine-grained 32-byte/64-byte** transaction packet) 
+between GPU VRAMs.
+For **InfiniBandk**, it is **single-packet transit time**.
+
+How Inter-Node (Cross-Chassis) Transfers Actually Work:
+
+PTX instructions like cp.async.bulk cannot send a packet over an optical InfiniBand cable or Ethernet network switch.
+
+To transfer data inter-node, the system relies on GDR (GPUDirect RDMA):
+
+1. The GPU writes tensor data to its VRAM (using local PTX/TMA or kernel outputs).
+2. The GPU (or Host CPU) notifies the ConnectX Network Interface Card (NIC) via PCIe.
+3. The NIC’s RDMA engine reads the VRAM buffer directly over PCIe and wraps the payload into InfiniBand / RoCE packets to send over the network fabric.
+
+.. rubric:: Inter-Node (Cross-Chassis) Transfers
+.. code-block:: text
+
+   ┌─────────────────────────────────────────────────────────────────────────────┐
+   │ intra-GPU / SAME-CHASSIS NVLINK DOMAIN                                      │
+   │                                                                             │
+   │  ┌────────────┐   cp.async.bulk (TMA)   ┌───────────────────────────────┐   │
+   │  │ SM Cores   │ ──────────────────────> │ Shared Memory / Local VRAM    │   │
+   │  └────────────┘                         └───────────────┬───────────────┘   │
+   └─────────────────────────────────────────────────────────┼───────────────────┘
+                                                             │ PCIe / Direct
+                                                             ▼
+   ┌─────────────────────────────────────────────────────────────────────────────┐
+   │ INTER-NODE NETWORK FABRIC                                                   │
+   │                                                                             │
+   │  ┌───────────────────────┐  InfiniBand Packets   ┌───────────────────────┐  │
+   │  │ Local ConnectX NIC    │ ────────────────────> │ Remote Node NIC / RAM │  │
+   │  └───────────────────────┘                       └───────────────────────┘  │
+   └─────────────────────────────────────────────────────────────────────────────┘
 
 
 

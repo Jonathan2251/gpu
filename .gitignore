@@ -19,6 +19,7 @@
 .*.swp
 .sw?
 *.DS_Store
+.DS_Store
 
 #==============================================================================#
 # Explicit files to ignore (only matches one).

@@ -28,7 +28,6 @@ digraph GPU {
               <TR><TD><FONT POINT-SIZE="10">ALUs (FP/INT)</FONT></TD></TR>
               <TR><TD><FONT POINT-SIZE="10">SFUs (transcendental)</FONT></TD></TR>
               <TR><TD><FONT POINT-SIZE="10">Load/Store Units</FONT></TD></TR>
-              <TR><TD><FONT POINT-SIZE="10">RegLess Staging Operands (RSO)</FONT></TD></TR>
             </TABLE>
           </TD></TR>
         </TABLE>
@@ -66,6 +65,18 @@ digraph GPU {
 
       Coalescing [label="Memory Coalescing\n(merges warp memory requests)"];
       GatherScatter [label="Gather–Scatter\n(irregular memory access)"];
+    }
+
+    /* Interconnects subsystem */
+    subgraph cluster_interconnects {
+      label = "Host & Cluster Interconnects";
+      style = filled;
+      fillcolor = "#fdfff7";
+      color = "#c7e9c0";
+
+      PCIe  [label="PCIe"];
+      NVLINK  [label="NVLINK"];
+      InfiniBand [label="InfiniBand"];
     }
 
     /* Connections between major blocks */

@@ -138,7 +138,7 @@ animation parameters called **uniform updates**, as shown in
    Because this transformation data is small and constant across all shader 
    pipeline stages, it is stored in the GPU’s global memory and can be cached in 
    the **uniform/constant cache** for performance, as illustrated in 
-   :numref:`mem-hierarchy` of :ref:`sec-mem-hierarchy` section.
+   :numref:`mem-hierarchy` of :ref:`memory-subsystem` section.
  
 The CPU updates only these small animation parameters and issues draw commands
 to the GPU.
