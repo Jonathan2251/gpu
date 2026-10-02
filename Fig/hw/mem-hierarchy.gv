@@ -4,7 +4,7 @@ digraph GPU_Memory_Hierarchy {
 
     // Processing hierarchy
     GigaThread [label="GigaThread Engine\n(Chip-wide Scheduler)"];
-    GPC [label="GPC\n(Graphics Processing Cluster)"];
+    GPC [label="GPC\n(Graphics Processing Cluster)\n(Grid)"];
     TPC [label="TPC\n(Texture Processing Cluster)"];
     SM [label="SM\n(Streaming Multiprocessor)"];
     Core [label="CUDA Cores"];

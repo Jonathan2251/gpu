@@ -674,8 +674,11 @@ Therefore, the average total execution time for 32 threads in an SM is:
 
 .. _sec-mem-hierarchy:
 
-Processor Units and Memory Hierarchy in NVIDIA GPU [#chatgpt-pumh]_
--------------------------------------------------------------------
+NVIDIA GPU Architectural Hierarchy [#chatgpt-pumh]_
+----------------------------------------------------
+
+Processor Units and Memory Hierarchy
+************************************
 
 .. _gpu-mem: 
 .. figure:: ../Fig/hw/memory.png
@@ -690,6 +693,10 @@ Processor Units and Memory Hierarchy in NVIDIA GPU [#chatgpt-pumh]_
             **Local Memory is shared by all threads and Cached in L1 and L2.**
             In addition, the **Shared Memory is provided to use per-SM, not 
             cacheable**.
+
+**Grid** is a software/programming abstraction in CUDA, whereas a **GPC** 
+(Graphics Processing Cluster) is a physical hardware unit on the GPU silicon 
+chip.
 
 Illustrate L1, L2 and Global Memory used by SM and whole chip of GPU as 
 :numref:`l1-l2`.
@@ -923,6 +930,164 @@ References
 
 - `NVIDIA GPU Architecture Overview <https://developer.nvidia.com/blog/nvidia-ampere-architecture-in-depth/>`_
 - `Understanding Warps and Threads <https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#Warps>`_
+
+
+Network Connection
+******************
+
+.. code-block:: text
+
+   ┌─────────────────────────────────────────────────────────────────────────────┐
+   │                       SERVER CHASSIS (Metal Enclosure)                      │
+   │                                                                             │
+   │   ┌─────────────────────────────────────────────────────────────────────┐   │
+   │   │                    BASEBOARD / BACKPLANE BOARD                      │   │
+   │   │                                                                     │   │
+   │   │   ┌────────┐       ┌────────┐       ┌────────┐       ┌────────┐     │   │
+   │   │   │ GPU 0  │       │ GPU 1  │       │ GPU 2  │       │ GPU 3  │     │   │
+   │   │   └───┬────┘       └───┬────┘       └───┬────┘       └───┬────┘     │   │
+   │   │       │                │                │                │          │   │
+   │   │  ═════╧════════════════╧════════════════╧════════════════╧═════     │   │
+   │   │                NVLink Interconnect Traces (High Bandwidth)          │   │
+   │   │  ═════╤════════════════╤════════════════╤════════════════╤═════     │   │
+   │   │       │                │                │                │          │   │
+   │   │   ┌───┴────┐       ┌───┴────┐       ┌───┴────┐       ┌───┴────┐     │   │
+   │   │   │ GPU 4  │       │ GPU 5  │       │ GPU 6  │       │ GPU 7  │     │   │
+   │   │   └────────┘       └────────┘       └────────┘       └────────┘     │   │
+   │   │                                                                     │   │
+   │   │            ┌───────────────────────────────────────────┐            │   │
+   │   │            │        On-Board NVSwitch Chips            │            │   │
+   │   │            └───────────────────────────────────────────┘            │   │
+   │   └──────────────────────────────────┬──────────────────────────────────┘   │
+   │                                      │                                      │
+   └──────────────────────────────────────┼──────────────────────────────────────┘
+                                          │ (InfiniBand NICs / PCIe)
+                                          ▼
+                          Out to Network / Other Servers
+
+NVLink connects GPUs within a single board inside a server chassis, while 
+InfiniBand connects GPUs across racks and clusters.
+
+References:
+
+- https://docs.nvidia.com/datacenter/tesla/fabric-manager-user-guide/index.html
+
+NVLINK
+^^^^^^
+
+NVLINK used in NVidia's GPUs for AI application.
+As shown in :numref:`nvlink`, NVLINK is network like ethernet using
+packet which including preamble, header, data and CRC to send data
+between GPUs.
+
+Through checking the target address in header, the data can be sent to the
+correct GPU node. Details as follows:
+
+The sequence below tracks a memory read request from GPU0 to GPU2, passing 
+through GPU1, and explains the critical role of NVLink routers and doorbell 
+mechanisms:
+
+**1. Request Initiation at GPU0:** The CPU submits work to the GPU0 Command 
+Processor (Step 1). The GPU0 NVLink Router performs a lookup in its routing 
+table (Step 2) to determine the next hop. Since GPU2 is not a direct neighbor, 
+it identifies Port 1 (connected to GPU1) as the path to reach GPU2's address 
+space.
+
+**2. Routing Through GPU1:** The packet is transmitted to GPU1 (Step 3). The 
+GPU1 NVLink Router receives the packet, identifies that the target address 
+belongs to GPU2 (Step 4), and forwards it to Port 1 (connected to GPU2) 
+(Step 5).
+
+**3. Delivery to GPU2:** The packet arrives at GPU2 (Step 6). Since the packet 
+has reached its destination, the NVLink controller places the request into the 
+L2 Cache Queue. It then updates a specific GPU2 Register, triggering the 
+Doorbell mechanism. This signal alerts the L2 Controller that new data is 
+waiting. 
+The L2 Controller fetches the request, processes the memory read (Step 7), and 
+prepares the response.
+
+4. Response Return (Steps 8-11): The requested data is packaged into a new 
+packet. The reverse routing logic is applied to send the response from GPU2 
+back to GPU0, following the same path in reverse (GPU2 -> GPU1 -> GPU0), 
+completing the operation.
+
+.. _nvlink:
+.. figure:: ../Fig/hw/nvlink.png
+  :align: center
+  :scale: 50 %
+  
+  NVLINK
+
+5. In **PTX, small data** transfers are handled directly by the SM using 
+**ld.global and st.global instructions**. 
+For **bulk or large-scale data** transfers, the SM issues a single **TMA 
+descriptor instruction (such as cp.async.bulk)** as the following, offloading 
+the hardware **DMA** operation to the Tensor Memory Accelerator.
+Whether a thread executes a simple st.global instruction or triggers a bulk 
+transfer via the Tensor Memory Accelerator (TMA) using cp.async.bulk, the 
+**hardware** uses the exact same **Virtual Address** resolution pipeline to 
+route packets over NVLink.
+
+InfiniBand
+^^^^^^^^^^
+
+.. code-block: asm
+
+   // Initiates bulk multi-dimensional tensor transfer via TMA DMA engine
+  cp.async.bulk.tensor.2d.shared::cluster.global.mbarrier::complete_tx::bytes ...
+
+.. list-table:: GPU Hierarchy Level Comparison
+   :widths: 15 20 20 15 30
+   :header-rows: 1
+
+   * - Hierarchy Level
+     - Primary Interconnect
+     - Typical Bandwidth (per GPU)
+     - Latency
+     - Memory Architecture & Protocol
+
+   * - **Intra-Node**
+       *(GPUs within 1 server chassis)*
+     - **NVLink** (+ NVSwitch)
+     - **1.8 TB/s** *(NVLink 5 / Blackwell)*
+
+       **900 GB/s** *(NVLink 4 / Hopper)*
+     - **Sub-microsecond**
+       (<0.5 µs)
+     - **Shared Virtual Memory.** GPUs use direct ``NVLink P2P`` memory 
+       reads/writes (``LD/ST`` operations) straight into remote GPU VRAM without 
+       network protocol overhead.
+
+   * - **Inter-Node**
+       *(Server to Server)*
+     - **InfiniBand** (NDR / XDR)
+     - **400 – 800 Gbps** per NIC
+       *(~50–100 GB/s per rail)*
+     - **1 – 2 microseconds**
+     - **Distributed Memory (Message Passing).** Uses **GPUDirect RDMA (GDR)** 
+       to bypass host CPU/system RAM, transferring data GPU VRAM -> IB NIC -> 
+       IB Switch -> IB NIC -> GPU VRAM.
+
+   * - **Inter-Rack / SuperPOD**
+     - **InfiniBand Fat-Tree**
+     - **800 Gbps – 1.6 Tbps** links
+     - **2 – 5 microseconds**
+     - **Network Packet Switching.** Managed via specialized InfiniBand subnet 
+       managers, routing data through multi-tier Leaf-Spine switches over fiber 
+       cables.
+
+   * - **Cluster / Datacenter**
+     - **InfiniBand / RoCE** Ethernet
+     - Multi-Terabit spine capacity
+     - **5+ microseconds**
+     - **Large-scale Packet Routing.** Connects independent compute pods, 
+       shared storage pools, and management head nodes.
+
+**Latency** is the time delay between triggering an action and seeing the 
+result—in simple terms, it is the lag or response time of a system.
+For **NVLINK**, it is (**LD/ST or fine-grained 32-byte/64-byte** transaction packet) 
+between GPU VRAMs.
+For **InfiniBandk**, it is **single-packet transit time**.
 
 
 Memory Subsystem
@@ -1802,7 +1967,8 @@ Per‑pixel storage (color/depth/stencil).
 
 The LCD/LED screen does not directly read the GPU color buffer.  
 Instead, the GPU’s display engine scans out the final framebuffer and sends 
-it to the panel’s TCON, which then drives the physical pixels.
+it to the panel’s TCON, which then drives the physical pixels as shown in 
+:numref:`tcon`.
 
 .. code-block:: text
 
