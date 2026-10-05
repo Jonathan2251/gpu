@@ -54,6 +54,22 @@ The inner loop of the preceding code is vectorizable with length VL, which is
 equal to either (n % MVL) or MVL. The VLR register must be set twice in the
 code, once at each place where the variable VL in the code is assigned.
 
+Although the Computer Architecture: A Quantitative Approach text does not 
+describe how the ``VL`` register is set, 
+the VMIPS architecture provides a single instruction for controlling the
+current vector length, ``VL``. This instruction is:
+
+.. code-block:: asm
+
+   SETVL rD, rS
+
+The instruction performs two actions:
+
+.. code-block:: c++
+
+   VL = min( rS, MVL )
+   rD = VL
+
 ✅ Vector Mask Registers: Handling IF Statements in Vector Loops
 
 .. code:: text
@@ -813,7 +829,9 @@ SPIR-V.
        physical register model**
 
 ✅ NVIDIA, AMD, ARM and Imagination all have exposed LLVM IR and convert 
-   SPIR-V IR to LLVM IR.
+SPIR-V IR to LLVM IR.
+
+✅ The differences between SPIR and SPIR-V as follows:
 
   - SPIR:
 

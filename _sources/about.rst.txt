@@ -22,7 +22,12 @@ https://github.com/Jonathan2251/sa/blob/master/README.md
 Revision history
 ----------------
 
-Version 0.7, not released yet.
+Version 0.8, not released yet.
+
+Version 0.7, Released October 4, 2026.
+
+  sw.rst: refine English.
+  hw.rst: add section 'Host & Cluster Interconnects'
 
 Version 0.6, Released September 27, 2026.
 
