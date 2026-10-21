@@ -370,6 +370,40 @@ As shown in :numref:`gpu-pipeline`:
 - Primitive Processing: processes and transforms **primitive** data.
 - Rasterizer: **Primitives → Fragments**.
 - Fragment Shader: **Fragments → Colored Fragments**.
+- GPU vendors can use shaders to accommodate future requirements. 
+  For example, the Clipping stage in Primitive Processing is optional and 
+  significantly lighter in computation than the rasterizer. 
+  A vendor may implement clipping using a combination of a clipping shader 
+  and fixed‑function hardware. 
+  In addition, the vendor can define an API that allows developers to supply 
+  or replace the clipping shader.
+- Lighting as below:
+
+Deferred rendering means you delay lighting until after you finish rasterizing geometry into screen‑space buffers.
+This contrasts with forward rendering, where lighting happens per fragment during rasterization.
+If you compute lighting in the fragment shader → you are doing forward rendering, not deferred.
+
+Game developers normally do not decide whether to use forward or deferred lighting [#deferred-rendering]_.  
+The engine automatically selects the correct pipeline based on object and material properties.
+Modern game engines use deferred rendering for opaque objects and forward rendering for special cases such as transparency.  
+They do this by issuing different OpenGL draw calls—binding different framebuffers and shaders—rather than switching the entire renderer.  
+OpenGL itself has no concept of “deferred” or “forward”; these are engine‑level pipeline designs implemented through specific sequences of OpenGL commands.
+
+The engine chooses the pipeline by issuing different OpenGL commands:
+
+For deferred (opaque) objects:
+
+•  glBindFramebuffer(GBufferFBO)
+•  glUseProgram(GBufferShader)
+•  glDrawElements(...)
+•  glUseProgram(LightingShader)
+•  glDrawArrays(...)
+
+For forward (special) objects:
+
+•  glBindFramebuffer(MainSceneFBO)
+•  glUseProgram(ForwardShader)
+•  glDrawElements(...)
 
 As illustrated in the :ref:`cross-product` section,
 
@@ -1538,7 +1572,7 @@ NVIDIA, AMD, and Intel all needed:
 - a compute‑like geometry pipeline
 - meshlet‑based processing
 - better culling
-- GPU‑driven rendering
+- GPU‑driven rendering **without CPU intervention**
 - a **replacement** for VS → TCS → TES → GS
 
   - TCS → Fixed-Function Tessellator → TES: geometry amplification.
@@ -1657,10 +1691,12 @@ Key responsibilities:
     inside that meshlet.
 
 - Perform fine-grained culling:
+
   - frustum culling
   - backface culling
   - small triangle culling
   - cluster-level culling
+
 - Generate the final set of vertices and primitives.
 - Emit primitives directly to the rasterizer.
 
@@ -1675,17 +1711,68 @@ Meshlets align naturally with GPU hardware for several reasons:
   Each meshlet maps cleanly to a single workgroup, keeping memory usage
   predictable and minimizing divergence.
 
-- **Cache Efficiency:**  
+- **Cache Efficiency:**
   Meshlets maximize vertex reuse and reduce memory bandwidth by grouping
   spatially local geometry.
 
-- **Hierarchical Culling:**  
+- **Hierarchical Culling:**
+
   - Task shader: coarse culling of entire meshlets.  
   - Mesh shader: fine culling of individual primitives.
 
 - **Reduced CPU Overhead:**  
-  The GPU can perform culling, LOD selection, and primitive generation
-  without CPU intervention, enabling GPU-driven rendering.
+  The GPU can perform culling, **LOD selection**, and **primitive generation**
+  **without CPU intervention**, enabling GPU-driven rendering.
+
+  - Traditional OpenGL:  
+    CPU must issue different draw calls for each LOD.
+
+    .. rubric:: Example logic inside a Task Shader (OpenGL)
+    .. code-block:: c++
+
+       if (distance < 50)
+           glBindVertexArray(LOD0);
+       else if (distance < 150)
+           glBindVertexArray(LOD1);
+       else
+           glBindVertexArray(LOD2);
+
+       glDrawElements(...);
+
+  - Mesh shaders:  
+    GPU chooses LOD → GPU draws.
+
+    LOD is computed inside the Task Shader using GPU data:
+
+    - camera position
+    - meshlet bounding sphere
+    - screen‑space projected size
+    - distance
+    - cone culling
+    - importance metrics
+    - visibility results
+
+    The Task Shader then decides:
+
+    - which meshlets to draw
+    - which LOD version of each meshlet to use
+    - how many mesh shader workgroups to launch
+
+      .. rubric:: Example logic inside a Task Shader (GLSL)
+      .. code-block:: c++
+
+         float dist = length(cameraPos - meshlet.center);
+
+         uint lod = 0;
+         if (dist > 50.0) lod = 1;
+         if (dist > 150.0) lod = 2;
+
+         dispatchMesh(meshletCountLOD[lod]);
+
+    - Although Task Shader is optional, proper LOD support typically requires 
+      using one.. 
+      Otherwiese, one meshlet must contain multiple LOD versions → vertex count 
+      becomes large → performance collapses.
 
 - **Scalable Parallelism:**  
   Each meshlet is processed independently, allowing thousands of
@@ -3451,6 +3538,8 @@ Here is the software stack of the 3D graphics system for OpenGL on Linux
 
 
 .. [#3drendering_wiki] https://en.wikipedia.org/wiki/3D_rendering
+
+.. [#deferred-rendering] https://learnopengl.com/Advanced-Lighting/Deferred-Shading
 
 .. [#rendering] https://www.khronos.org/opengl/wiki/Rendering_Pipeline_Overview
 
