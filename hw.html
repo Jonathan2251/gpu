@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/haiku.css?v=fce32b03" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
-    <script src="_static/documentation_options.js?v=48f8e935"></script>
+    <script src="_static/documentation_options.js?v=a0e24af7"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="author" title="About these documents" href="about.html" />
@@ -470,7 +470,8 @@ multiple VRAM transactions.</p></li>
 Final framebuffer stored in VRAM → Display Controller → HDMI / DP scanout.</p></li>
 </ul>
 <p><strong>All Together</strong></p>
-<p><strong>GPU provides the following hardware to accelerate graphics rendering pipeline as follows:</strong></p>
+<p><strong>GPU provides the following hardware to accelerate graphics rendering pipeline
+as follows:</strong></p>
 <dl class="simple">
 <dt>✅ Simplified Flow (OpenGL → Hardware)</dt><dd><ol class="arabic simple">
 <li><p>Vertex Fetch → VRAM &amp; Memory Controllers.</p></li>
@@ -489,13 +490,21 @@ supported <a class="footnote-reference brackets" href="#vrs" id="id4" role="doc-
 <ul class="simple">
 <li><p>Rasterizer (Rasterization Units):</p>
 <ul>
-<li><p>Decides how many fragments per pixel (or group of pixels) will actually be shaded.</p></li>
-<li><p>Instead of generating 1 fragment per pixel, it may shade 1 fragment for a 2×2 or 4×4 block and reuse that result.</p></li>
+<li><p>Determines pixel coverage at full resolution.</p></li>
+<li><p>Generates one fragment per covered pixel.</p></li>
+</ul>
+</li>
+<li><p>Shading‑Rate Unit (VRS logic)</p>
+<ul>
+<li><p>Decides how many fragment shader invocations to run (1×1, 2×2, 4×4).</p></li>
+<li><p>Coalesces fragments into blocks (e.g., shade once for 2×2).</p></li>
+<li><p>Reuses the fragment shader result for all pixels in the block.</p></li>
 </ul>
 </li>
 <li><p>Fragment Shader Cores (SMs/CUs):</p>
 <ul>
-<li><p>Still run the shading code, but at a reduced frequency (fewer fragment invocations).</p></li>
+<li><p>Still run the shading code, but at a reduced frequency (fewer fragment
+invocations) when VRS is active.</p></li>
 </ul>
 </li>
 <li><p>ROPs (and pipeline integration):</p>
@@ -516,7 +525,7 @@ accelerate AI workloads instead of traditional graphics workloads.</strong></p>
 </section>
 <section id="computer-cluster">
 <span id="id5"></span><h2><a class="toc-backref" href="#id84" role="doc-backlink">Computer Cluster</a><a class="headerlink" href="#computer-cluster" title="Link to this heading">¶</a></h2>
-<p>The newest NVIDIA data‑center GPU you asked about — Blackwell Ultra
+<p>The NVIDIA data‑center GPU — Blackwell Ultra
 (GB200-class) — contains 160 Streaming Multiprocessors (SMs), and those SMs
 serve both graphics‑style workloads (CUDA cores, Ray Tracing, RT, cores) and
 AI workloads (Tensor Cores).</p>

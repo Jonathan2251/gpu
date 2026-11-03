@@ -224,7 +224,7 @@ In this series of videos, you will see that he writes new Java engine modules,
 edits existing engine code, loads animation data from Blender, interpolates 
 keyframes, updates bone matrices and sends them to the GPU.
 Because ThinMatrix's engine is **tiny and educational** for engine programmer or
-game developer, does not provide Scripting Layer (such as C#, Python, GDScript, 
+game developer, it does not provide Scripting Layer (such as C#, Python, GDScript, 
 Blueprints) most commercial 3D engines.
 Instead, he modifies ThinMatrix’s Java engine directly, which differs from most
 other 3D engines operate.

@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/haiku.css?v=fce32b03" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
-    <script src="_static/documentation_options.js?v=48f8e935"></script>
+    <script src="_static/documentation_options.js?v=a0e24af7"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
@@ -273,7 +273,7 @@ parallelogram.</p>
 </figure>
 <p>The area of the parallelogram is given by:</p>
 <div class="math notranslate nohighlight">
-\[ \begin{align}\begin{aligned}\mathbf a = v_1-v_0, \mathbf b = v_2-v_1\\\Vert \mathbf a \mathsf x \mathbf b \Vert = \Vert a \Vert \Vert b \Vert |
+\[ \begin{align}\begin{aligned}\mathbf a = v_1-v_0, \mathbf b = v_2-v_1 = v_3-v_0\\\Vert \mathbf a \mathsf x \mathbf b \Vert = \Vert a \Vert \Vert b \Vert |
 sin(\Theta) |\end{aligned}\end{align} \]</div>
 <p>The area of a parallelogram is same in both 2D and 3D.
 To extend the definition of the corss product to 3D, all we must additionally
@@ -547,8 +547,11 @@ flips as shown in <a class="reference internal" href="#construct-triangle"><span
 <span class="math notranslate nohighlight">\(0 &lt; \Theta &lt; 180^\circ\)</span> under CCW orientation, the area of a triangle
 area is given by:</p>
 <div class="math notranslate nohighlight">
-\[\frac{1}{2} \mathbf \Vert (v_1-v_0) \mathsf x \mathbf (v_2-v_0) \Vert =
-\frac{1}{2} \Vert (v_1-v_0) \Vert \Vert (v_2-v_0) \Vert sin(\Theta)\]</div>
+\[\frac{1}{2} \mathbf \Vert (v_1-v_0) \mathsf x \mathbf (v_2-v_1) \Vert =
+\frac{1}{2} \Vert (v_1-v_0) \Vert \Vert (v_2-v_1) \Vert sin(\Theta)\]</div>
+<p>Where <span class="math notranslate nohighlight">\(\theta\)</span> is the turning angle at <span class="math notranslate nohighlight">\(v_{1}\)</span>, defined by the
+directed edges <span class="math notranslate nohighlight">\(v_{1} \rightarrow v_{0}\)</span> and <span class="math notranslate nohighlight">\(v_{1} \rightarrow
+v_{2}\)</span>.</p>
 <p>✔️  Though each triangle can be correctly identified and processed using its
 CCW ordering.
 As mentioned in <a class="reference internal" href="#trans-steps"><span class="std std-numref">Fig. 15</span></a> of section <a class="reference internal" href="#transformation"><span class="std std-ref">Transformation</span></a>,

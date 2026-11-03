@@ -226,7 +226,8 @@ that accelerate them as shown in :numref:`ogl-pipeline-hw`:
 
 **All Together**
 
-**GPU provides the following hardware to accelerate graphics rendering pipeline as follows:**
+**GPU provides the following hardware to accelerate graphics rendering pipeline 
+as follows:**
 
 ✅ Simplified Flow (OpenGL → Hardware)
 	1.	Vertex Fetch → VRAM & Memory Controllers.
@@ -244,12 +245,19 @@ supported [#vrs]_.
 
 - Rasterizer (Rasterization Units):
 
-  - Decides how many fragments per pixel (or group of pixels) will actually be shaded.
-  - Instead of generating 1 fragment per pixel, it may shade 1 fragment for a 2×2 or 4×4 block and reuse that result.
+  - Determines pixel coverage at full resolution.
+  - Generates one fragment per covered pixel.
+
+- Shading‑Rate Unit (VRS logic)
+
+  - Decides how many fragment shader invocations to run (1×1, 2×2, 4×4).
+  - Coalesces fragments into blocks (e.g., shade once for 2×2).
+  - Reuses the fragment shader result for all pixels in the block.
 
 - Fragment Shader Cores (SMs/CUs):
 
-  - Still run the shading code, but at a reduced frequency (fewer fragment invocations).
+  - Still run the shading code, but at a reduced frequency (fewer fragment 
+    invocations) when VRS is active.
 
 - ROPs (and pipeline integration):
 
@@ -270,7 +278,7 @@ supported [#vrs]_.
 Computer Cluster
 ----------------
 
-The newest NVIDIA data‑center GPU you asked about — Blackwell Ultra
+The NVIDIA data‑center GPU — Blackwell Ultra
 (GB200-class) — contains 160 Streaming Multiprocessors (SMs), and those SMs 
 serve both graphics‑style workloads (CUDA cores, Ray Tracing, RT, cores) and 
 AI workloads (Tensor Cores).

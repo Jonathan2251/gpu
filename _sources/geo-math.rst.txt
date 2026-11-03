@@ -290,7 +290,7 @@ The area of the parallelogram is given by:
 
 .. math::
 
-  \mathbf a = v_1-v_0, \mathbf b = v_2-v_1
+  \mathbf a = v_1-v_0, \mathbf b = v_2-v_1 = v_3-v_0
 
   \Vert \mathbf a \mathsf x \mathbf b \Vert = \Vert a \Vert \Vert b \Vert | 
   sin(\Theta) |
@@ -601,8 +601,12 @@ area is given by:
 
 .. math::
 
-   \frac{1}{2} \mathbf \Vert (v_1-v_0) \mathsf x \mathbf (v_2-v_0) \Vert =
-   \frac{1}{2} \Vert (v_1-v_0) \Vert \Vert (v_2-v_0) \Vert sin(\Theta)
+   \frac{1}{2} \mathbf \Vert (v_1-v_0) \mathsf x \mathbf (v_2-v_1) \Vert =
+   \frac{1}{2} \Vert (v_1-v_0) \Vert \Vert (v_2-v_1) \Vert sin(\Theta)
+
+Where :math:`\theta` is the turning angle at :math:`v_{1}`, defined by the
+directed edges :math:`v_{1} \rightarrow v_{0}` and :math:`v_{1} \rightarrow 
+v_{2}`.
 
 ✔️  Though each triangle can be correctly identified and processed using its
 CCW ordering.
