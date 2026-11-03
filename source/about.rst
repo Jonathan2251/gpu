@@ -22,7 +22,9 @@ https://github.com/Jonathan2251/sa/blob/master/README.md
 Revision history
 ----------------
 
-Version 0.8, not released yet.
+Version 0.9, not released yet.
+
+Version 0.8, Released November 2, 2026.
 
 Version 0.7, Released October 4, 2026.
 
